@@ -901,6 +901,7 @@
     <Image Include="..\resource\icon_grep.ico" />
     <Image Include="..\resource\icon_std.ico" />
     <Image Include="..\resource\mytool.bmp" />
+    <Image Include="..\resource\onipad.ico" />
     <Image Include="..\resource\printer.ico" />
   </ItemGroup>
   <ItemGroup>

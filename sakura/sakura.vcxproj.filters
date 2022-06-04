@@ -2341,6 +2341,9 @@
     <Image Include="..\resource\printer.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="..\resource\onipad.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\sakura_core\util\ReadMe_util.txt">

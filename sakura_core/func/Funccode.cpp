@@ -83,7 +83,8 @@ const uint16_t nsFuncCode::ppszFuncKind[] = {
 //	L"カスタムメニュー",	//Oct. 21, 2000 JEPRO 「その他」から独立分離化
 	STR_ERR_DLGFUNCLKUP16,	//L"ウィンドウ系",
 	STR_ERR_DLGFUNCLKUP17,	//L"支援",
-	STR_ERR_DLGFUNCLKUP18	//L"その他"
+	STR_ERR_DLGFUNCLKUP18,	//L"その他"
+	STR_ERR_DLGFUNCLKUP20	//L"ＨＳＰ"
 };
 const int nsFuncCode::nFuncKindNum = _countof(nsFuncCode::ppszFuncKind);
 
@@ -511,6 +512,34 @@ const EFunctionCode pnFuncList_Others[] = {
 };
 const int nFincList_Others_Num = _countof( pnFuncList_Others );	//Oct. 16, 2000 JEPRO 変数名変更(List12→List_Others)
 
+/* ＨＳＰ */
+const EFunctionCode pnFuncList_HSP[] = {
+	F_HSP_LABEL_LIST		,	/* ラベル・関数一覧(&L) */
+	F_HSP_COMPILE_RUN		,	/* コンパイル+実行(&C) */
+	F_HSP_RUN				,	/* 実行(&R) */
+	F_HSP_COMPILE_ONLY		,	/* コンパイルのみ(&P) */
+	F_HSP_SHOW_ERR			,	/* エラー表示(&E) */
+	F_HSP_CREATE_OBJ		,	/* オブジェクトファイル作成(&B) */
+	F_HSP_CREATE_STARTAX	,	/* START.AXファイル作成(&S) */
+	F_HSP_CREATE_EXE_AUTO	,	/* 実行ファイル自動作成(&A) */
+	F_HSP_RUN_EXTERNAL		,	/* 外部ファイル実行(&F) */
+	F_HSP_RESV_KEYWORD_LIST	,	/* 予約キーワード一覧(&K) */
+	F_HSP_RUN_OPTIONS		,	/* 起動オプション(&O) */
+	F_HSP_SHOW_DEBUG_WINDOW	,	/* Debugウィンドウ表示(&D) */
+	F_HSP_OPEN_SRC_FOLDER	,	/* ソースフォルダを開く(&O) */
+	F_HSP_RUN_ASSIST		,	/* HSPアシスタント起動(&F) */
+	F_HSP_RUN_HSPTV			,	/* HSPTVブラウザ起動(&H) */
+	F_HSP_CREATE_DPM		,	/* 指定フォルダからDPM作成(&D) */
+	F_HSP_CONVERT_DISH_C	,	/* HSP3Dish / Cソース変換(&C) */
+	F_HSP_OPEN_HGIMG4_TOOL	,	/* HGIMG4ツールを開く(&G) */
+	F_HSP_OPEN_PAINT_TOOL	,	/* ペイントツールを開く(&W) */
+	F_HSP_SEARCH_KEYWORD	,	/* HSPキーワード検索(&K) */
+	F_HSP_OPEN_PG_MANUAL	,	/* HSPプログラミング・マニュアルを開く(&P) */
+	F_HSP_OPEN_FUNC_REF		,	/* HSP命令リファレンスを開く(&R) */
+	F_HSP_OPEN_MANUAL_INDEX		/* HSPマニュアル目次(&I) */
+};
+const int nFincList_HSP_Num = _countof(pnFuncList_HSP);
+
 // 特殊機能
 const EFunctionCode nsFuncCode::pnFuncList_Special[] = {
 	F_WINDOW_LIST,
@@ -540,7 +569,8 @@ const int nsFuncCode::pnFuncListNumArr[] = {
 //	nFincList_Menu_Num,		/* カスタムメニュー */	//Oct. 21, 2000 JEPRO 「その他」から分離独立化
 	nFincList_Win_Num,		/* ウィンドウ系 */		//Oct. 16, 2000 JEPRO 変数名変更(List7→List_Win)
 	nFincList_Support_Num,	/* 支援 */				//Oct. 16, 2000 JEPRO 変数名変更(List11→List_Support)
-	nFincList_Others_Num	/* その他 */			//Oct. 16, 2000 JEPRO 変数名変更(List12→List_Others)
+	nFincList_Others_Num,	/* その他 */			//Oct. 16, 2000 JEPRO 変数名変更(List12→List_Others)
+	nFincList_HSP_Num		/* ＨＳＰ */
 };
 const EFunctionCode* nsFuncCode::ppnFuncListArr[] = {
 //	pnFuncList_Undef,	//Oct. 14, 2000 JEPRO 「--未定義--」を表示させないように変更	//Oct. 16, 2000 JEPRO 変数名変更(List0→List_Undef)
@@ -560,7 +590,8 @@ const EFunctionCode* nsFuncCode::ppnFuncListArr[] = {
 //	pnFuncList_Menu,	/* カスタムメニュー */	//Oct. 21, 2000 JEPRO「その他」から分離独立化
 	pnFuncList_Win,	/* ウィンドウ系 */		//Oct. 16, 2000 JEPRO 変数名変更(List7→List_Win)
 	pnFuncList_Support,/* 支援 */				//Oct. 16, 2000 JEPRO 変数名変更(List11→List_Support)
-	pnFuncList_Others	/* その他 */			//Oct. 16, 2000 JEPRO 変数名変更(List12→List_Others)
+	pnFuncList_Others,	/* その他 */			//Oct. 16, 2000 JEPRO 変数名変更(List12→List_Others)
+	pnFuncList_HSP	/* ＨＳＰ */
 };
 const int nsFuncCode::nFincListNumArrNum = _countof( nsFuncCode::pnFuncListNumArr );
 

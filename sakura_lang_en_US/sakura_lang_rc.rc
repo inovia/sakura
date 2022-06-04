@@ -2265,6 +2265,7 @@ BEGIN
     F_EDIT_TOPMENU          "Edit"
     F_CONVERT_TOPMENU       "Convert"
     F_SEARCH_TOPMENU        "Search"
+	F_HSP_TOPMENU           "HSP"
     F_TOOL_TOPMENU          "Tool"
     F_OPTION_TOPMENU        "Option"
     F_WINDOW_TOPMENU        "Window"
@@ -2883,6 +2884,33 @@ BEGIN
     F_EXTHELP1              "External Help1"
     F_EXTHTMLHELP           "External HTML Help"
     F_ABOUT                 "About Sakura"
+END
+
+STRINGTABLE
+BEGIN
+	F_HSP_LABEL_LIST		"HSP Label List..."
+	F_HSP_COMPILE_RUN		"Compile and Run"
+	F_HSP_RUN				"Run"
+	F_HSP_COMPILE_ONLY		"Compile"
+	F_HSP_SHOW_ERR			"Error Report..."
+	F_HSP_CREATE_OBJ		"Make .ax"
+	F_HSP_CREATE_STARTAX	"Make START.AX"
+	F_HSP_CREATE_EXE_AUTO	"Make Executable"
+	F_HSP_RUN_EXTERNAL		"Run External..."
+	F_HSP_RESV_KEYWORD_LIST	"Keywords..."
+	F_HSP_RUN_OPTIONS		"Boot Option"
+	F_HSP_SHOW_DEBUG_WINDOW	"Debug Window"
+	F_HSP_OPEN_SRC_FOLDER	"Open Source Folder..."
+	F_HSP_RUN_ASSIST		"HSP Assistant..."
+	F_HSP_RUN_HSPTV			"HSPTV Browser..."
+	F_HSP_CREATE_DPM		"Make .DPM from Folder..."
+	F_HSP_CONVERT_DISH_C	"HSP3Dish / Source Convert..."
+	F_HSP_OPEN_HGIMG4_TOOL	"HGIMG4 Tool..."
+	F_HSP_OPEN_PAINT_TOOL	"Paint Tool..."
+	F_HSP_SEARCH_KEYWORD	"Search Keyword..."
+	F_HSP_OPEN_PG_MANUAL	"Programming Manual..."
+	F_HSP_OPEN_FUNC_REF		"Command Reference..."
+	F_HSP_OPEN_MANUAL_INDEX	"Manual Index..."
 END
 
 STRINGTABLE
@@ -3670,6 +3698,7 @@ BEGIN
     STR_ERR_DLGFUNCLKUP17   "Support related"
     STR_ERR_DLGFUNCLKUP18   "Misc Others"
     STR_ERR_DLGFUNCLKUP19   "Plugin"
+	STR_ERR_DLGFUNCLKUP20   "HSP"
     STR_ERR_DLGKEYBIND1     "Key\tFunctionalName\tFunctionName\tFunctionalNr\tCan_record_as_key_macro?"
     STR_ERR_DLGKEYBIND2     "---Undefined Name-----"
     STR_ERR_DLGKEYMACMGR1   "//Keyboard macro file\r\n"

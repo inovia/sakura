@@ -242,7 +242,7 @@ CMenuDrawer::CMenuDrawer()
 /* 127 */		F_MODIFYLINE_NEXT_SEL			/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//(範囲選択)次の変更行へ
 /* 128 */		F_DISABLE						/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
 
-/* 矩形選択系(5段目32個: 129-160) */ //(注. 矩形選択系のほとんどは未実装)
+/* 矩形選択系(5段目22個: 129-151) */ //(注. 矩形選択系のほとんどは未実装)
 /* 129 */		F_DISABLE						/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
 /* 130 */		F_DISABLE/*F_BOXSELALL*/		/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//矩形ですべて選択
 /* 131 */		F_BEGIN_BOX						/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//矩形範囲選択開始	//Sept. 29, 2000 JEPRO 追加
@@ -265,9 +265,11 @@ CMenuDrawer::CMenuDrawer()
 /* 148 */		F_GOFILETOP_BOX					/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//(矩形選択)ファイルの先頭に移動
 /* 149 */		F_GOFILEEND_BOX					/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//(矩形選択)ファイルの最後に移動
 /* 150 */		F_GOLOGICALLINETOP_BOX			/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//(矩形選択)行頭に移動(改行単位)
-/* 151 */		F_DISABLE/*F_GOLOGICALLINEEND_BOX*/		/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
-/* 152 */		F_DISABLE								/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
-/* 153 */		F_DISABLE								/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
+
+/* HSP系(5段目10個: 151-160) */
+/* 151 */		F_HSP_COMPILE_RUN				/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
+/* 152 */		F_HSP_CREATE_OBJ				/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
+/* 153 */		F_HSP_RUN_EXTERNAL				/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
 /* 154 */		F_DISABLE								/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
 /* 155 */		F_DISABLE								/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
 /* 156 */		F_DISABLE								/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー

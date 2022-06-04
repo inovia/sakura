@@ -454,6 +454,30 @@ F_EXTHELP1			= 31450,	// 外部ヘルプ１										なし
 F_EXTHTMLHELP		= 31451,	// 外部HTMLヘルプ									const WCHAR* helpfile, const WCHAR* keyword
 F_ABOUT				= 31455,	// バージョン情報									なし
 
+// ＨＳＰ
+F_HSP_LABEL_LIST		= 31470,	// ラベル・関数一覧
+F_HSP_COMPILE_RUN		= 31471,	// コンパイル+実行
+F_HSP_RUN				= 31472,	// 実行
+F_HSP_COMPILE_ONLY		= 31473,	// コンパイルのみ
+F_HSP_SHOW_ERR			= 31474,	// エラー表示
+F_HSP_CREATE_OBJ		= 31475,	// オブジェクトファイル作成
+F_HSP_CREATE_STARTAX	= 31476,	// START.AXファイル作成
+F_HSP_CREATE_EXE_AUTO	= 31477,	// 実行ファイル自動作成
+F_HSP_RUN_EXTERNAL		= 31478,	// 外部ファイル実行
+F_HSP_RESV_KEYWORD_LIST	= 31479,	// 予約キーワード一覧
+F_HSP_RUN_OPTIONS		= 31480,	// 起動オプション
+F_HSP_SHOW_DEBUG_WINDOW	= 31481,	// Debugウィンドウ表示
+F_HSP_OPEN_SRC_FOLDER	= 31482,	// ソースフォルダを開く
+F_HSP_RUN_ASSIST		= 31483,	// HSPアシスタント起動
+F_HSP_RUN_HSPTV			= 31484,	// HSPTVブラウザ起動
+F_HSP_CREATE_DPM		= 31485,	// 指定フォルダからDPM作成
+F_HSP_CONVERT_DISH_C	= 31486,	// HSP3Dish / Cソース変換
+F_HSP_OPEN_HGIMG4_TOOL	= 31487,	// HGIMG4ツールを開く
+F_HSP_OPEN_PAINT_TOOL	= 31488,	// ペイントツールを開く
+F_HSP_SEARCH_KEYWORD	= 31489,	// HSPキーワード検索
+F_HSP_OPEN_PG_MANUAL	= 31490,	// HSPプログラミング・マニュアルを開く
+F_HSP_OPEN_FUNC_REF		= 31491,	// HSP命令リファレンスを開く
+F_HSP_OPEN_MANUAL_INDEX	= 31492,	// HSPマニュアル目次
 
 //	Jul. 4, 2000 genta
 F_USERMACRO_0		= 31600,	// 登録マクロ開始
