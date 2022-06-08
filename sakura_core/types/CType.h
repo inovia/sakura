@@ -342,6 +342,7 @@ GEN_CTYPE(CType_Sql)
 GEN_CTYPE(CType_Tex)
 GEN_CTYPE(CType_Text)
 GEN_CTYPE(CType_Vb)
+GEN_CTYPE(CType_Hsp3)
 GEN_CTYPE(CType_Other)
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

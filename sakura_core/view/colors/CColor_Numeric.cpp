@@ -602,6 +602,48 @@ static int IsNumber(const CStringRef& cStr,/*const wchar_t *buf,*/ int offset/*,
 		return 0;
 	}
 #endif
+#if 1
+	else if (*p == L'$')  /* HSPの16進数 */
+	{
+		p++; i++;
+		while (p < q)
+		{
+			if ((*p >= L'0' && *p <= L'9')
+				|| (*p >= L'A' && *p <= L'F')
+				|| (*p >= L'a' && *p <= L'f'))
+			{
+				p++; i++;
+			}
+			else
+			{
+				break;
+			}
+		}
+		/* "$" だけなら数値でない */
+		if (i == 1) i = 0;
+		return i;
+	}
+#endif
+#if 1
+	else if (*p == L'%')  /* HSPの2進数 */
+	{
+		p++; i++;
+		while (p < q)
+		{
+			if ((*p >= L'0' && *p <= L'1'))
+			{
+				p++; i++;
+			}
+			else
+			{
+				break;
+			}
+		}
+		/* "%" だけなら数値でない */
+		if (i == 1) i = 0;
+		return i;
+	}
+#endif
 
 	/* 数値ではない */
 	return 0;

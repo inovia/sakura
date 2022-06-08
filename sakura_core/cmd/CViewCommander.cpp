@@ -543,6 +543,14 @@ BOOL CViewCommander::HandleCommand(
 		Command_EXECCOMMAND((LPCWSTR)lparam1, (int)lparam2, (LPCWSTR)lparam3);	//	2006.12.03 maru 引数の拡張のため
 		break;
 
+	/* HSP */
+	case F_HSP_OPEN_PAINT_TOOL:
+		Command_HSP_OPEN_PAINT_TOOL();
+		break;
+	case F_HSP_SEARCH_KEYWORD:
+		Command_HSP_SEARCH_KEYWORD();
+		break;
+
 	/* カスタムメニュー */
 	case F_MENU_RBUTTON:	/* 右クリックメニュー */
 		/* 再帰処理対策 */

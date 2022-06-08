@@ -119,6 +119,9 @@
     <Filter Include="Cpp Source Files\uiparts">
       <UniqueIdentifier>{930f3f82-ab3f-49e3-af4a-d4f9c2d51f46}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Cpp Source Files\hsp">
+      <UniqueIdentifier>{4387accc-ec35-4d30-9987-b999241976dd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sakura_core\Funccode_define.h">
@@ -1114,6 +1117,12 @@
     </ClInclude>
     <ClInclude Include="..\sakura_core\view\CMiniMapView.h">
       <Filter>Cpp Source Files\view</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\hsp\CHsp3.h">
+      <Filter>Cpp Source Files\hsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\hsp\CHsp3Dll.h">
+      <Filter>Cpp Source Files\hsp</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2314,6 +2323,18 @@
     </ClCompile>
     <ClCompile Include="..\sakura_core\view\CMiniMapView.cpp">
       <Filter>Cpp Source Files\view</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\types\CType_Hsp3.cpp">
+      <Filter>Cpp Source Files\types</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\hsp\CHsp3.cpp">
+      <Filter>Cpp Source Files\hsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\hsp\CHsp3Dll.cpp">
+      <Filter>Cpp Source Files\hsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\cmd\CViewCommander_HSP.cpp">
+      <Filter>Cpp Source Files\cmd</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

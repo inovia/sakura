@@ -25,6 +25,8 @@
 #include "util/design_template.h"
 #include "env/CShareData.h"
 
+#include "hsp/CHsp3.h"
+
 #ifdef MINIDUMP_TYPE
 #define USE_CRASHDUMP
 #endif
@@ -59,6 +61,7 @@ public:
 	HINSTANCE		GetProcessInstance() const{ return m_hInstance; }
 	CShareData&		GetShareData()   { return m_cShareData; }
 	HWND			GetMainWindow() const{ return m_hWnd; }
+	CHsp3&			GetHsp3() { return m_Hsp3; }
 
 	[[nodiscard]] const CShareData* GetShareDataPtr() const { return &m_cShareData; }
 	[[nodiscard]] LPCWSTR	GetAppName( void ) const { return m_strAppName.c_str(); }
@@ -80,5 +83,7 @@ private:
 #endif
 	CShareData		m_cShareData;
 	std::wstring	m_strAppName;
+
+	CHsp3			m_Hsp3;
 };
 #endif /* SAKURA_CPROCESS_FECC5450_9096_4EAD_A6DA_C8B12C3A31B5_H_ */

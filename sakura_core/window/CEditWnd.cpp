@@ -762,6 +762,17 @@ HWND CEditWnd::Create(
 	//デフォルトのIMEモード設定
 	GetDocument()->m_cDocEditor.SetImeMode( GetDocument()->m_cDocType.GetDocumentAttribute().m_nImeState );
 
+	// デフォルトのタイプをHSPにしておく
+	//（サクラエディタ標準にない機能なのでここに）
+	CTypeConfig cTypeGrep = CDocTypeManager().GetDocumentTypeOfExt(L"hsp");
+	const STypeConfigMini* pConfig = NULL;
+	if ( CDocTypeManager().GetTypeConfigMini(cTypeGrep, &pConfig))
+	{
+		GetDocument()->m_cDocType.SetDocumentTypeIdx(pConfig->m_id);
+		GetDocument()->m_cDocType.LockDocumentType();
+		GetDocument()->OnChangeType();
+	}
+
 	return GetHwnd();
 }
 

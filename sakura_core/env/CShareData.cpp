@@ -315,14 +315,14 @@ bool CShareData::InitShareData()
 		{
 			CommonSetting_TabBar& sTabBar = m_pShareData->m_Common.m_sTabBar;
 
-			sTabBar.m_bDispTabWnd = FALSE;			//タブウインドウ表示	//@@@ 2003.05.31 MIK
+			sTabBar.m_bDispTabWnd = TRUE;			//タブウインドウ表示	//@@@ 2003.05.31 MIK	// HSPに寄せる
 			sTabBar.m_bDispTabWndMultiWin = FALSE;	//タブウインドウ表示	//@@@ 2003.05.31 MIK
 			wcscpy(	//@@@ 2003.06.13 MIK
 				sTabBar.m_szTabWndCaption,
 				L"${w?【Grep】$h$:【アウトプット】$:$f$n$}${U?(更新)$}${R?(ビューモード)$:(上書き禁止)$}${M?【キーマクロの記録中】$}"
 			);
 			sTabBar.m_bSameTabWidth = FALSE;			//タブを等幅にする			//@@@ 2006.01.28 ryoji
-			sTabBar.m_bDispTabIcon = FALSE;			//タブにアイコンを表示する	//@@@ 2006.01.28 ryoji
+			sTabBar.m_bDispTabIcon = TRUE;			//タブにアイコンを表示する	//@@@ 2006.01.28 ryoji
 			sTabBar.m_bDispTabClose = DISPTABCLOSE_NO;	//タブに閉じるボタンを表示する	//@@@ 2012.04.14 syat
 			sTabBar.m_bSortTabList = TRUE;			//タブ一覧をソートする		//@@@ 2006.05.10 ryoji
 			sTabBar.m_bTab_RetainEmptyWin = TRUE;	// 最後のファイルが閉じられたとき(無題)を残す	// 2007.02.11 genta

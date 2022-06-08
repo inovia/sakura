@@ -32,6 +32,8 @@
 #include "env/DLLSHAREDATA.h"
 #include "config/app_constants.h"
 
+#include "hsp/CHsp3.h"
+
 void _DefaultConfig(STypeConfig* pType);
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
@@ -86,6 +88,7 @@ void CShareData::InitTypeConfigs(DLLSHAREDATA* pShareData, std::vector<STypeConf
 		new CType_Vb(),		//Visual Basic
 		new CType_Rich(),	//リッチテキスト
 		new CType_Ini(),	//設定ファイル
+		new CType_Hsp3(),	//HSP
 	};
 	types.clear();
 	assert( _countof(table) <= MAX_TYPES );
@@ -140,6 +143,9 @@ void CShareData::InitKeyword(DLLSHAREDATA* pShareData)
 	PopulateKeyword( L"Visual Basic2",	false,	VB2 );			/* セット14の追加 */	//Jul. 10, 2001 JEPRO
 	PopulateKeyword( L"Rich Text",		true,	RTF );			/* セット15の追加 */	//Jul. 10, 2001 JEPRO
 	PopulateKeyword( L"Python",			true,	Python);		/* セット16の追加 */
+	PopulateKeyword( CHsp3::HSP3_FUNC_NAME.data(),		false,	HSP3_FUNC);		/* セット17の追加 */
+	PopulateKeyword( CHsp3::HSP3_PRE_NAME.data(),		false,	HSP3_PRE);		/* セット18の追加 */
+	PopulateKeyword( CHsp3::HSP3_MACRO_NAME.data(),		false,	HSP3_MACRO);	/* セット19の追加 */
 
 #undef PopulateKeyword
 }
@@ -198,7 +204,7 @@ void _DefaultConfig(STypeConfig* pType)
 
 	// 文字コード設定
 	pType->m_encoding.m_bPriorCesu8 = false;
-	pType->m_encoding.m_eDefaultCodetype = CODE_UTF8;
+	pType->m_encoding.m_eDefaultCodetype = CODE_SJIS;				// HSPに寄せる
 	pType->m_encoding.m_eDefaultEoltype = EEolType::cr_and_lf;
 	pType->m_encoding.m_bDefaultBom = false;
 

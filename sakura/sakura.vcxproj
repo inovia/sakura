@@ -323,6 +323,8 @@
     <ClInclude Include="..\sakura_core\func\CKeyBind.h" />
     <ClInclude Include="..\sakura_core\func\Funccode.h" />
     <ClInclude Include="..\sakura_core\GrepInfo.h" />
+    <ClInclude Include="..\sakura_core\hsp\CHsp3.h" />
+    <ClInclude Include="..\sakura_core\hsp\CHsp3Dll.h" />
     <ClInclude Include="..\sakura_core\io\CBinaryStream.h" />
     <ClInclude Include="..\sakura_core\io\CFile.h" />
     <ClInclude Include="..\sakura_core\io\CFileLoad.h" />
@@ -565,6 +567,7 @@
     <ClCompile Include="..\sakura_core\cmd\CViewCommander_Edit_word_line.cpp" />
     <ClCompile Include="..\sakura_core\cmd\CViewCommander_File.cpp" />
     <ClCompile Include="..\sakura_core\cmd\CViewCommander_Grep.cpp" />
+    <ClCompile Include="..\sakura_core\cmd\CViewCommander_HSP.cpp" />
     <ClCompile Include="..\sakura_core\cmd\CViewCommander_Insert.cpp" />
     <ClCompile Include="..\sakura_core\cmd\CViewCommander_Macro.cpp" />
     <ClCompile Include="..\sakura_core\cmd\CViewCommander_ModeChange.cpp" />
@@ -691,6 +694,8 @@
     <ClCompile Include="..\sakura_core\func\CKeyBind.cpp" />
     <ClCompile Include="..\sakura_core\func\Funccode.cpp" />
     <ClCompile Include="..\sakura_core\GrepInfo.cpp" />
+    <ClCompile Include="..\sakura_core\hsp\CHsp3.cpp" />
+    <ClCompile Include="..\sakura_core\hsp\CHsp3Dll.cpp" />
     <ClCompile Include="..\sakura_core\io\CBinaryStream.cpp" />
     <ClCompile Include="..\sakura_core\io\CFile.cpp" />
     <ClCompile Include="..\sakura_core\io\CFileLoad.cpp" />
@@ -794,6 +799,7 @@
     <ClCompile Include="..\sakura_core\types\CType_Cpp.cpp" />
     <ClCompile Include="..\sakura_core\types\CType_Dos.cpp" />
     <ClCompile Include="..\sakura_core\types\CType_Erlang.cpp" />
+    <ClCompile Include="..\sakura_core\types\CType_Hsp3.cpp" />
     <ClCompile Include="..\sakura_core\types\CType_Html.cpp" />
     <ClCompile Include="..\sakura_core\types\CType_Ini.cpp" />
     <ClCompile Include="..\sakura_core\types\CType_Java.cpp" />

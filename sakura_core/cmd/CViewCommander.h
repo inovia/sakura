@@ -361,6 +361,10 @@ public:
 //	To Here Sept. 20, 2000
 //	To Here 2006.12.03 maru 引数の拡張
 
+	/* HSP */
+	void Command_HSP_OPEN_PAINT_TOOL(void);
+	void Command_HSP_SEARCH_KEYWORD(void);
+
 	/* カスタムメニュー */
 	void Command_MENU_RBUTTON( void );	/* 右クリックメニュー */
 	int Command_CUSTMENU(int nMenuIdx);		/* カスタムメニュー表示 */

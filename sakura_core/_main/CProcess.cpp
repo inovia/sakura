@@ -72,6 +72,25 @@ bool CProcess::InitializeProcess()
 		return false;
 	}
 
+	/* HSP系初期化(コンパイラDLL) */
+	WCHAR	cmdline[1024];
+	GetExedir( cmdline, L"hspcmp.dll");
+	if ( !m_Hsp3.Load( cmdline))
+	{
+		::MYMESSAGEBOX(NULL, MB_OK | MB_ICONERROR,
+			GSTR_APPNAME, L"Failed to load hspcmp.dll.");
+		return false;
+	}
+
+	// 強調キーワードをコンパイラから取得して設定
+	auto& keywordMgr = GetDllShareData().m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr;
+	if ( !m_Hsp3.InitKeyword( keywordMgr))
+	{
+		::MYMESSAGEBOX(NULL, MB_OK | MB_ICONERROR,
+			GSTR_APPNAME, L"Failed to set emphasis keywords for HSP.");
+		return false;
+	}
+
 	/* リソースから製品バージョンの取得 */
 	//	2004.05.13 Moca 共有データのバージョン情報はコントロールプロセスだけが
 	//	ShareDataで設定するように変更したのでここからは削除
