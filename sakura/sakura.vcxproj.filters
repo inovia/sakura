@@ -1124,6 +1124,9 @@
     <ClInclude Include="..\sakura_core\hsp\CHsp3Dll.h">
       <Filter>Cpp Source Files\hsp</Filter>
     </ClInclude>
+    <ClInclude Include="..\sakura_core\hsp\CHsp3Interface.h">
+      <Filter>Cpp Source Files\hsp</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\resource\auto_scroll_center.cur">
@@ -2335,6 +2338,9 @@
     </ClCompile>
     <ClCompile Include="..\sakura_core\cmd\CViewCommander_HSP.cpp">
       <Filter>Cpp Source Files\cmd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\hsp\CHsp3Interface.cpp">
+      <Filter>Cpp Source Files\hsp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

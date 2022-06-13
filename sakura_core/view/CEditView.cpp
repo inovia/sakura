@@ -386,6 +386,28 @@ BOOL CEditView::Create(
 	CTypeSupport cTextType(this, COLORIDX_TEXT);
 	m_crBack = cTextType.GetBackColor();
 
+
+	// -------------------------------------------------------------
+	::D2D1CreateFactory(D2D1_FACTORY_TYPE_MULTI_THREADED, &pD2d1Factory);
+	::DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown**>(&pDWFactory));
+	//D2D1_SIZE_U oPixelSize =
+	//{
+	//	this->GetTextArea().GetAreaWidth(),
+	//	this->GetTextArea().GetAreaHeight()
+	//};
+
+	const D2D1_RENDER_TARGET_PROPERTIES oRenderTargetProperties = D2D1::RenderTargetProperties();
+	//D2D1_HWND_RENDER_TARGET_PROPERTIES oHwndRenderTargetProperties = D2D1::HwndRenderTargetProperties(
+	//	this->GetHwnd(), oPixelSize);
+	const D2D1_PIXEL_FORMAT D2D_PixelFormat = D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED);
+	D2D1_RENDER_TARGET_PROPERTIES render_props;
+	render_props = D2D1::RenderTargetProperties(D2D1_RENDER_TARGET_TYPE_DEFAULT, D2D_PixelFormat,
+		96.f, 96.f, D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT);
+
+	auto ret = pD2d1Factory->CreateDCRenderTarget(
+		&render_props
+		, &pRenderTarget);
+
 	return TRUE;
 }
 

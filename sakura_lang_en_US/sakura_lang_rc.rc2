@@ -1,7 +1,7 @@
 // このファイルにはリソースエディタで編集できない要素を配置します.
 // このファイルのエンコーディング/改行コードは UTF-16LE(BOM)/CRLF です.
 
-#define _APP_NAME_1 "SAKURA Editor"
+#define _APP_NAME_1 "HSP Script Editor. Powered By SAKURA."
 
 #ifdef DEV_VERSION
 #define _APP_NAME_2 " Dev"

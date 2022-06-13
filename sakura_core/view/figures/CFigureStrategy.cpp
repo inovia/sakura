@@ -101,6 +101,8 @@ bool CFigure_Text::DrawImpBlock(SColorStrategyInfo* pInfo, int nPos, int nLength
 	}
 	int nHeightMargin = pInfo->m_pcView->GetTextMetrics().GetCharHeightMarginByFontNo(fontNo);
 	pInfo->m_pcView->GetTextDrawer().DispText(
+		pInfo->m_pcView->pDWFactory,
+		pInfo->m_pcView->pRenderTarget,
 		pInfo->m_gr,
 		pInfo->m_pDispPos,
 		nHeightMargin,

@@ -544,11 +544,44 @@ BOOL CViewCommander::HandleCommand(
 		break;
 
 	/* HSP */
+	case F_HSP_OPEN_SRC_FOLDER:
+		Command_HSP_OPEN_SRC_FOLDER();
+		break;
+	case F_HSP_RUN_ASSIST:
+		Command_HSP_RUN_ASSIST();
+		break;
+	case F_HSP_RUN_HSPTV:
+		Command_HSP_RUN_HSPTV();
+		break;
+	case F_HSP_CREATE_DPM:
+		Command_HSP_CREATE_DPM();
+		break;
+	case F_HSP_CREATE_PACKOPT:
+		Command_HSP_CREATE_PACKOPT();
+		break;
+	case F_HSP_CONVERT_DISH_C:
+		Command_HSP_CONVERT_DISH_C();
+		break;
+	case F_HSP_OPEN_HGIMG4_TOOL:
+		Command_HSP_OPEN_HGIMG4_TOOL();
+		break;
 	case F_HSP_OPEN_PAINT_TOOL:
 		Command_HSP_OPEN_PAINT_TOOL();
 		break;
+	case F_HSP_OPEN_HELP_SOURCE_EDITOR:
+		Command_HSP_OPEN_HELP_SOURCE_EDITOR();
+		break;
 	case F_HSP_SEARCH_KEYWORD:
 		Command_HSP_SEARCH_KEYWORD();
+		break;
+	case F_HSP_OPEN_PG_MANUAL:
+		Command_HSP_OPEN_PG_MANUAL();
+		break;
+	case F_HSP_OPEN_FUNC_REF:
+		Command_HSP_OPEN_FUNC_REF();
+		break;
+	case F_HSP_OPEN_MANUAL_INDEX:
+		Command_HSP_OPEN_MANUAL_INDEX();
 		break;
 
 	/* カスタムメニュー */

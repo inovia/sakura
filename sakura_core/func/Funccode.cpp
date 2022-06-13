@@ -514,29 +514,31 @@ const int nFincList_Others_Num = _countof( pnFuncList_Others );	//Oct. 16, 2000 
 
 /* ＨＳＰ */
 const EFunctionCode pnFuncList_HSP[] = {
-	F_HSP_LABEL_LIST		,	/* ラベル・関数一覧(&L) */
-	F_HSP_COMPILE_RUN		,	/* コンパイル+実行(&C) */
-	F_HSP_RUN				,	/* 実行(&R) */
-	F_HSP_COMPILE_ONLY		,	/* コンパイルのみ(&P) */
-	F_HSP_SHOW_ERR			,	/* エラー表示(&E) */
-	F_HSP_CREATE_OBJ		,	/* オブジェクトファイル作成(&B) */
-	F_HSP_CREATE_STARTAX	,	/* START.AXファイル作成(&S) */
-	F_HSP_CREATE_EXE_AUTO	,	/* 実行ファイル自動作成(&A) */
-	F_HSP_RUN_EXTERNAL		,	/* 外部ファイル実行(&F) */
-	F_HSP_RESV_KEYWORD_LIST	,	/* 予約キーワード一覧(&K) */
-	F_HSP_RUN_OPTIONS		,	/* 起動オプション(&O) */
-	F_HSP_SHOW_DEBUG_WINDOW	,	/* Debugウィンドウ表示(&D) */
-	F_HSP_OPEN_SRC_FOLDER	,	/* ソースフォルダを開く(&O) */
-	F_HSP_RUN_ASSIST		,	/* HSPアシスタント起動(&F) */
-	F_HSP_RUN_HSPTV			,	/* HSPTVブラウザ起動(&H) */
-	F_HSP_CREATE_DPM		,	/* 指定フォルダからDPM作成(&D) */
-	F_HSP_CONVERT_DISH_C	,	/* HSP3Dish / Cソース変換(&C) */
-	F_HSP_OPEN_HGIMG4_TOOL	,	/* HGIMG4ツールを開く(&G) */
-	F_HSP_OPEN_PAINT_TOOL	,	/* ペイントツールを開く(&W) */
-	F_HSP_SEARCH_KEYWORD	,	/* HSPキーワード検索(&K) */
-	F_HSP_OPEN_PG_MANUAL	,	/* HSPプログラミング・マニュアルを開く(&P) */
-	F_HSP_OPEN_FUNC_REF		,	/* HSP命令リファレンスを開く(&R) */
-	F_HSP_OPEN_MANUAL_INDEX		/* HSPマニュアル目次(&I) */
+	F_HSP_LABEL_LIST				,	/* ラベル・関数一覧(&L) */
+	F_HSP_COMPILE_RUN				,	/* コンパイル+実行(&C) */
+	F_HSP_RUN						,	/* 実行(&R) */
+	F_HSP_COMPILE_ONLY				,	/* コンパイルのみ(&P) */
+	F_HSP_SHOW_ERR					,	/* エラー表示(&E) */
+	F_HSP_CREATE_OBJ				,	/* オブジェクトファイル作成(&B) */
+	F_HSP_CREATE_STARTAX			,	/* START.AXファイル作成(&S) */
+	F_HSP_CREATE_EXE_AUTO			,	/* 実行ファイル自動作成(&A) */
+	F_HSP_RUN_EXTERNAL				,	/* 外部ファイル実行(&F) */
+	F_HSP_RESV_KEYWORD_LIST			,	/* 予約キーワード一覧(&K) */
+	F_HSP_RUN_OPTIONS				,	/* 起動オプション(&O) */
+	F_HSP_SHOW_DEBUG_WINDOW			,	/* Debugウィンドウ表示(&D) */
+	F_HSP_OPEN_SRC_FOLDER			,	/* ソースフォルダを開く(&O) */
+	F_HSP_RUN_ASSIST				,	/* HSPアシスタント起動(&F) */
+	F_HSP_RUN_HSPTV					,	/* HSPTVブラウザ起動(&H) */
+	F_HSP_CREATE_DPM				,	/* 指定フォルダからDPM作成(&D) */
+	F_HSP_CREATE_PACKOPT			,	/* PACKOPT項目の作成(&P) */
+	F_HSP_CONVERT_DISH_C			,	/* HSP3Dish / Cソース変換(&C) */
+	F_HSP_OPEN_HGIMG4_TOOL			,	/* HGIMG4ツールを開く(&G) */
+	F_HSP_OPEN_PAINT_TOOL			,	/* ペイントツールを開く(&W) */
+	F_HSP_OPEN_HELP_SOURCE_EDITOR	,	/* Help Source Editorを開く(&E) */
+	F_HSP_SEARCH_KEYWORD			,	/* HSPキーワード検索(&K) */
+	F_HSP_OPEN_PG_MANUAL			,	/* HSPプログラミング・マニュアルを開く(&P) */
+	F_HSP_OPEN_FUNC_REF				,	/* HSP命令リファレンスを開く(&R) */
+	F_HSP_OPEN_MANUAL_INDEX				/* HSPマニュアル目次(&I) */
 };
 const int nFincList_HSP_Num = _countof(pnFuncList_HSP);
 

@@ -362,8 +362,19 @@ public:
 //	To Here 2006.12.03 maru 引数の拡張
 
 	/* HSP */
+	void Command_HSP_OPEN_SRC_FOLDER(void);
+	void Command_HSP_RUN_ASSIST(void);
+	void Command_HSP_RUN_HSPTV(void);
+	void Command_HSP_CREATE_DPM(void);
+	void Command_HSP_CREATE_PACKOPT(void);
+	void Command_HSP_CONVERT_DISH_C(void);
+	void Command_HSP_OPEN_HGIMG4_TOOL(void);
 	void Command_HSP_OPEN_PAINT_TOOL(void);
+	void Command_HSP_OPEN_HELP_SOURCE_EDITOR(void);
 	void Command_HSP_SEARCH_KEYWORD(void);
+	void Command_HSP_OPEN_PG_MANUAL(void);
+	void Command_HSP_OPEN_FUNC_REF(void);
+	void Command_HSP_OPEN_MANUAL_INDEX(void);
 
 	/* カスタムメニュー */
 	void Command_MENU_RBUTTON( void );	/* 右クリックメニュー */

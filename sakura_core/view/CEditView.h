@@ -72,6 +72,13 @@
 #include "util/container.h"		// vector_ex
 #include "util/design_template.h"
 
+
+#include <d2d1.h>
+#include <dwrite.h>
+#pragma comment(lib, "d2d1.lib")
+#pragma comment(lib, "dwrite.lib")
+
+
 class CViewFont;
 class CRuler;
 class CDropTarget; /// 2002/2/3 aroka ヘッダー軽量化
@@ -664,6 +671,10 @@ public:
 	int				m_nOldUnderLineYHeightReal;
 	int				m_nOldCursorLineX;		/* 前回作画したカーソル位置縦線の位置 */ // 2007.09.09 Moca
 	int				m_nOldCursorVLineWidth;	// カーソル位置縦線の太さ(px)
+
+	ID2D1Factory* pD2d1Factory = nullptr;
+	IDWriteFactory* pDWFactory = nullptr;
+	ID2D1DCRenderTarget* pRenderTarget = nullptr;
 
 public:
 	//画面バッファ

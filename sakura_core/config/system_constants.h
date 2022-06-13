@@ -557,32 +557,32 @@
 */
 #define N_SHAREDATA_VERSION		177
 #define STR_SHAREDATA_VERSION	NUM_TO_STR(N_SHAREDATA_VERSION)
-#define	GSTR_SHAREDATA	(L"SakuraShareData" _T(CON_SKR_MACHINE_SUFFIX_) _T(_CODE_SUFFIX_) _T(_DEBUG_SUFFIX_) _T(STR_SHAREDATA_VERSION))
+#define	GSTR_SHAREDATA	(L"HSPSakuraShareData" _T(CON_SKR_MACHINE_SUFFIX_) _T(_CODE_SUFFIX_) _T(_DEBUG_SUFFIX_) _T(STR_SHAREDATA_VERSION))
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                      ミューテックス                         //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
 //! アプリケーション実行検出用(インストーラで使用)
-#define	GSTR_MUTEX_SAKURA					L"MutexSakuraEditor"
+#define	GSTR_MUTEX_SAKURA					L"MutexHSPSakuraEditor"
 
 //! コントロールプロセス
-#define	GSTR_MUTEX_SAKURA_CP				(L"MutexSakuraEditorCP"				_T(CON_SKR_MACHINE_SUFFIX_) _T(_CODE_SUFFIX_) _T(_DEBUG_SUFFIX_)	_T(STR_SHAREDATA_VERSION))
+#define	GSTR_MUTEX_SAKURA_CP				(L"MutexHSPSakuraEditorCP"				_T(CON_SKR_MACHINE_SUFFIX_) _T(_CODE_SUFFIX_) _T(_DEBUG_SUFFIX_)	_T(STR_SHAREDATA_VERSION))
 
 //! ノーマルプロセス初期化同期
-#define	GSTR_MUTEX_SAKURA_INIT				(L"MutexSakuraEditorInit"			_T(CON_SKR_MACHINE_SUFFIX_) _T(_CODE_SUFFIX_) _T(_DEBUG_SUFFIX_)	_T(STR_SHAREDATA_VERSION))
+#define	GSTR_MUTEX_SAKURA_INIT				(L"MutexHSPSakuraEditorInit"			_T(CON_SKR_MACHINE_SUFFIX_) _T(_CODE_SUFFIX_) _T(_DEBUG_SUFFIX_)	_T(STR_SHAREDATA_VERSION))
 
 //! ノード操作同期
-#define	GSTR_MUTEX_SAKURA_EDITARR			(L"MutexSakuraEditorEditArr"			_T(CON_SKR_MACHINE_SUFFIX_) _T(_CODE_SUFFIX_) _T(_DEBUG_SUFFIX_)	_T(STR_SHAREDATA_VERSION))
+#define	GSTR_MUTEX_SAKURA_EDITARR			(L"MutexHSPSakuraEditorEditArr"			_T(CON_SKR_MACHINE_SUFFIX_) _T(_CODE_SUFFIX_) _T(_DEBUG_SUFFIX_)	_T(STR_SHAREDATA_VERSION))
 
 //DLLSHARE Work操作同期
-#define	GSTR_MUTEX_SAKURA_SHAREWORK			(L"MutexSakuraEditorShareWork"		_T(CON_SKR_MACHINE_SUFFIX_) _T(_CODE_SUFFIX_) _T(_DEBUG_SUFFIX_)	_T(STR_SHAREDATA_VERSION))
+#define	GSTR_MUTEX_SAKURA_SHAREWORK			(L"MutexHSPSakuraEditorShareWork"		_T(CON_SKR_MACHINE_SUFFIX_) _T(_CODE_SUFFIX_) _T(_DEBUG_SUFFIX_)	_T(STR_SHAREDATA_VERSION))
 
 //! 強調キーワードロック
-#define	GSTR_MUTEX_SAKURA_KEYWORD			(L"MutexSakuraEditorKeyword"			_T(CON_SKR_MACHINE_SUFFIX_) _T(_CODE_SUFFIX_) _T(_DEBUG_SUFFIX_)	_T(STR_SHAREDATA_VERSION))
+#define	GSTR_MUTEX_SAKURA_KEYWORD			(L"MutexHSPSakuraEditorKeyword"			_T(CON_SKR_MACHINE_SUFFIX_) _T(_CODE_SUFFIX_) _T(_DEBUG_SUFFIX_)	_T(STR_SHAREDATA_VERSION))
 
 //タイプ別設定転送用
-#define	GSTR_MUTEX_SAKURA_DOCTYPE			(L"MutexSakuraEditorDocType"			_T(CON_SKR_MACHINE_SUFFIX_) _T(_CODE_SUFFIX_) _T(_DEBUG_SUFFIX_)	_T(STR_SHAREDATA_VERSION))
+#define	GSTR_MUTEX_SAKURA_DOCTYPE			(L"MutexHSPSakuraEditorDocType"			_T(CON_SKR_MACHINE_SUFFIX_) _T(_CODE_SUFFIX_) _T(_DEBUG_SUFFIX_)	_T(STR_SHAREDATA_VERSION))
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                         イベント                            //

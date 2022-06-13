@@ -3,7 +3,8 @@
 
 bool CHsp3::Load(const CNativeW& strLibFileName)
 {
-	m_pHsp3Dll = new CHsp3Dll(strLibFileName.GetStringPtr());
+	m_pHsp3Dll	= new CHsp3Dll(strLibFileName.GetStringPtr());
+	// m_pHsp3If	= new CHsp3Interface();
 	return m_pHsp3Dll->LoadDll();
 }
 
@@ -98,10 +99,106 @@ bool CHsp3::InitKeyword(CKeyWordSetMgr& keywordMgr) const
 	return true;
 }
 
+bool CHsp3::OpenSrcFolder(HWND hParent) const
+{
+	// カレントディレクトリ版
+	WCHAR	cmdline[1024];
+	::GetCurrentDirectory(1024 - 1, cmdline);
+
+	return ((HINSTANCE)32 < ::ShellExecute(
+		hParent, L"explore", cmdline, nullptr, nullptr, SW_SHOWNORMAL));
+}
+
+bool CHsp3::OpenSrcFolder_File(HWND hParent, const CNativeW& strFilePath) const
+{
+	// 指定されたファイルが選択された状態でフォルダを開く版
+	CNativeW cmdline;
+	cmdline.AppendStringF(L"/select,\"%s\"", strFilePath);
+
+	return ((HINSTANCE)32 < ::ShellExecute(
+		hParent, L"open", L"explorer.exe", cmdline.GetStringPtr(), nullptr, SW_SHOWNORMAL));
+}
+
+bool CHsp3::RunAssist(HWND hParent) const
+{
+	WCHAR	cmdline[1024];
+	GetExedir(cmdline, L"ahtman.exe");
+
+	return ((HINSTANCE)32 < ::ShellExecute(
+		hParent, L"open", cmdline, nullptr, nullptr, SW_SHOWNORMAL));
+}
+
+bool CHsp3::RunHSPTV(HWND hParent) const
+{
+	WCHAR	cmdline[1024];
+	GetExedir(cmdline, L"hsptv.exe");
+
+	return ((HINSTANCE)32 < ::ShellExecute(
+		hParent, L"open", cmdline, nullptr, nullptr, SW_SHOWNORMAL));
+}
+
+bool CHsp3::CreateDPM(HWND hParent) const
+{
+	WCHAR	exePath[1024];
+	GetExedir(exePath, L"hsp3.exe");
+
+	// HSP 3.7 以降
+	WCHAR	axPath[1024];
+	GetExedir( axPath, L"support\\pack_make_list.ax");
+	if (! ::PathFileExists( axPath))	// 見つからない場合
+	{
+		// HSP 3.6 以前
+		GetExedir( axPath, L"mkpack.ax");
+	}
+
+	return ((HINSTANCE)32 < ::ShellExecute(
+		hParent, L"open", exePath, axPath, nullptr, SW_SHOWNORMAL));
+}
+
+bool CHsp3::CreatePackopt(HWND hParent) const
+{
+	WCHAR	exePath[1024];
+	GetExedir(exePath, L"hsp3.exe");
+
+	// HSP 3.7 以降
+	WCHAR	axPath[1024];
+	GetExedir(axPath, L"support\\packopt_make_list.ax");
+
+	return ((HINSTANCE)32 < ::ShellExecute(
+		hParent, L"open", exePath, axPath, nullptr, SW_SHOWNORMAL));
+}
+
+bool CHsp3::ConvertDishC(HWND hParent) const
+{
+	WCHAR	cmdline[1024];
+	GetExedir(cmdline, L"hsp3dh.exe");
+
+	return ((HINSTANCE)32 < ::ShellExecute(
+		hParent, L"open", cmdline, nullptr, nullptr, SW_SHOWNORMAL));
+}
+
+bool CHsp3::OpenHGIMG4Tool(HWND hParent) const
+{
+	WCHAR	cmdline[1024];
+	GetExedir(cmdline, L"gpbconv.exe");
+
+	return ((HINSTANCE)32 < ::ShellExecute(
+		hParent, L"open", cmdline, nullptr, nullptr, SW_SHOWNORMAL));
+}
+
 bool CHsp3::OpenPaintTool(HWND hParent) const
 {
 	return ((HINSTANCE)32 < ::ShellExecute(
 		hParent, L"open", L"mspaint", nullptr, nullptr, SW_SHOWNORMAL));
+}
+
+bool CHsp3::OpenHelpSourceEditor(HWND hParent) const
+{
+	WCHAR	cmdline[1024];
+	GetExedir(cmdline, L"hdl.exe");
+
+	return ((HINSTANCE)32 < ::ShellExecute(
+		hParent, L"open", cmdline, L"/hsedit:", nullptr, SW_SHOWNORMAL));
 }
 
 bool CHsp3::SearchKeyword(HWND hParent, const CNativeW& strKeyword) const
@@ -111,4 +208,38 @@ bool CHsp3::SearchKeyword(HWND hParent, const CNativeW& strKeyword) const
 
 	return ((HINSTANCE)32 < ::ShellExecute(
 		hParent, L"open", cmdline, strKeyword.GetStringPtr(), nullptr, SW_SHOWNORMAL));
+}
+
+bool CHsp3::OpenPGManual(HWND hParent) const
+{
+	WCHAR	cmdline[1024];
+	GetExedir(cmdline, L"doclib\\hspprog.htm");
+
+	return ((HINSTANCE)32 < ::ShellExecute(
+		hParent, L"open", cmdline, nullptr, nullptr, SW_SHOWNORMAL));
+}
+
+bool CHsp3::OpenFuncRef(HWND hParent) const
+{
+	WCHAR	cmdline[1024];
+	GetExedir(cmdline, L"hdl.exe");
+
+	return ((HINSTANCE)32 < ::ShellExecute(
+		hParent, L"open", cmdline, nullptr, nullptr, SW_SHOWNORMAL));
+}
+
+bool CHsp3::OpenManualIndex(HWND hParent, bool bEnglish = false) const
+{
+	WCHAR	cmdline[1024];
+	if ( bEnglish)
+	{
+		GetExedir( cmdline, L"index_en.htm");
+	}
+	else
+	{
+		GetExedir( cmdline, L"index.htm");
+	}
+
+	return ((HINSTANCE)32 < ::ShellExecute(
+		hParent, L"open", cmdline, nullptr, nullptr, SW_SHOWNORMAL));
 }

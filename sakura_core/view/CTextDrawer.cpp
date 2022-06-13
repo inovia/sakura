@@ -38,6 +38,13 @@
 #include "doc/layout/CLayout.h"
 #include "apiwrap/StdApi.h"
 
+
+
+CTextDrawer::CTextDrawer(const CEditView* pEditView) : m_pEditView(pEditView)
+{
+
+}
+
 const CTextArea* CTextDrawer::GetTextArea() const
 {
 	return &m_pEditView->GetTextArea();
@@ -50,11 +57,12 @@ using namespace std;
 @@@ 2002.09.22 YAZAKI    const unsigned char* pDataを、const char* pDataに変更
 @@@ 2007.08.25 kobake 戻り値を void に変更。引数 x, y を DispPos に変更
 */
-void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, int marginy, const wchar_t* pData, int nLength, bool bTransparent ) const
+void CTextDrawer::DispText(IDWriteFactory* pDWFactory, ID2D1DCRenderTarget* pRenderTarget, HDC hdc, DispPos* pDispPos, int marginy, const wchar_t* pData, int nLength, bool bTransparent ) const
 {
 	if( 0 >= nLength ){
 		return;
 	}
+
 	int x=pDispPos->GetDrawPos().x;
 	int y=pDispPos->GetDrawPos().y;
 
@@ -136,17 +144,79 @@ void CTextDrawer::DispText( HDC hdc, DispPos* pDispPos, int marginy, const wchar
 			nDrawLength++;
 		}
 
-		//描画
-		::ExtTextOut(
-			hdc,
-			nDrawX,					//X
-			y + marginy,			//Y
-			ExtTextOutOption() & ~(bTransparent? ETO_OPAQUE: 0),
-			&rcClip,
-			pDrawData,				//文字列
-			nDrawLength,			//文字列長
-			pDrawDxArray			//文字間隔の入った配列
-		);
+		//-----------------------------------------------------------------------------
+		pRenderTarget->BindDC(hdc, &rcClip);
+		pRenderTarget->BeginDraw();
+		/*
+			テキストの描画
+		*/
+		{
+			/*
+				ブラシの生成
+			*/
+			ID2D1SolidColorBrush* pBrush = NULL;
+			{
+				pRenderTarget->CreateSolidColorBrush(
+					D2D1::ColorF(D2D1::ColorF::Black)
+					, &pBrush
+				);
+			}
+
+
+			/*
+				テキストフォーマットの生成
+			*/
+			IDWriteTextFormat* pTextFormat = NULL;
+			{
+				pDWFactory->CreateTextFormat(
+					L"Segoe UI Emoji"
+					, NULL
+					, DWRITE_FONT_WEIGHT_NORMAL
+					, DWRITE_FONT_STYLE_NORMAL
+					, DWRITE_FONT_STRETCH_NORMAL
+					, 64
+					, L""
+					, &pTextFormat
+				);
+			}
+
+
+			/*
+				テキストの描画
+			*/
+			if (NULL != pBrush && NULL != pTextFormat) {
+
+				// テキストの描画
+				pRenderTarget->DrawText(
+					pDrawData		// 文字列
+					, nDrawLength   // 文字数
+					, pTextFormat
+					, &D2D1::RectF(0, 0, rcClip.Width(), rcClip.Height())
+					, pBrush
+					, (D2D1_DRAW_TEXT_OPTIONS)D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT
+				);
+			}
+
+			// テキストフォーマットの破棄
+			pTextFormat->Release();
+
+			// ブラシの破棄
+			pBrush->Release();
+		}
+		pRenderTarget->EndDraw();
+
+		////-----------------------------------------------------------------------------
+		////描画
+		//::ExtTextOut(
+		//	hdc,
+		//	nDrawX,					//X
+		//	y + marginy,			//Y
+		//	ExtTextOutOption() & ~(bTransparent? ETO_OPAQUE: 0),
+		//	&rcClip,
+		//	pDrawData,				//文字列
+		//	nDrawLength,			//文字列長
+		//	pDrawDxArray			//文字間隔の入った配列
+		//);
 	}
 
 end:
