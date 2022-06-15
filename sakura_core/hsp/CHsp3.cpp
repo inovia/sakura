@@ -1,10 +1,21 @@
 ﻿#include "StdAfx.h"
 #include "CHsp3.h"
+#include "_main/CProcess.h"
+#include "_main/CControlProcess.h"
 
 bool CHsp3::Load(const CNativeW& strLibFileName)
 {
+	// すべてのプロセスで生成を許可する
 	m_pHsp3Dll	= new CHsp3Dll(strLibFileName.GetStringPtr());
-	// m_pHsp3If	= new CHsp3Interface();
+
+	// コントロールプロセスのみ生成を許可する
+	const auto& pCP = dynamic_cast<CControlProcess*>(CProcess::getInstance());
+	if ( pCP != nullptr)
+	{
+		m_pHsp3If = new CHsp3Interface();
+		m_pHsp3If->CreateInterfaceWindow( pCP->GetProcessInstance());
+	}
+
 	return m_pHsp3Dll->LoadDll();
 }
 

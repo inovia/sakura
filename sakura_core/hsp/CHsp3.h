@@ -17,7 +17,11 @@ public:
 	static constexpr std::wstring_view HSP3_MACRO_NAME		{ L"HSP3(macro)" };
 
 private:
+
+	// hspcmp用（すべてのプロセスで生成されます）
 	CHsp3Dll* m_pHsp3Dll = nullptr;
+
+	// hsedsdk用（コントロールプロセスのみで生成されます）
 	CHsp3Interface* m_pHsp3If = nullptr;
 
 public:

@@ -4,6 +4,7 @@
 
 typedef BOOL(CALLBACK *HSPDLLFUNC)(int, int, int, int);
 
+class CEditWnd;
 class CHsp3Interface
 {
 
@@ -105,6 +106,13 @@ private:
 	// サクラエディタ共有データ
 	DLLSHAREDATA* m_pShareData		= nullptr;
 
+	// ウィンドウプロシージャー
+	static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+	// 管理中のウィンドウとインスタンスを管理するmap
+	// ※ 一応、本クラスのインスタンスを複数作れるようにはしている（けど使ってない）
+	static std::map<HWND, CHsp3Interface*> s_mapWindowInstance;
+
 public:
 	// デフォルトコンストラクタ
 	CHsp3Interface()
@@ -117,12 +125,31 @@ public:
 	~CHsp3Interface() { };
 
 public:
+	bool CreateInterfaceWindow(HINSTANCE hInstance);
 
 	inline LRESULT GetVersion(WPARAM wParam, LPARAM lParam, bool bUnicode) const;
 	inline LRESULT GetHspCmpVersion(HANDLE hPipe, bool bUnicode) const;
 	inline LRESULT GetWindowHandle(WPARAM wParam, LPARAM lParam, bool bUnicode) const;
 	inline HWND GetEditWindowHandle(int nId) const;
 	inline EditNode* GetEditNode(int nId) const;
+	inline CEditWnd* GetEditWindowByHWnd(HWND hWnd) const;
+	inline CEditWnd* GetEditWindowById(int nId) const;
+	inline LRESULT GetFilePath(int nId, HANDLE hPipe, bool bUnicode) const;
+	inline LRESULT GetOpenFileCount() const;
+	inline LRESULT GetActiveId() const;
+	inline LRESULT CanCopy(int nId) const;
+	inline LRESULT CanPaste() const;
+	inline LRESULT CanUndo(int nId) const;
+	inline LRESULT CanRedo(int nId) const;
+	inline LRESULT IsModified(int nId) const;
+	inline LRESULT Copy(int nId) const;
+	inline LRESULT Cut(int nId) const;
+	inline LRESULT Paste(int nId) const;
+	inline LRESULT Undo(int nId) const;
+	inline LRESULT Redo(int nId) const;
+	inline LRESULT Indent(int nId) const;
+	inline LRESULT UnIndent(int nId) const;
+	inline LRESULT SelectAll(int nId) const;
 
 	//inline CEditView* GetEditView(EditNode* pEditNode)
 	//{
