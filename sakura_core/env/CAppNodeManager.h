@@ -44,6 +44,7 @@ struct EditNode {
 	bool			m_bIsGrep;					//!< Grepのウィンドウか						//@@@ 2006.01.28 ryoji
 	UINT			m_showCmdRestore;			//!< 元のサイズに戻すときのサイズ種別		//@@@ 2007.06.20 ryoji
 	BOOL			m_bClosing;					//!< 終了中か（「最後のファイルを閉じても(無題)を残す」用）	//@@@ 2007.06.20 ryoji
+	HWND			m_hWndHspIf;				//!< HSP用インターフェース
 
 	HWND GetHwnd() const{ if(this)return m_hWnd; else return NULL; } // TODO: Remove "this" check
 	static HWND GetSafeHwnd(const EditNode* node) { return node ? node->m_hWnd : NULL; }
@@ -53,6 +54,7 @@ struct EditNode {
 	static CAppNodeGroupHandle GetGroup_Safe(const EditNode* node);
 	bool IsTopInGroup() const;
 	static bool IsTopInGroup_Safe(const EditNode* node);
+	HWND GetHwndHspIf() const { if (this)return m_hWndHspIf; else return NULL; } // TODO: Remove "this" check
 };
 
 //! 拡張構造体

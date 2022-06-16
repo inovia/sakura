@@ -42,6 +42,8 @@
 #include "config/system_constants.h"
 #include "config/app_constants.h"
 #include "String_define.h"
+#include "_main/CProcess.h"
+#include "hsp/CHsp3.h"
 
 // GetOpenedWindowArr用静的変数／構造体
 static BOOL s_bSort;	// ソート指定
@@ -150,6 +152,7 @@ BOOL CAppNodeGroupHandle::AddEditWndList( HWND hWnd )
 
 	memset_raw( &sMyEditNode, 0, sizeof( sMyEditNode ) );
 	sMyEditNode.m_hWnd = hWnd;
+	sMyEditNode.m_hWndHspIf = CProcess::getInstance()->GetHsp3().Hsp3If()->GetHwnd();
 
 	{	// 2007.07.07 genta Lock領域
 		LockGuard<CMutex> guard( g_cEditArrMutex );

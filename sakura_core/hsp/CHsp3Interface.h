@@ -21,13 +21,16 @@ public:
 	const static int FOOTY_BETA = 0;
 
 	// ウィンドウ名、クラス名
-	const static constexpr std::wstring_view HSED_INTERFACE_NAME{ L"HspEditorInterface" };
+	const static constexpr std::wstring_view HSED_INTERFACE_MAIN_NAME	{ L"HspEditorInterface" };		// コントロールプロセス用
+	const static constexpr std::wstring_view HSED_INTERFACE_SUB_NAME	{ L"HspEditorSubInterface" };	// マルチプロセス用
 
 	// Messages
 	const static int UNICODE_VER				= 0x1000;
 	const static int HSED_GETVER				= (WM_APP + 0x000);
+	const static int HSED_GETVERW				= (HSED_GETVER | UNICODE_VER);
 	const static int HSED_GETWND				= (WM_APP + 0x100);
 	const static int HSED_GETPATH				= (WM_APP + 0x101);
+	const static int HSED_GETPATHW				= (HSED_GETPATH | UNICODE_VER);
 
 	const static int HSED_GETTABCOUNT			= (WM_APP + 0x200);
 	const static int HSED_GETTABID				= (WM_APP + 0x201);
@@ -51,13 +54,20 @@ public:
 	const static int HSED_SELECTALL				= (WM_APP + 0x317);
 
 	const static int HSED_SETTEXT				= (WM_APP + 0x320);
+	const static int HSED_SETTEXTW				= (HSED_SETTEXT | UNICODE_VER);
 	const static int HSED_GETTEXT				= (WM_APP + 0x321);
+	const static int HSED_GETTEXTW				= (HSED_GETTEXT | UNICODE_VER);
 	const static int HSED_GETTEXTLENGTH			= (WM_APP + 0x322);
+	const static int HSED_GETTEXTLENGTHW		= (HSED_GETTEXTLENGTH | UNICODE_VER);
 	const static int HSED_GETLINES				= (WM_APP + 0x323);
 	const static int HSED_SETSELTEXT			= (WM_APP + 0x324);
+	const static int HSED_SETSELTEXTW			= (HSED_SETSELTEXT | UNICODE_VER);
 	const static int HSED_GETSELTEXT			= (WM_APP + 0x325);
+	const static int HSED_GETSELTEXTW			= (HSED_GETSELTEXT | UNICODE_VER);
 	const static int HSED_GETLINETEXT			= (WM_APP + 0x326);
+	const static int HSED_GETLINETEXTW			= (HSED_GETLINETEXT | UNICODE_VER);
 	const static int HSED_GETLINELENGTH			= (WM_APP + 0x327);
+	const static int HSED_GETLINELENGTHW		= (HSED_GETLINELENGTH | UNICODE_VER);
 	const static int HSED_GETLINECODE			= (WM_APP + 0x328);
 
 	const static int HSED_SETSELA				= (WM_APP + 0x330);
@@ -76,6 +86,8 @@ public:
 	const static int HSED_SETMARK				= (WM_APP + 0x350);
 	const static int HSED_GETMARK				= (WM_APP + 0x351);
 	const static int HSED_SETHIGHLIGHT			= (WM_APP + 0x352);
+
+	const static int IS_ACTIVEAPP				= (WM_APP + 0x2000);
 
 	// Constants for HSED_GETVER
 	const static int HGV_PUBLICVER		= 0;
@@ -100,6 +112,9 @@ public:
 
 private:
 
+	// コントロールプロセスかどうか？
+	bool m_bControlProcess			= false;
+
 	// hsedsdk用ウィンドウハンドル
 	HWND m_hWnd						= nullptr;
 
@@ -107,11 +122,24 @@ private:
 	DLLSHAREDATA* m_pShareData		= nullptr;
 
 	// ウィンドウプロシージャー
-	static LRESULT InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static LRESULT InterfaceProc(
+		HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+	static inline bool InterfaceProc_ControlProcess(
+		const CHsp3Interface& hspIf, LRESULT& result, HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static inline bool InterfaceProc_SubProcess(
+		const CHsp3Interface& hspIf, LRESULT& result, HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+	static inline LRESULT TransferMessageByIndex(
+		const CHsp3Interface& hspIf, int nIndex, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	static inline LRESULT TransferMessageByHwnd(
+		HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	// 管理中のウィンドウとインスタンスを管理するmap
 	// ※ 一応、本クラスのインスタンスを複数作れるようにはしている（けど使ってない）
 	static std::map<HWND, CHsp3Interface*> s_mapWindowInstance;
+
+	static inline int ReadPipe(HANDLE hPipe, char **pbuffer);
 
 public:
 	// デフォルトコンストラクタ
@@ -125,47 +153,57 @@ public:
 	~CHsp3Interface() { };
 
 public:
-	bool CreateInterfaceWindow(HINSTANCE hInstance);
+
+	HWND GetHwnd() const { return m_bControlProcess ? nullptr : m_hWnd; }
+	bool CreateInterfaceWindow(HINSTANCE hInstance, bool bControlProcess);
 
 	inline LRESULT GetVersion(WPARAM wParam, LPARAM lParam, bool bUnicode) const;
 	inline LRESULT GetHspCmpVersion(HANDLE hPipe, bool bUnicode) const;
-	inline LRESULT GetWindowHandle(WPARAM wParam, LPARAM lParam, bool bUnicode) const;
-	inline HWND GetEditWindowHandle(int nId) const;
-	inline EditNode* GetEditNode(int nId) const;
-	inline CEditWnd* GetEditWindowByHWnd(HWND hWnd) const;
-	inline CEditWnd* GetEditWindowById(int nId) const;
-	inline LRESULT GetFilePath(int nId, HANDLE hPipe, bool bUnicode) const;
+	inline LRESULT GetWindowHandle(WPARAM wParam, LPARAM lParam) const;
+
+	// サクラエディタの編集ウィンドウのウィンドウハンドルを取得
+	inline HWND GetEditWindowHandle(int nIndex) const;				// index -> HWND
+
+	// hsedsdk操作用のウィンドウハンドルを取得
+	inline HWND GetHsp3InterfaceWindowHandle(int nIndex) const;		// index -> HWND
+	inline int GetHsp3InterfaceWindowIndex(HWND hWnd) const;		// HWND -> index
+
+	// EditNodeを取得
+	inline EditNode* GetEditNode(int nIndex) const;
+
+	// 開かれているファイル数を取得（無題も含む）
 	inline LRESULT GetOpenFileCount() const;
-	inline LRESULT GetActiveId() const;
-	inline LRESULT CanCopy(int nId) const;
+	inline LRESULT GetActiveIndex(HWND& out_hWndHsp3If) const;
+
+	inline LRESULT GetFilePath(HANDLE hPipe, bool bUnicode) const;
+	inline LRESULT IsActive() const;
+	inline LRESULT CanCopy() const;
 	inline LRESULT CanPaste() const;
-	inline LRESULT CanUndo(int nId) const;
-	inline LRESULT CanRedo(int nId) const;
-	inline LRESULT IsModified(int nId) const;
-	inline LRESULT Copy(int nId) const;
-	inline LRESULT Cut(int nId) const;
-	inline LRESULT Paste(int nId) const;
-	inline LRESULT Undo(int nId) const;
-	inline LRESULT Redo(int nId) const;
-	inline LRESULT Indent(int nId) const;
-	inline LRESULT UnIndent(int nId) const;
-	inline LRESULT SelectAll(int nId) const;
-
-	//inline CEditView* GetEditView(EditNode* pEditNode)
-	//{
-	//	// 編集ウィンドウ（外枠）
-	//	// CEditWnd
-
-	//	// CEditWnd -> CEditDoc	
-
-	//	// 文書ウィンドウの管理
-	//	// CEditView (スプリッターとかある内部)
-
-	//	// pEditNode->m_hWnd;
-	//	
-	//	// CEditWnd::getInstance()->GetHwnd();
-
-	//	
-	//}
-
+	inline LRESULT CanUndo() const;
+	inline LRESULT CanRedo() const;
+	inline LRESULT IsModified() const;
+	inline LRESULT Copy() const;
+	inline LRESULT Cut() const;
+	inline LRESULT Paste() const;
+	inline LRESULT Undo() const;
+	inline LRESULT Redo() const;
+	inline LRESULT Indent() const;
+	inline LRESULT UnIndent() const;
+	inline LRESULT SelectAll() const;
+	inline LRESULT SetAllText(HANDLE hPipe, bool bUnicode) const;
+	inline LRESULT GetAllText(HANDLE hPipe, bool bUnicode) const;
+	inline LRESULT GetAllTextLength(bool bUnicode) const;
+	inline LRESULT GetLineCount() const;
+	inline LRESULT InsertText(HANDLE hPipe, bool bUnicode) const;
+	inline LRESULT GetLineLength(int nLineNo, bool bUnicode) const;
+	inline LRESULT GetNewLineMode() const;
+	inline LRESULT GetCaretLine() const;
+	inline LRESULT GetCaretPos() const;
+	inline LRESULT SetCaretLine(int nLineNo) const;
+	inline LRESULT SetCaretPos(int nPosNo) const;
+	inline LRESULT GetCaretLineThrough() const;
+	inline LRESULT SetCaretLineThrough(int nLineNo) const;
+	inline LRESULT GetCaretVPos(int nPosNo) const;
+	inline LRESULT SetMark(int nPosNo) const;
+	inline LRESULT GetMark(int nPosNo) const;
 };

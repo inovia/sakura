@@ -64,7 +64,7 @@ public:
 	/* キーリピート状態 */
 	int				m_bPrevCommand;
 
-private:
+public:
 	enum EIndentType {
 		INDENT_NONE,
 		INDENT_TAB,

@@ -5,17 +5,14 @@
 
 bool CHsp3::Load(const CNativeW& strLibFileName)
 {
-	// すべてのプロセスで生成を許可する
-	m_pHsp3Dll	= new CHsp3Dll(strLibFileName.GetStringPtr());
-
-	// コントロールプロセスのみ生成を許可する
+	// hsedsdk用
 	const auto& pCP = dynamic_cast<CControlProcess*>(CProcess::getInstance());
-	if ( pCP != nullptr)
-	{
-		m_pHsp3If = new CHsp3Interface();
-		m_pHsp3If->CreateInterfaceWindow( pCP->GetProcessInstance());
-	}
+	const auto bControlProcess = (pCP != nullptr);		// コントロールプロセス？
+	m_pHsp3If = new CHsp3Interface();
+	m_pHsp3If->CreateInterfaceWindow( pCP->GetProcessInstance(), bControlProcess);
 
+	// コンパイラ
+	m_pHsp3Dll	= new CHsp3Dll( strLibFileName.GetStringPtr());
 	return m_pHsp3Dll->LoadDll();
 }
 

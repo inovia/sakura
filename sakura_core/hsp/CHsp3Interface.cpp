@@ -2,6 +2,8 @@
 #include "CHsp3Interface.h"
 #include "_main/CProcess.h"
 #include "doc/CEditDoc.h"
+#include "doc/CDocReader.h"
+#include "cmd/CViewCommander.h"
 #include "window/CEditWnd.h"
 #include "charset/CShiftJis.h"
 #include "env/CSakuraEnvironment.h"
@@ -10,31 +12,363 @@
 #include "mem/CNativeW.h"
 #include "_os/CClipboard.h"
 #include "version.h"
+#include "charset/charcode.h"
 
 std::map<HWND, CHsp3Interface*> CHsp3Interface::s_mapWindowInstance;
 
+inline int CHsp3Interface::ReadPipe(HANDLE hPipe, char **pbuffer)
+{
+	DWORD dwSize, dwNumberOfBytesRead;
+	char *lpBuffer;
+
+	if (!::PeekNamedPipe(hPipe, nullptr, 0, nullptr, &dwSize, nullptr))
+	{
+		return 1;
+	}
+
+	lpBuffer = (char *)malloc(dwSize + 2);	// UTF-16も想定して多め
+	*pbuffer = lpBuffer;
+	if ( lpBuffer == nullptr) return 1;
+	if ( dwSize > 0)
+	{
+		::ReadFile(hPipe, lpBuffer, dwSize, &dwNumberOfBytesRead, nullptr);
+	}
+
+	lpBuffer[dwSize] = '\0';
+	lpBuffer[dwSize + 1] = '\0';			// UTF-16も想定して多め
+	return 0;
+}
+
+// ウィンドウプロシージャー
 LRESULT CHsp3Interface::InterfaceProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	// 管理中のウィンドウでない場合
 	if ( s_mapWindowInstance.count( hWnd) == 0)
 	{
-		return DefWindowProc( hWnd, uMsg, wParam, lParam);
+		return ::DefWindowProc( hWnd, uMsg, wParam, lParam);
 	}
 
 	// ウィンドウに紐づけされた CHsp3Interface
 	auto& thisInstance = s_mapWindowInstance[hWnd];
 
+	// コントロールプロセスへの通信は、
+	// メッセージIDをチェックしてサブプロセスへ転送
+	LRESULT result;
+	if ( thisInstance->m_bControlProcess)
+	{
+		if ( InterfaceProc_ControlProcess( *thisInstance, result, hWnd, uMsg, wParam, lParam ))
+		{
+			return result;
+		}
+	}
+	else
+	{
+		if ( InterfaceProc_SubProcess( *thisInstance, result, hWnd, uMsg, wParam, lParam))
+		{
+			return result;
+		}
+	}
 
-
-	return DefWindowProc( hWnd, uMsg, wParam, lParam);
+	// 処理しなかったメッセージは既定の処理を実行
+	return ::DefWindowProc( hWnd, uMsg, wParam, lParam);
 }
 
-bool CHsp3Interface::CreateInterfaceWindow(HINSTANCE hInstance)
+inline bool CHsp3Interface::InterfaceProc_ControlProcess(
+	const CHsp3Interface& hspIf, LRESULT& result, HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg)
+	{
+		case HSED_GETVER:
+		case HSED_GETVERW:
+		{
+			result = hspIf.GetVersion(wParam, lParam, (uMsg == HSED_GETVERW));
+			return true;
+		}
+		case HSED_GETWND:
+		{
+			result = hspIf.GetWindowHandle(wParam, lParam);
+			return true;
+		}
+		case HSED_GETPATH:
+		case HSED_GETPATHW:
+		{
+			result = TransferMessageByIndex(
+				hspIf, (int)wParam, uMsg, wParam, lParam);
+			return true;
+		}
+		case HSED_GETTABCOUNT:
+		{
+			result = hspIf.GetOpenFileCount();
+			return true;
+		}
+		case HSED_GETTABID:
+		{
+			// HWND -> nIndex
+			result = hspIf.GetHsp3InterfaceWindowIndex((HWND)wParam);
+			return true;
+		}
+		case HSED_GETFOOTYID:
+		{
+			// nIndex -> HWND
+			result = (LRESULT)hspIf.GetHsp3InterfaceWindowHandle((int)wParam);
+			return true;
+		}
+		case HSED_GETACTTABID:
+		{
+			HWND out_hWndHsp3If;
+			result = (LRESULT)hspIf.GetActiveIndex(out_hWndHsp3If);
+			return true;
+		}
+		case HSED_GETACTFOOTYID:
+		{
+			HWND out_hWndHsp3If;
+			hspIf.GetActiveIndex(out_hWndHsp3If);
+			result = (LRESULT)out_hWndHsp3If;
+			return true;
+		}
+		case HSED_CANCOPY:
+		case HSED_CANUNDO:
+		case HSED_CANREDO:
+		case HSED_GETMODIFY:
+		case HSED_COPY:
+		case HSED_CUT:
+		case HSED_PASTE:
+		case HSED_UNDO:
+		case HSED_REDO:
+		case HSED_INDENT:
+		case HSED_UNINDENT:
+		case HSED_SELECTALL:
+		case HSED_SETTEXT:
+		case HSED_SETTEXTW:
+		case HSED_GETTEXT:
+		case HSED_GETTEXTW:
+		case HSED_GETTEXTLENGTH:
+		case HSED_GETTEXTLENGTHW:
+		case HSED_GETLINES:
+		case HSED_SETSELTEXT:
+		case HSED_SETSELTEXTW:
+		case HSED_GETLINELENGTH:
+		case HSED_GETLINELENGTHW:
+		case HSED_GETLINECODE:
+		case HSED_GETCARETLINE:
+		case HSED_GETCARETPOS:
+		case HSED_SETCARETLINE:
+		case HSED_GETCARETTHROUGH:
+		case HSED_SETCARETTHROUGH:
+		case HSED_GETCARETVPOS:
+		case HSED_SETMARK:
+		case HSED_GETMARK:
+		{
+			result = TransferMessageByHwnd(
+				(HWND)wParam, uMsg, wParam, lParam);
+			return true;
+		}
+		case HSED_CANPASTE:
+		{
+			result = (LRESULT)hspIf.CanPaste();
+			return true;
+		}
+	}
+
+	return false;
+}
+
+inline bool CHsp3Interface::InterfaceProc_SubProcess(
+	const CHsp3Interface& hspIf, LRESULT& result, HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg)
+	{
+		case HSED_GETPATH:
+		case HSED_GETPATHW:
+		{
+			result = hspIf.GetFilePath((HANDLE)lParam, (uMsg == HSED_GETPATHW));
+			return true;
+		}
+		case HSED_CANCOPY:
+		{
+			result = hspIf.CanCopy();
+			return true;
+		}
+		case HSED_CANUNDO:
+		{
+			result = hspIf.CanUndo();
+			return true;
+		}
+		case HSED_CANREDO:
+		{
+			result = hspIf.CanRedo();
+			return true;
+		}
+		case HSED_GETMODIFY:
+		{
+			result = hspIf.IsModified();
+			return true;
+		}
+		case HSED_COPY:
+		{
+			result = hspIf.Copy();
+			return true;
+		}
+		case HSED_CUT:
+		{
+			result = hspIf.Cut();
+			return true;
+		}
+		case HSED_PASTE:
+		{
+			result = hspIf.Paste();
+			return true;
+		}
+		case HSED_UNDO:
+		{
+			result = hspIf.Undo();
+			return true;
+		}
+		case HSED_REDO:
+		{
+			result = hspIf.Redo();
+			return true;
+		}
+		case HSED_INDENT:
+		{
+			result = hspIf.Indent();
+			return true;
+		}
+		case HSED_UNINDENT:
+		{
+			result = hspIf.UnIndent();
+			return true;
+		}
+		case HSED_SELECTALL:
+		{
+			result = hspIf.SelectAll();
+			return true;
+		}
+		case HSED_SETTEXT:
+		case HSED_SETTEXTW:
+		{
+			result = hspIf.SetAllText((HANDLE)lParam, (uMsg == HSED_SETTEXTW));
+			return true;
+		}
+		case HSED_GETTEXT:
+		case HSED_GETTEXTW:
+		{
+			result = hspIf.GetAllText((HANDLE)lParam, (uMsg == HSED_GETTEXTW));
+			return true;
+		}
+		case HSED_GETTEXTLENGTH:
+		case HSED_GETTEXTLENGTHW:
+		{
+			result = hspIf.GetAllTextLength((uMsg == HSED_GETTEXTLENGTHW));
+			return true;
+		}
+		case HSED_GETLINES:
+		{
+			result = hspIf.GetLineCount();
+			return true;
+		}
+		case HSED_SETSELTEXT:
+		case HSED_SETSELTEXTW:
+		{
+			result = hspIf.InsertText((HANDLE)lParam, (uMsg == HSED_SETSELTEXTW));
+			return true;
+		}
+		case HSED_GETLINELENGTH:
+		case HSED_GETLINELENGTHW:
+		{
+			result = hspIf.GetLineLength((int)lParam, (uMsg == HSED_GETLINELENGTHW));
+			return true;
+		}
+		case HSED_GETLINECODE:
+		{
+			result = hspIf.GetNewLineMode();
+			return true;
+		}
+		case HSED_GETCARETLINE:
+		{
+			result = hspIf.GetCaretLine();
+			return true;
+		}
+		case HSED_GETCARETPOS:
+		{
+			result = hspIf.GetCaretPos();
+			return true;
+		}
+		case HSED_SETCARETLINE:
+		{
+			result = hspIf.SetCaretLine((int)lParam);
+			return true;
+		}
+		case HSED_SETCARETPOS:
+		{
+			result = hspIf.SetCaretPos((int)lParam);
+			return true;
+		}
+		case HSED_GETCARETTHROUGH:
+		{
+			result = hspIf.GetCaretLineThrough();
+			return true;
+		}
+		case HSED_SETCARETTHROUGH:
+		{
+			result = hspIf.SetCaretLineThrough((int)lParam);
+			return true;
+		}
+		case HSED_GETCARETVPOS:
+		{
+			result = hspIf.GetCaretVPos((int)lParam);
+			return true;
+		}
+		case HSED_SETMARK:
+		{
+			result = hspIf.SetMark((int)lParam);
+			return true;
+		}
+		case HSED_GETMARK:
+		{
+			result = hspIf.GetMark((int)lParam);
+			return true;
+		}
+		case IS_ACTIVEAPP:
+		{
+			result = hspIf.IsActive();
+			return true;
+		}
+	}
+
+	return false;
+}
+
+inline LRESULT CHsp3Interface::TransferMessageByIndex(
+	const CHsp3Interface& hspIf, int nIndex, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	const auto hWndHsp3If = hspIf.GetHsp3InterfaceWindowHandle( nIndex);
+	if ( hWndHsp3If == nullptr)
+	{
+		return -2;
+	}
+	return SendMessage( hWndHsp3If, uMsg, wParam, lParam);
+}
+
+inline LRESULT CHsp3Interface::TransferMessageByHwnd(
+	HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	return SendMessage(hWnd, uMsg, wParam, lParam);
+}
+
+bool CHsp3Interface::CreateInterfaceWindow(HINSTANCE hInstance, bool bControlProcess)
 {
 	WNDCLASSEX wcex;
 
 	wcex.cbSize = sizeof(WNDCLASSEX);
-	wcex.lpszClassName = HSED_INTERFACE_NAME.data();
+	if ( bControlProcess)
+	{
+		wcex.lpszClassName = HSED_INTERFACE_MAIN_NAME.data();
+	}
+	else
+	{
+		wcex.lpszClassName = HSED_INTERFACE_SUB_NAME.data();
+	}
 	wcex.hInstance = hInstance;
 	wcex.lpfnWndProc = (WNDPROC)InterfaceProc;
 	wcex.hCursor = nullptr;
@@ -49,7 +383,8 @@ bool CHsp3Interface::CreateInterfaceWindow(HINSTANCE hInstance)
 	::RegisterClassEx(&wcex);
 
 	HWND hWnd = ::CreateWindow(
-		HSED_INTERFACE_NAME.data(), HSED_INTERFACE_NAME.data(),
+		(bControlProcess) ? HSED_INTERFACE_MAIN_NAME.data() : HSED_INTERFACE_SUB_NAME.data(),
+		(bControlProcess) ? HSED_INTERFACE_MAIN_NAME.data() : HSED_INTERFACE_SUB_NAME.data(),
 		0, 0, 0, 0, 0, nullptr, nullptr, hInstance, nullptr);
 
 	if ( hWnd == nullptr)
@@ -58,7 +393,7 @@ bool CHsp3Interface::CreateInterfaceWindow(HINSTANCE hInstance)
 	// インスタンス管理へ追加
 	s_mapWindowInstance.emplace(hWnd, this);
 	m_hWnd = hWnd;
-
+	m_bControlProcess = bControlProcess;
 	return true;
 }
 
@@ -130,7 +465,7 @@ inline LRESULT CHsp3Interface::GetHspCmpVersion(HANDLE hPipe, bool bUnicode) con
 	return bRet ? dwNumberOfBytesWritten : -1;
 }
 
-inline LRESULT CHsp3Interface::GetWindowHandle(WPARAM wParam, LPARAM lParam, bool bUnicode) const
+inline LRESULT CHsp3Interface::GetWindowHandle(WPARAM wParam, LPARAM lParam) const
 {
 	switch (wParam)
 	{
@@ -161,15 +496,44 @@ inline LRESULT CHsp3Interface::GetWindowHandle(WPARAM wParam, LPARAM lParam, boo
 	}
 }
 
-inline HWND CHsp3Interface::GetEditWindowHandle(int nId) const
+inline HWND CHsp3Interface::GetEditWindowHandle(int nIndex) const
 {
-	EditNode* pEdit = GetEditNode(nId);
+	EditNode* pEdit = GetEditNode(nIndex);
 	if (pEdit == nullptr)
 		return nullptr;
 	return pEdit->GetHwnd();
 }
 
-inline EditNode* CHsp3Interface::GetEditNode(int nId) const
+inline int CHsp3Interface::GetHsp3InterfaceWindowIndex(HWND hWnd) const
+{
+	int	i;
+	int iIndex;
+
+	iIndex = 0;
+	for (i = 0; i < m_pShareData->m_sNodes.m_nEditArrNum; i++)
+	{
+		if ( IsSakuraMainWindow(m_pShareData->m_sNodes.m_pEditArr[i].m_hWnd))
+		{
+			if ( m_pShareData->m_sNodes.m_pEditArr[i].m_hWndHspIf == hWnd)
+			{
+				return iIndex;
+			}
+			iIndex++;
+		}
+	}
+
+	return -1;
+}
+
+inline HWND CHsp3Interface::GetHsp3InterfaceWindowHandle(int nIndex) const
+{
+	EditNode* pEdit = GetEditNode(nIndex);
+	if (pEdit == nullptr)
+		return nullptr;
+	return pEdit->GetHwndHspIf();
+}
+
+inline EditNode* CHsp3Interface::GetEditNode(int nIndex) const
 {
 	int	i;
 	int iIndex;
@@ -179,7 +543,7 @@ inline EditNode* CHsp3Interface::GetEditNode(int nId) const
 	{
 		if (IsSakuraMainWindow(m_pShareData->m_sNodes.m_pEditArr[i].m_hWnd))
 		{
-			if (iIndex == nId)
+			if (iIndex == nIndex)
 				return &m_pShareData->m_sNodes.m_pEditArr[i];
 			iIndex++;
 		}
@@ -188,22 +552,9 @@ inline EditNode* CHsp3Interface::GetEditNode(int nId) const
 	return nullptr;
 }
 
-inline CEditWnd* CHsp3Interface::GetEditWindowByHWnd(HWND hWnd) const
+inline LRESULT CHsp3Interface::GetFilePath(HANDLE hPipe, bool bUnicode) const
 {
-	return (CEditWnd*)::GetWindowLongPtr(hWnd, GWLP_USERDATA);
-}
-
-inline CEditWnd* CHsp3Interface::GetEditWindowById(int nId) const
-{
-	auto hWnd = GetEditWindowHandle(nId);
-	if ( hWnd == nullptr)
-		return nullptr;
-	return GetEditWindowByHWnd(hWnd);
-}
-
-inline LRESULT CHsp3Interface::GetFilePath(int nId, HANDLE hPipe, bool bUnicode) const
-{
-	const auto& pEditWnd = GetEditWindowById(nId);
+	const auto& pEditWnd = CEditWnd::getInstance();
 	if ( pEditWnd == nullptr)
 		return -2;
 
@@ -246,7 +597,7 @@ inline LRESULT CHsp3Interface::GetOpenFileCount() const
 	return iIndex;
 }
 
-inline LRESULT CHsp3Interface::GetActiveId() const
+inline LRESULT CHsp3Interface::GetActiveIndex(HWND& out_hWndHsp3If) const
 {
 	int	i;
 	int iIndex;
@@ -256,25 +607,32 @@ inline LRESULT CHsp3Interface::GetActiveId() const
 	{
 		if ( IsSakuraMainWindow( m_pShareData->m_sNodes.m_pEditArr[i].m_hWnd))
 		{
-			const auto& pEditWnd = GetEditWindowById(iIndex);
-			if ( pEditWnd != nullptr)
+			const auto& hWmdHspIf = m_pShareData->m_sNodes.m_pEditArr[i].m_hWndHspIf;
+			auto ret = (int)SendMessage( hWmdHspIf, IS_ACTIVEAPP, 0, 0);
+			if ( ret == 1)
 			{
-				if ( pEditWnd->IsActiveApp())
-				{
-					return iIndex;
-				}
+				out_hWndHsp3If = hWmdHspIf;
+				return iIndex;
 			}
-
 			iIndex++;
 		}
 	}
 
+	out_hWndHsp3If = nullptr;
 	return -1;
 }
 
-inline LRESULT CHsp3Interface::CanCopy(int nId) const
+inline LRESULT CHsp3Interface::IsActive() const
 {
-	const auto& pEditWnd = GetEditWindowById(nId);
+	const auto& pEditWnd = CEditWnd::getInstance();
+	if ( pEditWnd == nullptr)
+		return -2;
+	return pEditWnd->IsActiveApp() ? 1 : 0;
+}
+
+inline LRESULT CHsp3Interface::CanCopy() const
+{
+	const auto& pEditWnd = CEditWnd::getInstance();
 	if (pEditWnd == nullptr)
 		return -2;
 
@@ -289,9 +647,9 @@ inline LRESULT CHsp3Interface::CanPaste() const
 	return CClipboard::HasValidData() ? 1 : 0;
 }
 
-inline LRESULT CHsp3Interface::CanUndo(int nId) const
+inline LRESULT CHsp3Interface::CanUndo() const
 {
-	const auto& pEditWnd = GetEditWindowById(nId);
+	const auto& pEditWnd = CEditWnd::getInstance();
 	if (pEditWnd == nullptr)
 		return -2;
 
@@ -299,9 +657,9 @@ inline LRESULT CHsp3Interface::CanUndo(int nId) const
 	return pDoc->m_cDocEditor.IsEnableUndo() ? 1 : 0;
 }
 
-inline LRESULT CHsp3Interface::CanRedo(int nId) const
+inline LRESULT CHsp3Interface::CanRedo() const
 {
-	const auto& pEditWnd = GetEditWindowById(nId);
+	const auto& pEditWnd = CEditWnd::getInstance();
 	if (pEditWnd == nullptr)
 		return -2;
 
@@ -309,9 +667,9 @@ inline LRESULT CHsp3Interface::CanRedo(int nId) const
 	return pDoc->m_cDocEditor.IsEnableRedo() ? 1 : 0;
 }
 
-inline LRESULT CHsp3Interface::IsModified(int nId) const
+inline LRESULT CHsp3Interface::IsModified() const
 {
-	const auto& pEditWnd = GetEditWindowById(nId);
+	const auto& pEditWnd = CEditWnd::getInstance();
 	if (pEditWnd == nullptr)
 		return -2;
 
@@ -319,9 +677,9 @@ inline LRESULT CHsp3Interface::IsModified(int nId) const
 	return pDoc->m_cDocEditor.IsModified() ? 1 : 0;
 }
 
-inline LRESULT CHsp3Interface::Copy(int nId) const
+inline LRESULT CHsp3Interface::Copy() const
 {
-	const auto& pEditWnd = GetEditWindowById(nId);
+	const auto& pEditWnd = CEditWnd::getInstance();
 	if ( pEditWnd == nullptr)
 		return -2;
 
@@ -356,14 +714,14 @@ inline LRESULT CHsp3Interface::Copy(int nId) const
 	return 0;
 }
 
-inline LRESULT CHsp3Interface::Cut(int nId) const
+inline LRESULT CHsp3Interface::Cut() const
 {
 	// 処理はコピーとほぼ同じ
-	auto ret = Copy( nId);
+	auto ret = Copy();
 	if (ret != 0)
 		return ret;
 
-	const auto& pEditWnd = GetEditWindowById(nId);
+	const auto& pEditWnd = CEditWnd::getInstance();
 	if ( pEditWnd == nullptr)
 		return -2;
 	auto& pActiveView = pEditWnd->GetActiveView();
@@ -374,9 +732,9 @@ inline LRESULT CHsp3Interface::Cut(int nId) const
 	return 0;
 }
 
-inline LRESULT CHsp3Interface::Paste(int nId) const
+inline LRESULT CHsp3Interface::Paste() const
 {
-	const auto& pEditWnd = GetEditWindowById(nId);
+	const auto& pEditWnd = CEditWnd::getInstance();
 	if ( pEditWnd == nullptr)
 		return -2;
 
@@ -389,9 +747,9 @@ inline LRESULT CHsp3Interface::Paste(int nId) const
 	return 0;
 }
 
-inline LRESULT CHsp3Interface::Undo(int nId) const
+inline LRESULT CHsp3Interface::Undo() const
 {
-	const auto& pEditWnd = GetEditWindowById(nId);
+	const auto& pEditWnd = CEditWnd::getInstance();
 	if (pEditWnd == nullptr)
 		return -2;
 
@@ -404,9 +762,9 @@ inline LRESULT CHsp3Interface::Undo(int nId) const
 	return 0;
 }
 
-inline LRESULT CHsp3Interface::Redo(int nId) const
+inline LRESULT CHsp3Interface::Redo() const
 {
-	const auto& pEditWnd = GetEditWindowById(nId);
+	const auto& pEditWnd = CEditWnd::getInstance();
 	if (pEditWnd == nullptr)
 		return -2;
 
@@ -419,19 +777,39 @@ inline LRESULT CHsp3Interface::Redo(int nId) const
 	return 0;
 }
 
-inline LRESULT CHsp3Interface::Indent(int nId) const
+inline LRESULT CHsp3Interface::Indent() const
 {
-	return -1;
+	const auto& pEditWnd = CEditWnd::getInstance();
+	if (pEditWnd == nullptr)
+		return -2;
+
+	// 処理が複雑すぎるので、コマンダーにそのまま投げる
+	// （結果が取れないという難点）
+	auto& pActiveView = pEditWnd->GetActiveView();
+	auto& pCommander = pActiveView.GetCommander();
+	pCommander.Command_INDENT( WCODE::TAB, CViewCommander::INDENT_TAB);
+
+	return 0;
 }
 
-inline LRESULT CHsp3Interface::UnIndent(int nId) const
-{
-	return -1;
+inline LRESULT CHsp3Interface::UnIndent() const
+{ 
+	const auto& pEditWnd = CEditWnd::getInstance();
+	if (pEditWnd == nullptr)
+		return -2;
+
+	// 処理が複雑すぎるので、コマンダーにそのまま投げる
+	// （結果が取れないという難点）
+	auto& pActiveView = pEditWnd->GetActiveView();
+	auto& pCommander = pActiveView.GetCommander();
+	pCommander.Command_UNINDENT( WCODE::TAB);
+
+	return 0;
 }
 
-inline LRESULT CHsp3Interface::SelectAll(int nId) const
+inline LRESULT CHsp3Interface::SelectAll() const
 {
-	const auto& pEditWnd = GetEditWindowById(nId);
+	const auto& pEditWnd = CEditWnd::getInstance();
 	if (pEditWnd == nullptr)
 		return -2;
 
@@ -442,4 +820,339 @@ inline LRESULT CHsp3Interface::SelectAll(int nId) const
 	pCommander.Command_SELECTALL();
 
 	return 0;
+}
+
+inline LRESULT CHsp3Interface::SetAllText(HANDLE hPipe, bool bUnicode) const
+{
+	// セットするテキスト
+	CNativeW bufW;
+
+	// パイプから文字列を取得
+	{
+		char *lpBuffer;
+		if ( ReadPipe( hPipe, &lpBuffer))
+		{
+			return -3;
+		}
+
+		// 文字コード変換が必要であれば行う
+	
+		if ( !bUnicode)
+		{
+			// Shift_JIS -> UTF-16
+			CNativeA bufA = lpBuffer;
+			CShiftJis::SJISToUnicode(*(bufA._GetMemory()), &bufW);
+		}
+		else
+		{
+			// UTF-16 なのでそのままキャストして良い
+			bufW = (wchar_t*)lpBuffer;
+		}
+
+		free(lpBuffer);
+	}
+
+	const auto& pEditWnd = CEditWnd::getInstance();
+	if (pEditWnd == nullptr)
+		return -2;
+
+	// 処理が複雑すぎるので、コマンダーにそのまま投げる
+	// （結果が取れないという難点）
+	auto& pActiveView = pEditWnd->GetActiveView();
+	auto& pCommander = pActiveView.GetCommander();
+	pCommander.Command_SELECTALL();
+	pCommander.Command_DELETE();
+	pCommander.Command_ADDTAIL( bufW.GetStringPtr(), -1);
+
+	return 0;
+}
+
+inline LRESULT CHsp3Interface::GetAllText(HANDLE hPipe, bool bUnicode) const
+{
+	const auto& pEditWnd = CEditWnd::getInstance();
+	if (pEditWnd == nullptr)
+		return -2;
+
+	wchar_t*	pDataAll;
+	int		nDataAllLen;
+
+	const auto& pDoc = pEditWnd->GetDocument();
+	pDataAll = CDocReader(pDoc->m_cDocLineMgr).GetAllData(&nDataAllLen);
+
+	LPCVOID buffer = pDataAll;
+	DWORD nNumberOfBytesToWrite = sizeof(wchar_t) * wcslen(pDataAll);
+
+	CNativeA destSjis;
+
+	if (!bUnicode)
+	{
+		// UTF-16 -> Shift_JIS
+		CShiftJis::UnicodeToSJIS(pDataAll, destSjis._GetMemory());
+		buffer = destSjis.GetStringPtr();
+		nNumberOfBytesToWrite = destSjis.GetStringLength();
+	}
+
+	DWORD dwNumberOfBytesWritten;
+	BOOL bRet;
+	bRet = WriteFile(hPipe, buffer, nNumberOfBytesToWrite, &dwNumberOfBytesWritten, nullptr);
+
+	free(pDataAll);
+
+	return bRet ? 0 : -3;
+}
+
+inline LRESULT CHsp3Interface::GetAllTextLength(bool bUnicode) const
+{
+	const auto& pEditWnd = CEditWnd::getInstance();
+	if (pEditWnd == nullptr)
+		return -2;
+
+	wchar_t*	pDataAll;
+	int		nDataAllLen;
+
+	const auto& pDoc = pEditWnd->GetDocument();
+	pDataAll = CDocReader(pDoc->m_cDocLineMgr).GetAllData(&nDataAllLen);
+
+	LPCVOID buffer = pDataAll;
+	DWORD nStringLength = wcslen(pDataAll);
+
+	CNativeA destSjis;
+
+	if (!bUnicode)
+	{
+		// UTF-16 -> Shift_JIS
+		CShiftJis::UnicodeToSJIS(pDataAll, destSjis._GetMemory());
+		buffer = destSjis.GetStringPtr();
+		nStringLength = destSjis.GetStringLength();
+	}
+
+	free(pDataAll);
+	return nStringLength;
+}
+
+inline LRESULT CHsp3Interface::GetLineCount() const
+{
+	const auto& pEditWnd = CEditWnd::getInstance();
+	if ( pEditWnd == nullptr)
+		return -2;
+
+	const auto& pDoc = pEditWnd->GetDocument();
+	return pDoc->m_cDocLineMgr.GetLineCount().GetValue();
+}
+
+inline LRESULT CHsp3Interface::InsertText(HANDLE hPipe, bool bUnicode) const
+{
+	// セットするテキスト
+	CNativeW bufW;
+
+	// パイプから文字列を取得
+	{
+		char *lpBuffer;
+		if (ReadPipe(hPipe, &lpBuffer))
+		{
+			return -3;
+		}
+
+		// 文字コード変換が必要であれば行う
+		if (!bUnicode)
+		{
+			// Shift_JIS -> UTF-16
+			CNativeA bufA = lpBuffer;
+			CShiftJis::SJISToUnicode(*(bufA._GetMemory()), &bufW);
+		}
+		else
+		{
+			// UTF-16 なのでそのままキャストして良い
+			bufW = (wchar_t*)lpBuffer;
+		}
+
+		free(lpBuffer);
+	}
+
+	const auto& pEditWnd = CEditWnd::getInstance();
+	if (pEditWnd == nullptr)
+		return -2;
+
+	// 処理が複雑すぎるので、コマンダーにそのまま投げる
+	// （結果が取れないという難点）
+	auto& pActiveView = pEditWnd->GetActiveView();
+	auto& pCommander = pActiveView.GetCommander();
+	pCommander.Command_INSTEXT(true, bufW.GetStringPtr(), CLogicInt(-1), TRUE);
+	return 0;
+}
+
+inline LRESULT CHsp3Interface::GetLineLength(int nLineNo, bool bUnicode) const
+{
+	const auto& pEditWnd = CEditWnd::getInstance();
+	if (pEditWnd == nullptr)
+		return -2;
+
+	const wchar_t*	pDataLine;
+	CLogicInt	nDataLineLen;
+
+	const auto& pDoc = pEditWnd->GetDocument();
+	pDataLine = CDocReader(pDoc->m_cDocLineMgr).GetLineStr(CLogicInt(nLineNo - 1), &nDataLineLen);
+
+	LPCVOID buffer = pDataLine;
+	DWORD nStringLength = wcslen(pDataLine);
+
+	CNativeA destSjis;
+
+	if (!bUnicode)
+	{
+		// UTF-16 -> Shift_JIS
+		CShiftJis::UnicodeToSJIS(pDataLine, destSjis._GetMemory());
+		buffer = destSjis.GetStringPtr();
+		nStringLength = destSjis.GetStringLength();
+	}
+
+	return nStringLength;
+}
+
+inline LRESULT CHsp3Interface::GetNewLineMode() const
+{
+	const auto& pEditWnd = CEditWnd::getInstance();
+	if (pEditWnd == nullptr)
+		return -2;
+
+	const auto& pDoc = pEditWnd->GetDocument();
+	const auto& eol = pDoc->m_cDocEditor.GetNewLineCode();
+	switch (eol.GetType())
+	{
+		case EEolType::cr_and_lf:
+			return 1;
+		case EEolType::carriage_return:
+			return 2;
+		case EEolType::line_feed:
+			return 3;
+	}
+	return 4;
+}
+
+inline LRESULT CHsp3Interface::GetCaretLine() const
+{
+	const auto& pEditWnd = CEditWnd::getInstance();
+	if (pEditWnd == nullptr)
+		return -2;
+
+	auto& pActiveView = pEditWnd->GetActiveView();
+	auto& pCommander = pActiveView.GetCommander();
+	return pCommander.GetCaret().GetCaretLogicPos().GetY().GetValue() + 1;
+}
+
+inline LRESULT CHsp3Interface::GetCaretPos() const
+{
+	const auto& pEditWnd = CEditWnd::getInstance();
+	if (pEditWnd == nullptr)
+		return -2;
+
+	auto& pActiveView = pEditWnd->GetActiveView();
+	auto& pCommander = pActiveView.GetCommander();
+	return pCommander.GetCaret().GetCaretLogicPos().GetX().GetValue() + 1;
+}
+
+inline LRESULT CHsp3Interface::SetCaretLine(int nLineNo) const
+{
+	const auto& pEditWnd = CEditWnd::getInstance();
+	if (pEditWnd == nullptr)
+		return -2;
+
+	// 折り返し考慮しない
+	auto bkLineMode = m_pShareData->m_bLineNumIsCRLF_ForJump;
+	m_pShareData->m_bLineNumIsCRLF_ForJump = true;
+
+	// 行番号設定
+	auto bkLineNo = pEditWnd->m_cDlgJump.m_nLineNum;
+	pEditWnd->m_cDlgJump.m_nLineNum = nLineNo;
+
+	// 処理が複雑すぎるので、コマンダーにそのまま投げる
+	// （結果が取れないという難点）
+	auto& pActiveView = pEditWnd->GetActiveView();
+	auto& pCommander = pActiveView.GetCommander();
+	pCommander.Command_JUMP();
+
+	m_pShareData->m_bLineNumIsCRLF_ForJump = bkLineMode;	// 復帰
+	pEditWnd->m_cDlgJump.m_nLineNum = bkLineNo;				// 復帰
+	return 0;
+}
+
+inline LRESULT CHsp3Interface::SetCaretPos(int nPosNo) const
+{
+	return 0;
+}
+
+inline LRESULT CHsp3Interface::GetCaretLineThrough() const
+{
+	// 折り返し対応
+	const auto& pEditWnd = CEditWnd::getInstance();
+	if (pEditWnd == nullptr)
+		return -2;
+
+	auto& pActiveView = pEditWnd->GetActiveView();
+	auto& pCommander = pActiveView.GetCommander();
+	return pCommander.GetCaret().GetCaretLayoutPos().GetX().GetValue() + 1;
+}
+
+inline LRESULT CHsp3Interface::SetCaretLineThrough(int nLineNo) const
+{
+	const auto& pEditWnd = CEditWnd::getInstance();
+	if (pEditWnd == nullptr)
+		return -2;
+
+	// 折り返し考慮する
+	auto bkLineMode = m_pShareData->m_bLineNumIsCRLF_ForJump;
+	m_pShareData->m_bLineNumIsCRLF_ForJump = false;
+
+	// 行番号設定
+	auto bkLineNo = pEditWnd->m_cDlgJump.m_nLineNum;
+	pEditWnd->m_cDlgJump.m_nLineNum = nLineNo;
+
+	// 処理が複雑すぎるので、コマンダーにそのまま投げる
+	// （結果が取れないという難点）
+	auto& pActiveView = pEditWnd->GetActiveView();
+	auto& pCommander = pActiveView.GetCommander();
+	pCommander.Command_JUMP();
+
+	m_pShareData->m_bLineNumIsCRLF_ForJump = bkLineMode;	// 復帰
+	pEditWnd->m_cDlgJump.m_nLineNum = bkLineNo;				// 復帰
+	return 0;
+}
+
+inline LRESULT CHsp3Interface::GetCaretVPos(int nPosNo) const
+{
+	return 0;
+}
+
+inline LRESULT CHsp3Interface::SetMark(int nPosNo) const
+{
+	const auto& pEditWnd = CEditWnd::getInstance();
+	if (pEditWnd == nullptr)
+		return -2;
+
+	const auto& pDoc = pEditWnd->GetDocument();
+	const auto& pCDocLine = pDoc->m_cDocLineMgr.GetLine(CLogicInt(nPosNo - 1));
+	if (pCDocLine == nullptr)
+		return -1;
+
+	CBookmarkSetter cBookmark(pCDocLine);
+	cBookmark.SetBookmark(!cBookmark.IsBookmarked());		// トグル動作
+
+	// 分割したビューも更新
+	pEditWnd->Views_Redraw();
+	return 0;
+}
+
+inline LRESULT CHsp3Interface::GetMark(int nPosNo) const
+{
+	const auto& pEditWnd = CEditWnd::getInstance();
+	if (pEditWnd == nullptr)
+		return -2;
+
+	const auto& pDoc = pEditWnd->GetDocument();
+	const auto& pCDocLine = pDoc->m_cDocLineMgr.GetLine(CLogicInt(nPosNo - 1));
+	if (pCDocLine == nullptr)
+		return -1;
+
+	CBookmarkSetter cBookmark(pCDocLine);
+	return cBookmark.IsBookmarked() ? 1 : 0;
 }
