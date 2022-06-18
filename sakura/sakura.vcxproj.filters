@@ -122,6 +122,9 @@
     <Filter Include="Cpp Source Files\hsp">
       <UniqueIdentifier>{4387accc-ec35-4d30-9987-b999241976dd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Cpp Source Files\hsp\res">
+      <UniqueIdentifier>{345d9ea9-f70c-45d7-98ac-49bee2343a35}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sakura_core\Funccode_define.h">
@@ -1188,6 +1191,9 @@
     </None>
     <None Include="..\sakura_core\sakura_rc.rc2">
       <Filter>Other Files</Filter>
+    </None>
+    <None Include="..\resource\default1.bin">
+      <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -2382,5 +2388,10 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="sakura.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="..\sakura_core\hsp\res\UDEVGothic-Regular.ttf">
+      <Filter>Cpp Source Files\hsp\res</Filter>
+    </Font>
   </ItemGroup>
 </Project>

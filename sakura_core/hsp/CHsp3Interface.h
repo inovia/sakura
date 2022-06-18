@@ -24,6 +24,10 @@ public:
 	const static constexpr std::wstring_view HSED_INTERFACE_MAIN_NAME	{ L"HspEditorInterface" };		// コントロールプロセス用
 	const static constexpr std::wstring_view HSED_INTERFACE_SUB_NAME	{ L"HspEditorSubInterface" };	// マルチプロセス用
 
+	// 旧エディタ連携用
+	const static constexpr std::wstring_view HSED_INTERFACE_MUTEX_NAME	{ L"HSPEditor3_Mutex" };
+	const static constexpr std::wstring_view HSED_INTERFACE_PROP_NAME	{ L"HSPEditor3_Property" };
+
 	// Messages
 	const static int UNICODE_VER				= 0x1000;
 	const static int HSED_GETVER				= (WM_APP + 0x000);
@@ -118,6 +122,9 @@ private:
 	// hsedsdk用ウィンドウハンドル
 	HWND m_hWnd						= nullptr;
 
+	// インスタンスハンドル
+	HINSTANCE m_hInstance				= nullptr;
+
 	// サクラエディタ共有データ
 	DLLSHAREDATA* m_pShareData		= nullptr;
 
@@ -131,9 +138,9 @@ private:
 		const CHsp3Interface& hspIf, LRESULT& result, HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	static inline LRESULT TransferMessageByIndex(
-		const CHsp3Interface& hspIf, int nIndex, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		const CHsp3Interface& hspIf, int nIndex, UINT uMsg, WPARAM wParam, LPARAM lParam, bool bPipeSwap);
 	static inline LRESULT TransferMessageByHwnd(
-		HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+		HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool bPipeSwap);
 
 	// 管理中のウィンドウとインスタンスを管理するmap
 	// ※ 一応、本クラスのインスタンスを複数作れるようにはしている（けど使ってない）
@@ -160,6 +167,7 @@ public:
 	inline LRESULT GetVersion(WPARAM wParam, LPARAM lParam, bool bUnicode) const;
 	inline LRESULT GetHspCmpVersion(HANDLE hPipe, bool bUnicode) const;
 	inline LRESULT GetWindowHandle(WPARAM wParam, LPARAM lParam) const;
+	inline LRESULT OpenPage(WPARAM wParam, LPARAM lParam) const;
 
 	// サクラエディタの編集ウィンドウのウィンドウハンドルを取得
 	inline HWND GetEditWindowHandle(int nIndex) const;				// index -> HWND
@@ -174,6 +182,7 @@ public:
 	// 開かれているファイル数を取得（無題も含む）
 	inline LRESULT GetOpenFileCount() const;
 	inline LRESULT GetActiveIndex(HWND& out_hWndHsp3If) const;
+	inline LRESULT GetLastActiveIndex(HWND& out_hWndHsp3If) const;
 
 	inline LRESULT GetFilePath(HANDLE hPipe, bool bUnicode) const;
 	inline LRESULT IsActive() const;

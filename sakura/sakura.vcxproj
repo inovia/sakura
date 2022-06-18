@@ -22,6 +22,7 @@
     <ProjectName>sakura</ProjectName>
     <ProjectGuid>{AF03508C-515E-4A0E-87BE-67ED1E254BD0}</ProjectGuid>
     <GenerateFuncCodeEnum>true</GenerateFuncCodeEnum>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(ProjectDir)..\vcx-props\vcxcompat.props" />
@@ -51,6 +52,18 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetName>hsed3s</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <TargetName>hsed3s</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>hsed3s</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>hsed3s</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Label="sakura.common">
     <ClCompile>
@@ -503,6 +516,7 @@
     <None Include="..\resource\cursor_rvarrow.cur" />
     <None Include="..\resource\cursor_tab_join.cur" />
     <None Include="..\resource\cursor_tab_separate.cur" />
+    <None Include="..\resource\default1.bin" />
     <None Include="..\resource\MainMenu.ini" />
     <None Include="..\sakura_core\sakura_rc.rc2" />
   </ItemGroup>
@@ -917,6 +931,9 @@
   </ItemGroup>
   <ItemGroup>
     <FuncCodeRes Include="..\sakura_core\Funccode_x.hsrc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="..\sakura_core\hsp\res\UDEVGothic-Regular.ttf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

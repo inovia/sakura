@@ -1,6 +1,8 @@
 ﻿#include "StdAfx.h"
 #include "CHsp3Interface.h"
 #include "_main/CProcess.h"
+#include "_main/CControlTray.h"
+#include "_main/CCommandLine.h"
 #include "doc/CEditDoc.h"
 #include "doc/CDocReader.h"
 #include "cmd/CViewCommander.h"
@@ -13,6 +15,8 @@
 #include "_os/CClipboard.h"
 #include "version.h"
 #include "charset/charcode.h"
+#include "COpeBlk.h"
+#include "sakura_rc.h"
 
 std::map<HWND, CHsp3Interface*> CHsp3Interface::s_mapWindowInstance;
 
@@ -92,8 +96,21 @@ inline bool CHsp3Interface::InterfaceProc_ControlProcess(
 		case HSED_GETPATH:
 		case HSED_GETPATHW:
 		{
+			// パイプハンドル付け替え(孫プロセスに渡せないため)
 			result = TransferMessageByIndex(
-				hspIf, (int)wParam, uMsg, wParam, lParam);
+				hspIf, (int)wParam, uMsg, wParam, lParam, true);
+			return true;
+		}
+		case HSED_SETTEXT:
+		case HSED_SETTEXTW:
+		case HSED_GETTEXT:
+		case HSED_GETTEXTW:
+		case HSED_SETSELTEXT:
+		case HSED_SETSELTEXTW:
+		{
+			// パイプハンドル付け替え(孫プロセスに渡せないため)
+			result = TransferMessageByHwnd(
+				(HWND)wParam, uMsg, wParam, lParam, true);
 			return true;
 		}
 		case HSED_GETTABCOUNT:
@@ -116,13 +133,13 @@ inline bool CHsp3Interface::InterfaceProc_ControlProcess(
 		case HSED_GETACTTABID:
 		{
 			HWND out_hWndHsp3If;
-			result = (LRESULT)hspIf.GetActiveIndex(out_hWndHsp3If);
+			result = (LRESULT)hspIf.GetLastActiveIndex(out_hWndHsp3If);
 			return true;
 		}
 		case HSED_GETACTFOOTYID:
 		{
 			HWND out_hWndHsp3If;
-			hspIf.GetActiveIndex(out_hWndHsp3If);
+			hspIf.GetLastActiveIndex(out_hWndHsp3If);
 			result = (LRESULT)out_hWndHsp3If;
 			return true;
 		}
@@ -138,15 +155,9 @@ inline bool CHsp3Interface::InterfaceProc_ControlProcess(
 		case HSED_INDENT:
 		case HSED_UNINDENT:
 		case HSED_SELECTALL:
-		case HSED_SETTEXT:
-		case HSED_SETTEXTW:
-		case HSED_GETTEXT:
-		case HSED_GETTEXTW:
 		case HSED_GETTEXTLENGTH:
 		case HSED_GETTEXTLENGTHW:
 		case HSED_GETLINES:
-		case HSED_SETSELTEXT:
-		case HSED_SETSELTEXTW:
 		case HSED_GETLINELENGTH:
 		case HSED_GETLINELENGTHW:
 		case HSED_GETLINECODE:
@@ -160,12 +171,18 @@ inline bool CHsp3Interface::InterfaceProc_ControlProcess(
 		case HSED_GETMARK:
 		{
 			result = TransferMessageByHwnd(
-				(HWND)wParam, uMsg, wParam, lParam);
+				(HWND)wParam, uMsg, wParam, lParam, false);
 			return true;
 		}
 		case HSED_CANPASTE:
 		{
 			result = (LRESULT)hspIf.CanPaste();
+			return true;
+		}
+		case WM_COPYDATA:	// 旧ＨＳＰスクリプトエディタからの連携用
+		{
+			hspIf.OpenPage(wParam, lParam);
+			result = 0;
 			return true;
 		}
 	}
@@ -340,27 +357,56 @@ inline bool CHsp3Interface::InterfaceProc_SubProcess(
 }
 
 inline LRESULT CHsp3Interface::TransferMessageByIndex(
-	const CHsp3Interface& hspIf, int nIndex, UINT uMsg, WPARAM wParam, LPARAM lParam)
+	const CHsp3Interface& hspIf, int nIndex, UINT uMsg, WPARAM wParam, LPARAM lParam, bool bPipeSwap)
 {
 	const auto hWndHsp3If = hspIf.GetHsp3InterfaceWindowHandle( nIndex);
 	if ( hWndHsp3If == nullptr)
 	{
 		return -2;
 	}
-	return SendMessage( hWndHsp3If, uMsg, wParam, lParam);
+	return TransferMessageByHwnd( hWndHsp3If, uMsg, wParam, lParam, bPipeSwap);
 }
 
 inline LRESULT CHsp3Interface::TransferMessageByHwnd(
-	HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+	HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, bool bPipeSwap)
 {
-	return SendMessage(hWnd, uMsg, wParam, lParam);
+	// パイプハンドル付け替え(孫プロセスに渡せないため)
+	if ( bPipeSwap)
+	{
+		HANDLE hPipeOrigin = (HANDLE)lParam;
+		DWORD dwProcessId = 0;
+		::GetWindowThreadProcessId(hWnd, &dwProcessId);
+
+		HANDLE hProcTarget =
+			::OpenProcess( PROCESS_ALL_ACCESS, 0, dwProcessId);
+		HANDLE hProcCurrent = ::GetCurrentProcess();
+
+		HANDLE hPipeTarget = nullptr;
+		::DuplicateHandle(
+			hProcCurrent, hPipeOrigin, hProcTarget,
+			&hPipeTarget, 0, 0, DUPLICATE_SAME_ACCESS);
+
+		::CloseHandle((HANDLE)hProcTarget);
+
+		lParam = (LPARAM)hPipeTarget;
+	}
+
+	LRESULT ret = ::SendMessage(hWnd, uMsg, wParam, lParam);
+
+	if ( bPipeSwap)
+	{
+		
+	}
+
+	return ret;
 }
 
 bool CHsp3Interface::CreateInterfaceWindow(HINSTANCE hInstance, bool bControlProcess)
 {
+	// ウィンドウクラス生成
 	WNDCLASSEX wcex;
-
 	wcex.cbSize = sizeof(WNDCLASSEX);
+
 	if ( bControlProcess)
 	{
 		wcex.lpszClassName = HSED_INTERFACE_MAIN_NAME.data();
@@ -382,6 +428,7 @@ bool CHsp3Interface::CreateInterfaceWindow(HINSTANCE hInstance, bool bControlPro
 
 	::RegisterClassEx(&wcex);
 
+	// ウィンドウ生成
 	HWND hWnd = ::CreateWindow(
 		(bControlProcess) ? HSED_INTERFACE_MAIN_NAME.data() : HSED_INTERFACE_SUB_NAME.data(),
 		(bControlProcess) ? HSED_INTERFACE_MAIN_NAME.data() : HSED_INTERFACE_SUB_NAME.data(),
@@ -390,9 +437,39 @@ bool CHsp3Interface::CreateInterfaceWindow(HINSTANCE hInstance, bool bControlPro
 	if ( hWnd == nullptr)
 		return false;
 
+	// 旧エディタ連携用
+	if ( bControlProcess)
+	{
+		::CreateMutex( nullptr, TRUE, HSED_INTERFACE_MUTEX_NAME.data());
+		::SetProp( hWnd, HSED_INTERFACE_PROP_NAME.data(), (HANDLE)1);
+	}
+
+	// フォント読み込み
+	if ( !bControlProcess)
+	{
+		// 
+		// 本当はリソース内にフォントを組み込んで、
+		// AddFontMemResourceEx() でロードしたかった。
+		// ChooseFont() でフォントが列挙できない問題があり、見送り。
+		// 
+
+		WCHAR	filePath[1024];
+		GetExedir( filePath, L"UDEVGothic-Regular.ttf");
+
+		if ( ::PathFileExists( filePath))
+		{
+			int nCount = ::AddFontResourceEx( filePath, FR_PRIVATE, 0);
+			if ( nCount == 0)
+			{
+				ErrorBeep();
+			}
+		}
+	}
+
 	// インスタンス管理へ追加
 	s_mapWindowInstance.emplace(hWnd, this);
 	m_hWnd = hWnd;
+	m_hInstance = hInstance;
 	m_bControlProcess = bControlProcess;
 	return true;
 }
@@ -494,6 +571,42 @@ inline LRESULT CHsp3Interface::GetWindowHandle(WPARAM wParam, LPARAM lParam) con
 	default:
 		return (LRESULT)nullptr;
 	}
+}
+
+inline LRESULT CHsp3Interface::OpenPage(WPARAM wParam, LPARAM lParam) const
+{
+	// 旧ＨＳＰスクリプトエディタ用連携
+	COPYDATASTRUCT *pcds = (COPYDATASTRUCT*)lParam;
+	if ( pcds->dwData == 0)
+	{
+		// ファイルパスはSJIS固定の想定
+		// Shift_JIS -> UTF-16
+		CNativeA strA = (char *)pcds->lpData;
+		CNativeW strW;
+		CShiftJis::SJISToUnicode(*strA._GetMemory(), &strW);
+
+		// コマンドライン分解
+		auto cmdLine = CCommandLine();
+		cmdLine.ParseCommandLine( strW.GetStringPtr(), false);
+
+		// ファイルが指定されていれば実行
+		if ( 0 < cmdLine.GetFileNum())
+		{
+			// 指定されたファイルを開く
+			SLoadInfo sLoadInfo;
+			sLoadInfo.cFilePath = cmdLine.GetFileName(0);
+			sLoadInfo.eCharCode = CODE_AUTODETECT;	// 文字コード自動判別
+			sLoadInfo.bViewMode = false;
+		
+			// 新たな編集ウィンドウを起動
+			CControlTray::OpenNewEditor(
+				m_hInstance, m_pShareData->m_sHandles.m_hwndTray,
+				sLoadInfo, nullptr, true, nullptr,
+				m_pShareData->m_Common.m_sTabBar.m_bNewWindow ? true : false);
+		}
+	}
+
+	return 0;			// WM_COPYDATA の戻り値
 }
 
 inline HWND CHsp3Interface::GetEditWindowHandle(int nIndex) const
@@ -622,6 +735,36 @@ inline LRESULT CHsp3Interface::GetActiveIndex(HWND& out_hWndHsp3If) const
 	return -1;
 }
 
+inline LRESULT CHsp3Interface::GetLastActiveIndex(HWND& out_hWndHsp3If) const
+{
+	// 最近
+	EditNode*	pEditNode = CAppNodeGroupHandle(0).GetEditNodeAt(0);
+	if ( pEditNode == nullptr)
+		return -2;
+
+	out_hWndHsp3If = pEditNode->GetHwndHspIf();
+
+	int	i;
+	int iIndex;
+
+	iIndex = 0;
+	for (i = 0; i < m_pShareData->m_sNodes.m_nEditArrNum; i++)
+	{
+		if (IsSakuraMainWindow(m_pShareData->m_sNodes.m_pEditArr[i].m_hWnd))
+		{
+			const auto& hWmdHspIf = m_pShareData->m_sNodes.m_pEditArr[i].m_hWndHspIf;
+			if ( out_hWndHsp3If == hWmdHspIf)
+			{
+				return iIndex;
+			}
+			iIndex++;
+		}
+	}
+
+	out_hWndHsp3If = nullptr;
+	return -1;
+}
+
 inline LRESULT CHsp3Interface::IsActive() const
 {
 	const auto& pEditWnd = CEditWnd::getInstance();
@@ -739,10 +882,14 @@ inline LRESULT CHsp3Interface::Paste() const
 		return -2;
 
 	// 処理が複雑すぎるので、コマンダーにそのまま投げる
-	// （結果が取れないという難点）
+	
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
-	pCommander.Command_PASTE(0);
+	pCommander.HandleCommand(
+		F_PASTE, true, 0, 0, 0, 0);
+
+	// ↓直接呼んではいけない
+	// pCommander.Command_PASTE(0);
 
 	return 0;
 }
@@ -754,10 +901,13 @@ inline LRESULT CHsp3Interface::Undo() const
 		return -2;
 
 	// 処理が複雑すぎるので、コマンダーにそのまま投げる
-	// （結果が取れないという難点）
+	
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
-	pCommander.Command_UNDO();
+	pCommander.HandleCommand(F_UNDO, true, 0, 0, 0, 0);
+
+	// ↓直接呼んではいけない
+	//pCommander.Command_UNDO();
 
 	return 0;
 }
@@ -769,10 +919,13 @@ inline LRESULT CHsp3Interface::Redo() const
 		return -2;
 
 	// 処理が複雑すぎるので、コマンダーにそのまま投げる
-	// （結果が取れないという難点）
+	
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
-	pCommander.Command_REDO();
+	pCommander.HandleCommand(F_REDO, true, 0, 0, 0, 0);
+
+	// ↓直接呼んではいけない
+	// pCommander.Command_REDO();
 
 	return 0;
 }
@@ -784,10 +937,13 @@ inline LRESULT CHsp3Interface::Indent() const
 		return -2;
 
 	// 処理が複雑すぎるので、コマンダーにそのまま投げる
-	// （結果が取れないという難点）
+	
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
-	pCommander.Command_INDENT( WCODE::TAB, CViewCommander::INDENT_TAB);
+	pCommander.HandleCommand(F_INDENT_TAB, true, 0, 0, 0, 0);
+
+	// ↓直接呼んではいけない
+	// pCommander.Command_INDENT( WCODE::TAB, CViewCommander::INDENT_TAB);
 
 	return 0;
 }
@@ -799,10 +955,13 @@ inline LRESULT CHsp3Interface::UnIndent() const
 		return -2;
 
 	// 処理が複雑すぎるので、コマンダーにそのまま投げる
-	// （結果が取れないという難点）
+	
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
-	pCommander.Command_UNINDENT( WCODE::TAB);
+	pCommander.HandleCommand(F_UNINDENT_TAB, true, 0, 0, 0, 0);
+
+	// ↓直接呼んではいけない
+	// pCommander.Command_UNINDENT( WCODE::TAB);
 
 	return 0;
 }
@@ -814,10 +973,13 @@ inline LRESULT CHsp3Interface::SelectAll() const
 		return -2;
 
 	// 処理が複雑すぎるので、コマンダーにそのまま投げる
-	// （結果が取れないという難点）
+	
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
-	pCommander.Command_SELECTALL();
+	pCommander.HandleCommand(F_SELECTALL, true, 0, 0, 0, 0);
+
+	// ↓直接呼んではいけない
+	// pCommander.Command_SELECTALL();
 
 	return 0;
 }
@@ -857,12 +1019,17 @@ inline LRESULT CHsp3Interface::SetAllText(HANDLE hPipe, bool bUnicode) const
 		return -2;
 
 	// 処理が複雑すぎるので、コマンダーにそのまま投げる
-	// （結果が取れないという難点）
+	
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
-	pCommander.Command_SELECTALL();
-	pCommander.Command_DELETE();
-	pCommander.Command_ADDTAIL( bufW.GetStringPtr(), -1);
+	pCommander.HandleCommand(F_SELECTALL, true, 0, 0, 0, 0);
+	pCommander.HandleCommand(F_DELETE, true, 0, 0, 0, 0);
+	pCommander.HandleCommand(F_ADDTAIL_W, true, (LPARAM)bufW.GetStringPtr(), -1, 0, 0);
+
+	// ↓直接呼んではいけない
+	// pCommander.Command_SELECTALL();
+	// pCommander.Command_DELETE();
+	// pCommander.Command_ADDTAIL( bufW.GetStringPtr(), -1);
 
 	return 0;
 }
@@ -974,10 +1141,16 @@ inline LRESULT CHsp3Interface::InsertText(HANDLE hPipe, bool bUnicode) const
 		return -2;
 
 	// 処理が複雑すぎるので、コマンダーにそのまま投げる
-	// （結果が取れないという難点）
+	
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
-	pCommander.Command_INSTEXT(true, bufW.GetStringPtr(), CLogicInt(-1), TRUE);
+
+	pCommander.HandleCommand(
+		F_INSTEXT_W, true,
+		(LPARAM)bufW.GetStringPtr(), (LPARAM)bufW.GetStringLength(), TRUE, 0);
+
+	// ↓直接呼んではいけない
+	// pCommander.Command_INSTEXT(true, bufW.GetStringPtr(), bufW.GetStringLength(), TRUE);
 	return 0;
 }
 
@@ -1066,10 +1239,13 @@ inline LRESULT CHsp3Interface::SetCaretLine(int nLineNo) const
 	pEditWnd->m_cDlgJump.m_nLineNum = nLineNo;
 
 	// 処理が複雑すぎるので、コマンダーにそのまま投げる
-	// （結果が取れないという難点）
+	
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
-	pCommander.Command_JUMP();
+	pCommander.HandleCommand(F_JUMP, true, 0, 0, 0, 0);
+
+	// ↓直接呼んではいけない
+	// pCommander.Command_JUMP();
 
 	m_pShareData->m_bLineNumIsCRLF_ForJump = bkLineMode;	// 復帰
 	pEditWnd->m_cDlgJump.m_nLineNum = bkLineNo;				// 復帰
@@ -1108,10 +1284,13 @@ inline LRESULT CHsp3Interface::SetCaretLineThrough(int nLineNo) const
 	pEditWnd->m_cDlgJump.m_nLineNum = nLineNo;
 
 	// 処理が複雑すぎるので、コマンダーにそのまま投げる
-	// （結果が取れないという難点）
+	
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
-	pCommander.Command_JUMP();
+	pCommander.HandleCommand(F_JUMP, true, 0, 0, 0, 0);
+
+	// ↓直接呼んではいけない
+	// pCommander.Command_JUMP();
 
 	m_pShareData->m_bLineNumIsCRLF_ForJump = bkLineMode;	// 復帰
 	pEditWnd->m_cDlgJump.m_nLineNum = bkLineNo;				// 復帰

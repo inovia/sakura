@@ -7,9 +7,10 @@ bool CHsp3::Load(const CNativeW& strLibFileName)
 {
 	// hsedsdk用
 	const auto& pCP = dynamic_cast<CControlProcess*>(CProcess::getInstance());
+	const auto& hInstance = CProcess::getInstance()->GetProcessInstance();
 	const auto bControlProcess = (pCP != nullptr);		// コントロールプロセス？
 	m_pHsp3If = new CHsp3Interface();
-	m_pHsp3If->CreateInterfaceWindow( pCP->GetProcessInstance(), bControlProcess);
+	m_pHsp3If->CreateInterfaceWindow( hInstance, bControlProcess);
 
 	// コンパイラ
 	m_pHsp3Dll	= new CHsp3Dll( strLibFileName.GetStringPtr());
@@ -130,7 +131,7 @@ bool CHsp3::OpenSrcFolder_File(HWND hParent, const CNativeW& strFilePath) const
 bool CHsp3::RunAssist(HWND hParent) const
 {
 	WCHAR	cmdline[1024];
-	GetExedir(cmdline, L"ahtman.exe");
+	GetExedir(cmdline, L"hspat.exe");
 
 	return ((HINSTANCE)32 < ::ShellExecute(
 		hParent, L"open", cmdline, nullptr, nullptr, SW_SHOWNORMAL));
@@ -236,17 +237,10 @@ bool CHsp3::OpenFuncRef(HWND hParent) const
 		hParent, L"open", cmdline, nullptr, nullptr, SW_SHOWNORMAL));
 }
 
-bool CHsp3::OpenManualIndex(HWND hParent, bool bEnglish = false) const
+bool CHsp3::OpenManualIndex(HWND hParent, bool bJapanese = true) const
 {
 	WCHAR	cmdline[1024];
-	if ( bEnglish)
-	{
-		GetExedir( cmdline, L"index_en.htm");
-	}
-	else
-	{
-		GetExedir( cmdline, L"index.htm");
-	}
+	GetExedir( cmdline, bJapanese ? L"index.htm" : L"index_en.htm");
 
 	return ((HINSTANCE)32 < ::ShellExecute(
 		hParent, L"open", cmdline, nullptr, nullptr, SW_SHOWNORMAL));

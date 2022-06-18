@@ -112,8 +112,8 @@ void CViewCommander::Command_HSP_OPEN_FUNC_REF(void)
 void CViewCommander::Command_HSP_OPEN_MANUAL_INDEX(void)
 {
 	const auto& langId = CSelectLang::getDefaultLangId();
-	auto bEnglish = (langId != 1041);	// 1041 = Japanese
+	auto bJapanese = (langId == 1041);	// 1041 = Japanese
 
 	const auto& Hsp3 = CProcess::getInstance()->GetHsp3();
-	Hsp3.OpenManualIndex( m_pCommanderView->GetHwnd(), bEnglish);
+	Hsp3.OpenManualIndex( m_pCommanderView->GetHwnd(), bJapanese);
 }

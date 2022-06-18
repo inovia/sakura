@@ -8,3 +8,5 @@ set SRCDIR=..\sakura_core
 @echo =======================
 @echo preBuild
 @echo =======================
+
+copy /n "%SRCDIR%\hsp\res\UDEVGothic-Regular.ttf" "%EXEDIR%\UDEVGothic-Regular.ttf"

@@ -59,5 +59,5 @@ public:
 	bool SearchKeyword(HWND hParent, const CNativeW& strKeyword) const;
 	bool OpenPGManual(HWND hParent) const;
 	bool OpenFuncRef(HWND hParent) const;
-	bool OpenManualIndex(HWND hParent, bool bEnglish) const;
+	bool OpenManualIndex(HWND hParent, bool bJapanese) const;
 };
