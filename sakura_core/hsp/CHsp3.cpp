@@ -19,6 +19,7 @@ bool CHsp3::Load(const CNativeW& strLibFileName)
 	// フォント管理クラス
 	if (! bControlProcess)
 	{
+		// コントロールプロセスでない = エディタプロセス
 		CHsp3Font().LoadFont( hInstance);
 	}
 

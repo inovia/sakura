@@ -444,28 +444,6 @@ bool CHsp3Interface::CreateInterfaceWindow(HINSTANCE hInstance, bool bControlPro
 		::SetProp( hWnd, HSED_INTERFACE_PROP_NAME.data(), (HANDLE)1);
 	}
 
-	// フォント読み込み
-	if ( !bControlProcess)
-	{
-		// 
-		// 本当はリソース内にフォントを組み込んで、
-		// AddFontMemResourceEx() でロードしたかった。
-		// ChooseFont() でフォントが列挙できない問題があり、見送り。
-		// 
-
-		WCHAR	filePath[1024];
-		GetExedir( filePath, L"UDEVGothic-Regular.ttf");
-
-		if ( ::PathFileExists( filePath))
-		{
-			int nCount = ::AddFontResourceEx( filePath, FR_PRIVATE, 0);
-			if ( nCount == 0)
-			{
-				ErrorBeep();
-			}
-		}
-	}
-
 	// インスタンス管理へ追加
 	s_mapWindowInstance.emplace(hWnd, this);
 	m_hWnd = hWnd;
