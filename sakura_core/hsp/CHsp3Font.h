@@ -5,6 +5,10 @@
 class CHsp3Font
 {
 public:
+	// フォント名
+	static constexpr std::wstring_view FONT_NAME = { L"UDEV Gothic" };
+
+public:
 	// デフォルトコンストラクタ
 	CHsp3Font() {  };
 

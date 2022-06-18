@@ -42,6 +42,7 @@
 #include "util/string_ex2.h"
 #include "util/window.h"
 #include "util/os.h"
+#include "hsp/CHsp3Font.h"
 #include "CDataProfile.h"
 #include "apiwrap/StdApi.h"
 #include "sakura_rc.h"
@@ -212,7 +213,8 @@ bool CShareData::InitShareData()
 		lf.lfClipPrecision		= 0x2;
 		lf.lfQuality			= 0x1;
 		lf.lfPitchAndFamily	= 0x31;
-		wcscpy( lf.lfFaceName, L"ＭＳ ゴシック" );
+		wcscpy( lf.lfFaceName, CHsp3Font::FONT_NAME.data()) ;		// HSP3
+		// wcscpy( lf.lfFaceName, L"ＭＳ ゴシック" );
 
 		// LoadShareDataでフォントが変わる可能性があるので、ここでは不要 // 2013.04.08 aroka
 		//InitCharWidthCacheCommon();								// 2008/5/17 Uchi
@@ -355,7 +357,7 @@ bool CShareData::InitShareData()
 			sEdit.m_bConvertEOLPaste = false;			/* 改行コードを変換して貼り付ける */	// 2009.02.28 salarm
 			sEdit.m_bEnableExtEol = false;
 			sEdit.m_bBoxSelectLock = true;
-			sEdit.m_bVistaStyleFileDialog = false;
+			sEdit.m_bVistaStyleFileDialog = true;		// HSP3 ダークモード対応
 
 			sEdit.m_bNotOverWriteCRLF = TRUE;			/* 改行は上書きしない */
 			sEdit.m_bOverWriteFixMode = false;			// 文字幅に合わせてスペースを詰める
