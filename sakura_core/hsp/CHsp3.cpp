@@ -5,14 +5,24 @@
 
 bool CHsp3::Load(const CNativeW& strLibFileName)
 {
-	// hsedsdk用
+	// コントロールプロセスかどうか取得
 	const auto& pCP = dynamic_cast<CControlProcess*>(CProcess::getInstance());
+	const auto bControlProcess = (pCP != nullptr);
+
+	// インスタンスハンドルを取得
 	const auto& hInstance = CProcess::getInstance()->GetProcessInstance();
-	const auto bControlProcess = (pCP != nullptr);		// コントロールプロセス？
+
+	// hsedsdk用管理クラス
 	m_pHsp3If = new CHsp3Interface();
 	m_pHsp3If->CreateInterfaceWindow( hInstance, bControlProcess);
 
-	// コンパイラ
+	// フォント管理クラス
+	if (! bControlProcess)
+	{
+		CHsp3Font().LoadFont( hInstance);
+	}
+
+	// コンパイラ管理クラス
 	m_pHsp3Dll	= new CHsp3Dll( strLibFileName.GetStringPtr());
 	return m_pHsp3Dll->LoadDll();
 }

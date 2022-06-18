@@ -6,6 +6,7 @@
 
 #include "CKeyWordSetMgr.h"
 #include "CHsp3Dll.h"
+#include "CHsp3Font.h"
 #include "CHsp3Interface.h"
 
 class CHsp3

@@ -338,6 +338,7 @@
     <ClInclude Include="..\sakura_core\GrepInfo.h" />
     <ClInclude Include="..\sakura_core\hsp\CHsp3.h" />
     <ClInclude Include="..\sakura_core\hsp\CHsp3Dll.h" />
+    <ClInclude Include="..\sakura_core\hsp\CHsp3Font.h" />
     <ClInclude Include="..\sakura_core\hsp\CHsp3Interface.h" />
     <ClInclude Include="..\sakura_core\io\CBinaryStream.h" />
     <ClInclude Include="..\sakura_core\io\CFile.h" />
@@ -711,6 +712,7 @@
     <ClCompile Include="..\sakura_core\GrepInfo.cpp" />
     <ClCompile Include="..\sakura_core\hsp\CHsp3.cpp" />
     <ClCompile Include="..\sakura_core\hsp\CHsp3Dll.cpp" />
+    <ClCompile Include="..\sakura_core\hsp\CHsp3Font.cpp" />
     <ClCompile Include="..\sakura_core\hsp\CHsp3Interface.cpp" />
     <ClCompile Include="..\sakura_core\io\CBinaryStream.cpp" />
     <ClCompile Include="..\sakura_core\io\CFile.cpp" />
