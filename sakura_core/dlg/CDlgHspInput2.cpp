@@ -1,0 +1,202 @@
+﻿/*!	@file
+	@brief 1行入力ダイアログボックス + チェックボックス
+
+	@author Norio Nakatani
+	@date	1998/05/31 作成
+*/
+/*
+	Copyright (C) 1998-2001, Norio Nakatani
+	Copyright (C) 2002, MIK
+	Copyright (C) 2003, KEITA
+	Copyright (C) 2006, ryoji
+	Copyright (C) 2018-2022, Sakura Editor Organization
+
+	This source code is designed for sakura editor.
+	Please contact the copyright holder to use this code for other purpose.
+*/
+#include "StdAfx.h"
+#include "dlg/CDlgHspInput2.h"
+#include "CEditApp.h"
+#include "Funccode_enum.h"	// EFunctionCode
+#include "hsp/CHsp3DarkMode.h"
+#include "util/shell.h"
+#include "sakura_rc.h"
+#include "sakura.hh"
+#include "util/window.h"
+#include "apiwrap/StdControl.h"
+#include "CSelectLang.h"
+
+// 入力 CDlgHspInput2.cpp	//@@@ 2002.01.07 add start MIK
+static const DWORD p_helpids[] = {	//13000
+	IDOK,					HIDOK_DLG1,
+	IDCANCEL,				HIDCANCEL_DLG1,
+	IDC_EDIT_INPUT1,		HIDC_DLG1_EDIT1,	//入力フィールド	IDC_EDIT1->IDC_EDIT_INPUT1	2008/7/3 Uchi
+	IDC_STATIC_MSG,			HIDC_DLG1_EDIT1,	//メッセージ
+//	IDC_STATIC,				-1,
+	0, 0
+};	//@@@ 2002.01.07 add end MIK
+
+/* ダイアログプロシージャ */
+INT_PTR CALLBACK CDlgHSPInput2Proc(
+	HWND hwndDlg,	// handle to dialog box
+	UINT uMsg,		// message
+	WPARAM wParam,	// first message parameter
+	LPARAM lParam 	// second message parameter
+)
+{
+	CDlgHspInput2* pCDlgInput2;
+	switch( uMsg ){
+	case WM_INITDIALOG:
+		pCDlgInput2 = (CDlgHspInput2* )lParam;
+		if( NULL != pCDlgInput2){
+			UpdateDialogFont( hwndDlg );
+			return pCDlgInput2->DispatchEvent( hwndDlg, uMsg, wParam, lParam );
+		}else{
+			return FALSE;
+		}
+	default:
+		// Modified by KEITA for WIN64 2003.9.6
+		pCDlgInput2 = (CDlgHspInput2* )::GetWindowLongPtr( hwndDlg, DWLP_USER );
+		if( NULL != pCDlgInput2){
+			return pCDlgInput2->DispatchEvent( hwndDlg, uMsg, wParam, lParam );
+		}else{
+			return FALSE;
+		}
+	}
+}
+
+/* モーダルダイアログの表示 */
+BOOL CDlgHspInput2::DoModal(
+	HINSTANCE		hInstApp,
+	HWND			hwndParent,
+	const WCHAR*	pszTitle,
+	const WCHAR*	pszMessage,
+	int				nMaxTextLen,
+	WCHAR*			pszText,
+	const WCHAR*	pszCheckText1,
+	bool&			bChecked1,
+	const WCHAR*	pszCheckText2,
+	bool&			bChecked2
+)
+{
+	BOOL bRet;
+	m_hInstance = hInstApp;					/* アプリケーションインスタンスのハンドル */
+	m_hwndParent = hwndParent;				/* オーナーウィンドウのハンドル */
+	m_pszTitle = pszTitle;					/* ダイアログタイトル */
+	m_pszMessage = pszMessage;				/* メッセージ */
+	m_nMaxTextLen = nMaxTextLen;			/* 入力サイズ上限 */
+//	m_pszText = pszText;					/* テキスト */
+	m_cmemText.SetString( pszText );
+
+	m_pszCheckText1 = pszCheckText1;		/* チェックテキスト*/
+	m_bChecked1 = bChecked1;				/* チェック */
+	m_pszCheckText2 = pszCheckText2;		/* チェックテキスト*/
+	m_bChecked2 = bChecked2;				/* チェック */
+
+	bRet = (BOOL)::DialogBoxParam(
+		CSelectLang::getLangRsrcInstance(),
+		MAKEINTRESOURCE( IDD_HSP_INPUT2 ),
+		m_hwndParent,
+		CDlgHSPInput2Proc,
+		(LPARAM)this
+	);
+
+	wcscpy( pszText, m_cmemText.GetStringPtr() );
+	bChecked1 = m_bChecked1;
+	bChecked2 = m_bChecked2;
+	return bRet;
+}
+
+/* ダイアログのメッセージ処理 */
+INT_PTR CDlgHspInput2::DispatchEvent(
+	HWND hwndDlg,	// handle to dialog box
+	UINT uMsg,		// message
+	WPARAM wParam,	// first message parameter
+	LPARAM lParam 	// second message parameter
+)
+{
+	WORD	wNotifyCode;
+	WORD	wID;
+//	int		nRet;
+
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hwndDlg, uMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
+	switch( uMsg ){
+	case WM_INITDIALOG:
+		/* ダイアログデータの設定 */
+		// Modified by KEITA for WIN64 2003.9.6
+		::SetWindowLongPtr( hwndDlg, DWLP_USER, lParam );
+
+		::SetWindowText( hwndDlg, m_pszTitle );	/* ダイアログタイトル */
+		EditCtl_LimitText( ::GetDlgItem( hwndDlg, IDC_EDIT_INPUT1 ), m_nMaxTextLen );	/* 入力サイズ上限 */
+		DlgItem_SetText( hwndDlg, IDC_EDIT_INPUT1, m_cmemText.GetStringPtr() );	/* テキスト */
+		::SetWindowText( ::GetDlgItem( hwndDlg, IDC_STATIC_MSG ), m_pszMessage );	/* メッセージ */
+
+		::SetDlgItemText(hwndDlg, IDC_HSP_CHECK1, m_pszCheckText1);		/* チェックテキスト */
+		::SendDlgItemMessage(hwndDlg, IDC_HSP_CHECK1, BM_SETCHECK,
+			(WPARAM) m_bChecked1 ? BST_CHECKED : BST_UNCHECKED, 0);		/* チェック状態 */
+
+		::SetDlgItemText(hwndDlg, IDC_HSP_CHECK2, m_pszCheckText2);		/* チェックテキスト */
+		::SendDlgItemMessage(hwndDlg, IDC_HSP_CHECK2, BM_SETCHECK,
+			(WPARAM)m_bChecked2 ? BST_CHECKED : BST_UNCHECKED, 0);		/* チェック状態 */
+
+		// ダークモード
+		DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
+
+		return TRUE;
+	case WM_COMMAND:
+		wNotifyCode = HIWORD(wParam);	/* 通知コード */
+		wID			= LOWORD(wParam);	/* 項目ID、 コントロールID、 またはアクセラレータID */
+		switch( wNotifyCode )
+		{
+			/* ボタン／チェックボックスがクリックされた */
+			case BN_CLICKED:
+			{
+				switch( wID )
+				{
+					case IDOK:
+					{
+						m_cmemText.AllocStringBuffer( ::GetWindowTextLength( ::GetDlgItem( hwndDlg, IDC_EDIT_INPUT1 ) ) );
+						::GetWindowText( ::GetDlgItem( hwndDlg, IDC_EDIT_INPUT1 ), m_cmemText.GetStringPtr(), m_nMaxTextLen + 1 );	/* テキスト */
+
+						UINT state;
+						state = ::IsDlgButtonChecked(hwndDlg, IDC_HSP_CHECK1);		/* チェック状態 */
+						m_bChecked1 = (state == BST_CHECKED);
+						state = ::IsDlgButtonChecked(hwndDlg, IDC_HSP_CHECK2);		/* チェック状態 */
+						m_bChecked2 = (state == BST_CHECKED);
+
+						::EndDialog( hwndDlg, TRUE );
+						return TRUE;
+					}
+					case IDCANCEL:
+					{
+						::EndDialog( hwndDlg, FALSE );
+						return TRUE;
+					}
+				}
+				break;	//@@@ 2002.01.07 add
+			}
+		}
+		break;	//@@@ 2002.01.07 add
+	//@@@ 2002.01.07 add start
+	case WM_HELP:
+		{
+			HELPINFO *p = (HELPINFO *)lParam;
+			MyWinHelp( (HWND)p->hItemHandle, HELP_WM_HELP, (ULONG_PTR)(LPVOID)p_helpids );	// 2006.10.10 ryoji MyWinHelpに変更に変更
+		}
+		return TRUE;
+
+	//Context Menu
+	case WM_CONTEXTMENU:
+		MyWinHelp( hwndDlg, HELP_CONTEXTMENU, (ULONG_PTR)(LPVOID)p_helpids );	// 2006.10.10 ryoji MyWinHelpに変更に変更
+		return TRUE;
+	//@@@ 2002.01.07 add end
+	}
+	return FALSE;
+}

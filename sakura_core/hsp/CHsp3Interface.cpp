@@ -1082,7 +1082,7 @@ inline LRESULT CHsp3Interface::GetLineCount() const
 		return -2;
 
 	const auto& pDoc = pEditWnd->GetDocument();
-	return pDoc->m_cDocLineMgr.GetLineCount().GetValue();
+	return pDoc->m_cDocLineMgr.GetLineCount();
 }
 
 inline LRESULT CHsp3Interface::InsertText(HANDLE hPipe, bool bUnicode) const
@@ -1188,7 +1188,7 @@ inline LRESULT CHsp3Interface::GetCaretLine() const
 
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
-	return pCommander.GetCaret().GetCaretLogicPos().GetY().GetValue() + 1;
+	return pCommander.GetCaret().GetCaretLogicPos().GetY() + 1;
 }
 
 inline LRESULT CHsp3Interface::GetCaretPos() const
@@ -1199,7 +1199,7 @@ inline LRESULT CHsp3Interface::GetCaretPos() const
 
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
-	return pCommander.GetCaret().GetCaretLogicPos().GetX().GetValue() + 1;
+	return pCommander.GetCaret().GetCaretLogicPos().GetX() + 1;
 }
 
 inline LRESULT CHsp3Interface::SetCaretLine(int nLineNo) const
@@ -1244,7 +1244,13 @@ inline LRESULT CHsp3Interface::GetCaretLineThrough() const
 
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
+
+#ifdef _DEBUG
 	return pCommander.GetCaret().GetCaretLayoutPos().GetX().GetValue() + 1;
+#else
+	return pCommander.GetCaret().GetCaretLayoutPos().GetX() + 1;
+#endif
+	
 }
 
 inline LRESULT CHsp3Interface::SetCaretLineThrough(int nLineNo) const

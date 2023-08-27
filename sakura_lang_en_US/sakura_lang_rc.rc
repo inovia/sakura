@@ -93,7 +93,7 @@ CAPTION "Jump to Line"
 FONT 9, "Tahoma", 0, 0, 0x1
 BEGIN
     LTEXT           "Line &Number",IDC_STATIC,5,6,34,8
-    EDITTEXT        IDC_EDIT_LINENUM,34,4,54,12, ES_NUMBER
+    EDITTEXT        IDC_EDIT_LINENUM,34,4,54,12,ES_NUMBER
     CONTROL         "Spin1",IDC_SPIN_LINENUM,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,82,4,9,12
     CONTROL         "Use Layout(&R)",IDC_RADIO_LINENUM_LAYOUT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,94,5,97,10
     CONTROL         "Use CRLF(&W)",IDC_RADIO_LINENUM_CRLF,"Button",BS_AUTORADIOBUTTON,94,20,87,10
@@ -2265,12 +2265,27 @@ BEGIN
     F_EDIT_TOPMENU          "Edit"
     F_CONVERT_TOPMENU       "Convert"
     F_SEARCH_TOPMENU        "Search"
-	F_HSP_TOPMENU           "HSP"
     F_TOOL_TOPMENU          "Tool"
     F_OPTION_TOPMENU        "Option"
     F_WINDOW_TOPMENU        "Window"
     F_HELP_TOPMENU          "Help"
     F_WINDOW_LIST_SUBMENU   "Window List"
+END
+
+STRINGTABLE
+BEGIN
+    STR_FILEDIALOG_MRU      "Recent &File:"
+    STR_FILEDIALOG_OPENFOLDER "Recent Fol&der:"
+    STR_IMPEXP_REGEX4       "keyword truncated because too long."
+    STR_STATUS_FONTZOOM_0   "%4.0f %%"
+    STR_STATUS_FONTZOOM_1   "%4.1f %%"
+    STR_DLGGREP_THISDOC     "(Current document)"
+    STR_ERR_DLGFUNCLKUP20   "HSP"
+    F_HSP_TOPMENU           "HSP"
+    STR_OUTLINE_HSP3        "HSP3"
+    STR_DLGFNCLST_HSP3_LABEL "LABEL"
+    STR_DLGFNCLST_HSP3_DEFFUNC "DEFFUNC"
+    STR_DLGFNCLST_HSP3_DEFCFUNC "DEFCFUNC"
 END
 
 STRINGTABLE
@@ -2357,6 +2372,8 @@ STRINGTABLE
 BEGIN
     F_OPEN_POWERSHELL       "Open PowerShell"
     F_OPEN_POWERSHELL_AS_ADMIN "Open PowerShell As Admin"
+    F_HSP_LABEL_LIST        "HSP Label List..."
+    F_HSP_COMPILE_RUN       "Compile and Run"
 END
 
 STRINGTABLE
@@ -2888,43 +2905,41 @@ END
 
 STRINGTABLE
 BEGIN
-	F_HSP_LABEL_LIST				"HSP Label List..."
-	F_HSP_COMPILE_RUN				"Compile and Run"
-	F_HSP_RUN						"Run"
-	F_HSP_COMPILE_ONLY				"Compile"
-	F_HSP_SHOW_ERR					"Error Report..."
-	F_HSP_CREATE_OBJ				"Make .ax"
-	F_HSP_CREATE_STARTAX			"Make START.AX"
-	F_HSP_CREATE_EXE_AUTO			"Make Executable"
-	F_HSP_RUN_EXTERNAL				"Run External..."
-	F_HSP_RESV_KEYWORD_LIST			"Keywords..."
-	F_HSP_RUN_OPTIONS				"Boot Option"
-	F_HSP_SHOW_DEBUG_WINDOW			"Debug Window"
-	F_HSP_OPEN_SRC_FOLDER			"Open Source Folder..."
-	F_HSP_RUN_ASSIST				"HSP Assistant..."
-	F_HSP_RUN_HSPTV					"HSPTV Browser..."
-	F_HSP_CREATE_DPM				"Make .DPM from Folder..."
-	F_HSP_CREATE_PACKOPT			"Make .PACKOPT items..."
-	F_HSP_CONVERT_DISH_C			"HSP3Dish / Source Convert..."
-	F_HSP_OPEN_HGIMG4_TOOL			"HGIMG4 Tool..."
-	F_HSP_OPEN_PAINT_TOOL			"Paint Tool..."
-	F_HSP_OPEN_HELP_SOURCE_EDITOR	"Help Source Editor..."
-	F_HSP_SEARCH_KEYWORD			"Search Keyword..."
-	F_HSP_OPEN_PG_MANUAL			"Programming Manual..."
-	F_HSP_OPEN_FUNC_REF				"Command Reference..."
-	F_HSP_OPEN_MANUAL_INDEX			"Manual Index..."
+    F_HSP_RUN               "Run"
+    F_HSP_COMPILE_ONLY      "Compile"
+    F_HSP_SHOW_ERR          "Error Report..."
+    F_HSP_CREATE_OBJ        "Make .ax"
+    F_HSP_CREATE_STARTAX    "Make START.AX"
+    F_HSP_CREATE_EXE_AUTO   "Make Executable"
+    F_HSP_RUN_EXTERNAL      "Run External..."
+    F_HSP_RESV_KEYWORD_LIST "Keywords..."
+    F_HSP_RUN_OPTIONS       "Boot Option"
+    F_HSP_SHOW_DEBUG_WINDOW "Debug Window"
+    F_HSP_OPEN_SRC_FOLDER   "Open Source Folder..."
+    F_HSP_RUN_ASSIST        "HSP Assistant..."
+    F_HSP_RUN_HSPTV         "HSPTV Browser..."
+    F_HSP_CREATE_DPM        "Make .DPM from Folder..."
+    F_HSP_CONVERT_DISH_C    "HSP3Dish / Source Convert..."
+    F_HSP_OPEN_HGIMG4_TOOL  "HGIMG4 Tool..."
+END
+
+STRINGTABLE
+BEGIN
+    F_HSP_OPEN_PAINT_TOOL   "Paint Tool..."
+    F_HSP_SEARCH_KEYWORD    "Search Keyword..."
+    F_HSP_OPEN_PG_MANUAL    "Programming Manual..."
+    F_HSP_OPEN_FUNC_REF     "Command Reference..."
+    F_HSP_OPEN_MANUAL_INDEX "Manual Index..."
+    F_HSP_OPEN_HELP_SOURCE_EDITOR "Help Source Editor..."
+    F_HSP_CREATE_PACKOPT    "Make .PACKOPT items..."
+    F_CUSTMENU_1            "Custom Menu 1"
+    F_CUSTMENU_2            "Custom Menu 2"
+    F_CUSTMENU_3            "Custom Menu 3"
 END
 
 STRINGTABLE
 BEGIN
     F_MENU_RBUTTON          "Right Click Menu"
-END
-
-STRINGTABLE
-BEGIN
-    F_CUSTMENU_1            "Custom Menu 1"
-    F_CUSTMENU_2            "Custom Menu 2"
-    F_CUSTMENU_3            "Custom Menu 3"
 END
 
 STRINGTABLE
@@ -3189,6 +3204,8 @@ BEGIN
     STR_DLGFNCLST_LIST_TEXT_M "Text *"
     STR_DLGFNCLST_LIST_FUNC "Function name"
     STR_DLGFNCLST_LIST_FUNC_M "Function name *"
+	STR_DLGFNCLST_LIST_NAME "Name"
+	STR_DLGFNCLST_LIST_NAME_M "Name *"
     STR_DLGFNCLST_LIST_LINE "Ln"
     STR_DLGFNCLST_LIST_LINE_M "Ln *"
     STR_DLGFNCLST_LIST_COL  "Cl"
@@ -3242,7 +3259,6 @@ BEGIN
     STR_DLGGREP4            "Please define the target search folder."
     STR_DLGGREP5            "Target folder is not correct."
     STR_DLGGREP6            "Target folder is too long"
-    STR_DLGGREP_THISDOC     "(Current document)"
     STR_DLGJUMP1            "Please input correct line number"
     STR_DLGJUMP_PSLQL       "%d Ln  %s  Package Specification"
     STR_DLGOPNFL1           "as is"
@@ -3521,15 +3537,6 @@ END
 
 STRINGTABLE
 BEGIN
-    STR_FILEDIALOG_MRU      "Recent &File:"
-    STR_FILEDIALOG_OPENFOLDER "Recent Fol&der:"
-    STR_IMPEXP_REGEX4       "keyword truncated because too long."
-    STR_STATUS_FONTZOOM_0   "%4.0f %%"
-    STR_STATUS_FONTZOOM_1   "%4.1f %%"
-END
-
-STRINGTABLE
-BEGIN
     STR_GREP_CASE_SENSITIVE "    (Case Sensitivity = Yes)\r\n"
     STR_GREP_IGNORE_CASE    "    (Case Sensitivity = No)\r\n"
     STR_GREP_REGEX_DLL      "    (RegEx:"
@@ -3700,7 +3707,6 @@ BEGIN
     STR_ERR_DLGFUNCLKUP17   "Support related"
     STR_ERR_DLGFUNCLKUP18   "Misc Others"
     STR_ERR_DLGFUNCLKUP19   "Plugin"
-	STR_ERR_DLGFUNCLKUP20   "HSP"
     STR_ERR_DLGKEYBIND1     "Key\tFunctionalName\tFunctionName\tFunctionalNr\tCan_record_as_key_macro?"
     STR_ERR_DLGKEYBIND2     "---Undefined Name-----"
     STR_ERR_DLGKEYMACMGR1   "//Keyboard macro file\r\n"

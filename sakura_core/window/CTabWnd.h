@@ -83,6 +83,8 @@ public:
 		OnSize( GetHwnd(), WM_SIZE, 0, 0 );
 	}
 	void UpdateStyle();
+
+	LRESULT DispatchEvent(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) override;
 protected:
 	/*
 	|| 実装ヘルパ系

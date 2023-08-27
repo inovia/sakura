@@ -69,6 +69,7 @@ protected:
 	||  実装ヘルパ関数
 	*/
 	BOOL OnCbnDropDown( HWND hwndCtl, int wID ) override;
+	INT_PTR DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam) override;
 	BOOL OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
 	BOOL OnDestroy() override;
 	BOOL OnBnClicked(int wID) override;

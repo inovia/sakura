@@ -60,6 +60,8 @@ protected:
 	/*
 	||  実装ヘルパ関数
 	*/
+	INT_PTR DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam) override;
+	BOOL	OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
 	BOOL	OnBnClicked(int wID) override;
 	LPVOID	GetHelpIdTable(void) override;
 

@@ -2109,9 +2109,21 @@ INT_PTR CPrintPreview::DispatchEvent_PPB(
 	WORD				wNotifyCode;
 	WORD				wID;
 
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hwndDlg, uMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
 	switch( uMsg ){
 
 	case WM_INITDIALOG:
+
+		// ダークモード
+		DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
+
 		::EnableWindow( ::GetDlgItem(hwndDlg, IDC_CHECK_ANTIALIAS), TRUE );
 		return TRUE;
 	case WM_COMMAND:

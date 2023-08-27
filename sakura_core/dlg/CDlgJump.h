@@ -42,6 +42,10 @@ protected:
 	/*
 	||  実装ヘルパ関数
 	*/
+
+	INT_PTR DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam) override;
+	BOOL	OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
+
 	BOOL OnNotify(NMHDR* pNMHDR) override;	//	Oct. 6, 2000 JEPRO added for Spin control
 	BOOL OnCbnSelChange(HWND hwndCtl, int wID) override;
 	BOOL OnBnClicked(int wID) override;

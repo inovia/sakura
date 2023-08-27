@@ -34,6 +34,7 @@
 #include "dlg/CDlgWinSize.h"
 #include "util/shell.h"
 #include "util/os.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "apiwrap/CommonControl.h"
 #include "apiwrap/StdControl.h"
 #include "CSelectLang.h"
@@ -91,11 +92,32 @@ int CDlgWinSize::DoModal(
 	return TRUE;
 }
 
+/*!
+	標準以外のメッセージを捕捉する
+*/
+INT_PTR CDlgWinSize::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
+{
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
+	/* 基底クラスメンバ */
+	return CDialog::DispatchEvent(hWnd, wMsg, wParam, lParam);
+}
+
 /*! 初期化処理
 */
 BOOL CDlgWinSize::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
 	_SetHwnd( hwndDlg );
+
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
 
 	Combo_AddString( GetItemHwnd( IDC_COMBO_WINTYPE ), LS( STR_DLGWINSZ_NORMAL ) );	//L"普通"
 	Combo_AddString( GetItemHwnd( IDC_COMBO_WINTYPE ), LS( STR_DLGWINSZ_MAXIMIZE ) );	//L"最大化"

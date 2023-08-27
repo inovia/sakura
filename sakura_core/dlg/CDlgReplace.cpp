@@ -22,6 +22,7 @@
 #include "view/CEditView.h"
 #include "util/shell.h"
 #include "util/window.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "apiwrap/StdApi.h"
 #include "apiwrap/StdControl.h"
 #include "CSelectLang.h"
@@ -320,9 +321,32 @@ int CDlgReplace::GetData( void )
 	}
 }
 
+/*!
+	標準以外のメッセージを捕捉する
+*/
+INT_PTR CDlgReplace::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
+{
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
+	/* 基底クラスメンバ */
+	return CDialog::DispatchEvent(hWnd, wMsg, wParam, lParam);
+}
+
 BOOL CDlgReplace::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
 	_SetHwnd( hwndDlg );
+
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
+
+
 	//	Jun. 26, 2001 genta
 	//	この位置で正規表現の初期化をする必要はない
 	//	他との一貫性を保つため削除

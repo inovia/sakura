@@ -68,6 +68,7 @@ protected:
 	static void ShareData_IO_Statusbar( CDataProfile& cProfile );	// 2008/6/21 Uchi
 	static void ShareData_IO_Plugin( CDataProfile& cProfile, CMenuDrawer* pcMenuDrawer );	// 2009/11/30 syat
 	static void ShareData_IO_MainMenu( CDataProfile& cProfile );		// 2010/5/15 Uchi
+	static void ShareData_IO_HSP(CDataProfile& cProfile);				// 2023/08/27 inovia
 	static void ShareData_IO_Other( CDataProfile& cProfile );
 
 public:
@@ -84,6 +85,7 @@ public:
 	}
 	static void IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstring>* pData,
 		CommonSetting_MainMenu& mainmenu, bool bOutCmdName);
+	static void IO_HSP(CDataProfile& cProfile, CommonSetting_HSP& hsp);					// 2023/08/27 inovia
 	static void IO_ColorSet( CDataProfile* pcProfile, const WCHAR* pszSecName, ColorInfo* pColorInfoArr );	/* 色設定 I/O */ // Feb. 12, 2006 D.S.Koba
 };
 #endif /* SAKURA_CSHAREDATA_IO_B154E0E0_C606_468E_A3B7_767DDA1DE6EE_H_ */

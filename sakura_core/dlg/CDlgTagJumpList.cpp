@@ -43,6 +43,7 @@
 #include "util/file.h"
 #include "util/window.h"
 #include "util/tchar_convert.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "apiwrap/StdControl.h"
 #include "CSelectLang.h"
 #include "mem/CNativeA.h"
@@ -436,6 +437,11 @@ BOOL CDlgTagJumpList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	::SetWindowLongPtr( GetHwnd(), DWLP_USER, lParam );
 
 	CreateSizeBox();
+
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
+
 	CDialog::OnSize();
 	
 	::GetWindowRect( hwndDlg, &rc );
@@ -598,6 +604,14 @@ BOOL CDlgTagJumpList::OnBnClicked( int wID )
 
 INT_PTR CDlgTagJumpList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam )
 {
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
 	INT_PTR result;
 	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
 

@@ -141,6 +141,7 @@ protected:
 	void SetTree(HTREEITEM hInsertAfter, bool tagjump = false, bool nolabel = false);		/* ツリーコントロールの初期化：汎用品 */
 	void SetTreeFile();				// ツリーコントロールの初期化：ファイルツリー
 	void SetListVB( void );			/* リストビューコントロールの初期化：VisualBasic */		// Jul 10, 2003  little YOSHI
+	void SetListHSP3( void );		/* リストビューコントロールの初期化：HSP3 */			// Aug 10, 2003  inovia
 	void SetDocLineFuncList();
 	void SetItemSelection( int nSelectItemIndex, bool bAllowExpand );
 	void SetItemSelectionForTreeView( HWND hwndTree, int nSelectItemIndex, bool bAllowExpand );

@@ -25,6 +25,7 @@
 #include "plugin/CComplementIfObj.h"
 #include "util/input.h"
 #include "util/os.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "apiwrap/StdApi.h"
 #include "apiwrap/StdControl.h"
 #include "sakura_rc.h"
@@ -447,6 +448,19 @@ INT_PTR CHokanMgr::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lP
 		pmmi->ptMinTrackSize.x = ::GetSystemMetrics(SM_CXVSCROLL) * 4;
 		pmmi->ptMinTrackSize.y = ::GetSystemMetrics(SM_CYHSCROLL) * 4;
 		break;
+
+
+	case WM_CTLCOLORLISTBOX:
+
+		// ダークモード
+		auto& DarkMode = CHsp3DarkMode::GetInstance();
+		if ( DarkMode.IsSystemUseDarkMode())
+		{
+			SetBkColor((HDC)wParam, DarkMode.GetSysColor(COLOR_BTNFACE));
+			SetTextColor((HDC)wParam, DarkMode.GetSysColor(COLOR_BTNTEXT));
+			return (LRESULT)DarkMode.GetSysColorBrush(COLOR_BTNFACE);
+		}
+		break;
 	}
 	return result;
 }
@@ -454,6 +468,20 @@ INT_PTR CHokanMgr::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lP
 BOOL CHokanMgr::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
 	_SetHwnd( hwndDlg );
+
+	// ダークモード
+	const auto& DarkMode = CHsp3DarkMode::GetInstance();
+	HWND hwndList = GetItemHwnd(IDC_LIST_WORDS);
+	if (hwndList)
+	{
+		// コントロールをダークモードに変更する
+		if (DarkMode.IsSystemUseDarkMode())
+		{
+			DarkMode.AllowDarkModeForWindow(hwndList, true);
+			::SetWindowTheme(hwndList, L"DarkMode_Explorer", nullptr);
+		}
+	}
+
 	/* 基底クラスメンバ */
 //-	CreateSizeBox();
 	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );

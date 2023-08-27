@@ -25,6 +25,7 @@
 #include "util/shell.h"
 #include "apiwrap/StdApi.h"
 #include "apiwrap/StdControl.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "CSelectLang.h"
 #include "sakura_rc.h"
 #include "sakura.hh"
@@ -92,8 +93,29 @@ void CDlgFind::ChangeView( LPARAM pcEditView )
 	return;
 }
 
+/*!
+	標準以外のメッセージを捕捉する
+*/
+INT_PTR CDlgFind::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
+{
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
+	/* 基底クラスメンバ */
+	return CDialog::DispatchEvent(hWnd, wMsg, wParam, lParam);
+}
+
 BOOL CDlgFind::OnInitDialog( HWND hwnd, WPARAM wParam, LPARAM lParam )
 {
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog(hwnd, wParam, lParam);
+
 	BOOL bRet = CDialog::OnInitDialog(hwnd, wParam, lParam);
 	SetComboBoxDeleter(GetItemHwnd(IDC_COMBO_TEXT), &m_cRecentSearch);
 

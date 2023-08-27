@@ -18,6 +18,7 @@
 #include "dlg/CDlgInput1.h"
 #include "CEditApp.h"
 #include "Funccode_enum.h"	// EFunctionCode
+#include "hsp/CHsp3DarkMode.h"
 #include "util/shell.h"
 #include "sakura_rc.h"
 #include "sakura.hh"
@@ -104,6 +105,15 @@ INT_PTR CDlgInput1::DispatchEvent(
 	WORD	wNotifyCode;
 	WORD	wID;
 //	int		nRet;
+
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hwndDlg, uMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
 	switch( uMsg ){
 	case WM_INITDIALOG:
 		/* ダイアログデータの設定 */
@@ -114,6 +124,9 @@ INT_PTR CDlgInput1::DispatchEvent(
 		EditCtl_LimitText( ::GetDlgItem( hwndDlg, IDC_EDIT_INPUT1 ), m_nMaxTextLen );	/* 入力サイズ上限 */
 		DlgItem_SetText( hwndDlg, IDC_EDIT_INPUT1, m_cmemText.GetStringPtr() );	/* テキスト */
 		::SetWindowText( ::GetDlgItem( hwndDlg, IDC_STATIC_MSG ), m_pszMessage );	/* メッセージ */
+
+		// ダークモード
+		DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
 
 		return TRUE;
 	case WM_COMMAND:

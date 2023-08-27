@@ -66,6 +66,7 @@ protected:
 
 	BOOL	OnBnClicked(int wID) override;
 	INT_PTR	DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam ) override;
+	BOOL	OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
 
 	void	SetData() override;	/* ダイアログデータの設定 */
 	void	SetData(int nSelIndex);	/* ダイアログデータの設定 */

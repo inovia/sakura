@@ -24,6 +24,7 @@
 #include "outline/CFuncInfoArr.h"// 2002/2/10 aroka ヘッダー整理
 #include "util/shell.h"
 #include "util/os.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "window/CEditWnd.h"
 #include "apiwrap/StdControl.h"
 #include "CSelectLang.h"
@@ -56,6 +57,33 @@ CDlgJump::CDlgJump()
 	m_nPLSQL_E2 = 1;
 
 	return;
+}
+
+/*!
+	標準以外のメッセージを捕捉する
+*/
+INT_PTR CDlgJump::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
+{
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
+	/* 基底クラスメンバ */
+	return CDialog::DispatchEvent(hWnd, wMsg, wParam, lParam);
+}
+
+BOOL CDlgJump::OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam)
+{
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
+
+	/* 基底クラスメンバ */
+	return CDialog::OnInitDialog(hwndDlg, wParam, lParam);
 }
 
 /* モーダルダイアログの表示 */

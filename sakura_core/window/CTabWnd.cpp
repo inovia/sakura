@@ -175,6 +175,18 @@ LRESULT CTabWnd::TabWndDispatchEvent( HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 		m_bVisualStyle = ::IsVisualStyle();
 		break;
 
+	case WM_ERASEBKGND:
+	{
+		// ダークモードの時はタブコントロールの背景を描画しない
+		// (親コントロールの描画がそのまま使われる)
+		const auto& DarkMode = CHsp3DarkMode::GetInstance();
+		if ( DarkMode.IsSystemUseDarkMode() )
+		{
+			return 0L;
+		}
+		break;
+	}
+
 	//default:
 	}
 
@@ -844,10 +856,19 @@ CTabWnd::~CTabWnd()
 	return;
 }
 
+// タブを管理するウィンドウの DispatchEvent
+LRESULT CTabWnd::DispatchEvent(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+	return CWnd::DispatchEvent(hwnd, msg, wp, lp);
+}
+
 /* ウィンドウ オープン */
 HWND CTabWnd::Open( HINSTANCE hInstance, HWND hwndParent )
 {
 	LPCWSTR pszClassName = L"CTabWnd";
+
+	// ダークモード
+	const auto& DarkMode = CHsp3DarkMode::GetInstance();
 
 	/* 初期化 */
 	m_hwndTab    = NULL;
@@ -941,6 +962,13 @@ HWND CTabWnd::Open( HINSTANCE hInstance, HWND hwndParent )
 		lngStyle |= TTS_ALWAYSTIP | TTS_NOPREFIX;	// 従来通りTTS_ALWAYSTIPにしておく
 		::SetWindowLongPtr( hwndToolTips, GWL_STYLE, lngStyle );
 
+		// タブコントロールに割りつけられたツールチップをダークモードに変更する
+		if ( DarkMode.IsSystemUseDarkMode())
+		{
+			DarkMode.AllowDarkModeForWindow(hwndToolTips, true);
+			::SetWindowTheme(hwndToolTips, L"DarkMode_Explorer", nullptr);
+		}
+
 		/* 表示用フォント */
 		/* LOGFONTの初期化 */
 		m_lf = m_pShareData->m_Common.m_sTabBar.m_lf;
@@ -964,6 +992,9 @@ HWND CTabWnd::Open( HINSTANCE hInstance, HWND hwndParent )
 			GetAppInstance(),
 			NULL
 			);
+
+		DarkMode.AllowDarkModeForWindow(m_hwndToolTip, true);
+		::SetWindowTheme(m_hwndToolTip, L"DarkMode_Explorer", nullptr);
 
 		// ツールチップをマルチライン可能にする（SHRT_MAX: Win95でINT_MAXだと表示されない）	// 2007.03.03 ryoji
 		Tooltip_SetMaxTipWidth( m_hwndToolTip, SHRT_MAX );
@@ -1262,6 +1293,9 @@ LRESULT CTabWnd::OnMeasureItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 */
 LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+
 	DRAWITEMSTRUCT* lpdis = (DRAWITEMSTRUCT*)lParam;
 	if( lpdis->CtlType == ODT_MENU )
 	{
@@ -1278,12 +1312,12 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 		int nSysClrBk;
 		if (lpdis->itemState & ODS_SELECTED)
 		{
-			clrText = ::GetSysColor( COLOR_HIGHLIGHTTEXT );
+			clrText = DarkMode.GetSysColor(COLOR_HIGHLIGHTTEXT);
 			nSysClrBk = COLOR_HIGHLIGHT;
 		}
 		else
 		{
-			clrText = ::GetSysColor( COLOR_MENUTEXT );
+			clrText = DarkMode.GetSysColor(COLOR_MENUTEXT);
 			nSysClrBk = COLOR_MENU;
 		}
 
@@ -1320,7 +1354,7 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 		// チェック状態なら外枠描画
 		if( lpdis->itemState & ODS_CHECKED )
 		{
-			gr.SetPen( ::GetSysColor(COLOR_HIGHLIGHT) );
+			gr.SetPen(DarkMode.GetSysColor(COLOR_HIGHLIGHT));
 			gr.SetBrushColor(-1); //NULL_BRUSH
 			::Rectangle( gr, rcItem.left, rcItem.top, rcItem.right, rcItem.bottom );
 		}
@@ -1349,8 +1383,43 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 		// 状態に従ってテキストと背景色を決める
 
 		// 背景描画
-		if( !IsVisualStyle() ) {
-			::MyFillRect( gr, rcItem, COLOR_BTNFACE );
+		if (!IsVisualStyle()) {
+			::MyFillRect(gr, rcItem, COLOR_BTNFACE);
+		}
+		else if ( DarkMode.IsSystemUseDarkMode() )
+		{
+			// ダークモード
+			if ( bSelected)
+			{
+				// アクティブなタブ
+				::MyFillRect(gr, rcItem, RGB(96, 96, 96));
+			}
+			else
+			{
+				// ホット状態を取得(マウスがタブにあるか)
+				POINT pt;
+				GetCursorPos(&pt); // マウスの現在のスクリーン位置を取得
+				ScreenToClient(m_hwndTab, &pt); // タブコントロールのクライアント座標に変換
+
+				TCHITTESTINFO hitTestInfo;
+				hitTestInfo.pt = pt;
+				int hitTabIndex = ::SendMessage(m_hwndTab, TCM_HITTEST, 0, (LPARAM)&hitTestInfo);
+
+				if ( nTabIndex == hitTabIndex)
+				{
+					::MyFillRect(gr, rcItem, RGB(32, 32, 32));
+				}
+				else
+				{
+					::MyFillRect(gr, rcItem, RGB(64, 64, 64));
+				}
+			}
+
+			rcFullItem.left -= 2;
+			rcFullItem.top -= 2;
+			rcFullItem.right += 2;
+			rcFullItem.bottom += 2;
+			
 		}else{
 			CUxTheme& uxTheme = *CUxTheme::getInstance();
 			int iPartId = TABP_TABITEM;
@@ -1365,7 +1434,7 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 						rcFullItem.left += DpiScaleX(1);
 					}
 				}
-				bool bHotTracked = ::GetTextColor(hdc) == GetSysColor(COLOR_HOTLIGHT);
+				bool bHotTracked = ::GetTextColor(hdc) == DarkMode.GetSysColor(COLOR_HOTLIGHT);
 
 				RECT rcBk(rcFullItem);
 				if( bSelected ){
@@ -1424,7 +1493,7 @@ LRESULT CTabWnd::OnDrawItem( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam 
 
 		// テキスト描画
 		COLORREF clrText;
-		clrText = ::GetSysColor(COLOR_MENUTEXT);
+		clrText = DarkMode.GetSysColor(COLOR_MENUTEXT);
 		gr.PushTextForeColor( clrText );
 		gr.SetTextBackTransparent(true);
 		RECT rcText = rcItem;
@@ -1588,20 +1657,28 @@ LRESULT CTabWnd::OnPaint( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
 	PAINTSTRUCT ps;
 	RECT rc;
 
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+
 	//描画対象
 	hdc = ::BeginPaint( hwnd, &ps );
 	CGraphics gr(hdc);
 
 	// 背景を描画する
 	::GetClientRect( hwnd, &rc );
-	::MyFillRect( gr, rc, COLOR_3DFACE );
+	if (!DarkMode.IsSystemUseDarkMode())
+		::MyFillRect( gr, rc, COLOR_3DFACE );
+	else
+		::MyFillRect(gr, rc, RGB(40, 40, 40));
 
 	// ボタンを描画する
 	DrawListBtn( gr, &rc );
 	DrawCloseBtn( gr, &rc );	// 2006.10.21 ryoji 追加
 
 	// 上側に境界線を描画する
-	::DrawEdge(gr, &rc, EDGE_ETCHED, BF_TOP);
+	if (! DarkMode.IsSystemUseDarkMode())
+	{
+		::DrawEdge(gr, &rc, EDGE_ETCHED, BF_TOP);
+	}
 
 	// トップバンドを描画する
 	if( auto nCurSel = TabCtrl_GetCurSel( m_hwndTab ); 0 <= nCurSel ){
@@ -2255,6 +2332,8 @@ void CTabWnd::TabWnd_ActivateFrameWindow( HWND hwnd, bool bForeground )
 */
 void CTabWnd::LayoutTab( void )
 {
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+
 	// フォントを切り替える 2011.12.01 Moca
 	bool bChgFont = (0 != memcmp( &m_lf, &m_pShareData->m_Common.m_sTabBar.m_lf, sizeof(m_lf) ));
 	int nSizeBoxWidth = 0;
@@ -2297,13 +2376,19 @@ void CTabWnd::LayoutTab( void )
 
 	// オーナードロー状態を共通設定に追随させる
 	BOOL bDispTabClose = m_pShareData->m_Common.m_sTabBar.m_bDispTabClose;
+
+	// 強制的に有効化
+	if ( DarkMode.IsSystemUseDarkMode())
+	{
+		bDispTabClose = true;
+	}
+
 	BOOL bOwnerDraw = bDispTabClose;
 	if( bOwnerDraw && !(lStyle & TCS_OWNERDRAWFIXED) ){
 		lStyle |= TCS_OWNERDRAWFIXED;
 	}else if( !bOwnerDraw && (lStyle & TCS_OWNERDRAWFIXED) ){
 		lStyle &= ~TCS_OWNERDRAWFIXED;
 	}
-
 	// タブのアイテムサイズを調整する（等幅のときのサイズやフォント切替時の高さ調整）
 	// ※ 画面のちらつきや体感性能にさほど影響は無さそうなので条件を絞らず毎回 TabCtrl_SetItemSize() を実行する
 	RECT rcTab;
@@ -2546,11 +2631,13 @@ HIMAGELIST CTabWnd::ImageList_Duplicate( HIMAGELIST himl )
 */
 void CTabWnd::DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted )
 {
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+
 	if( bBtnHilighted )
 	{
 		CGraphics gr(hdc);
-		gr.SetPen( ::GetSysColor(COLOR_HIGHLIGHT) );
-		gr.SetBrushColor( ::GetSysColor(COLOR_MENU) );
+		gr.SetPen( DarkMode.GetSysColor(COLOR_HIGHLIGHT) );
+		gr.SetBrushColor( DarkMode.GetSysColor(COLOR_MENU) );
 		::Rectangle( gr, lprcBtn->left, lprcBtn->top, lprcBtn->right, lprcBtn->bottom );
 	}
 }
@@ -2562,6 +2649,7 @@ void CTabWnd::DrawBtnBkgnd( HDC hdc, const LPRECT lprcBtn, BOOL bBtnHilighted )
 */
 void CTabWnd::DrawListBtn( CGraphics& gr, const LPRECT lprcClient )
 {
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
 	static const POINT ptBase[4] = { {4, 8}, {7, 11}, {8, 11}, {11, 8} };	// 描画イメージ形状
 	POINT pt[4];
 
@@ -2576,8 +2664,8 @@ void CTabWnd::DrawListBtn( CGraphics& gr, const LPRECT lprcClient )
 	rcBtn.bottom = rcBtn.top + (rcBtnBase.bottom - rcBtnBase.left);
 
 	int nIndex = m_bListBtnHilighted? COLOR_MENUTEXT: COLOR_BTNTEXT;
-	gr.SetPen( ::GetSysColor( nIndex ) );
-	gr.SetBrushColor( ::GetSysColor( nIndex ) ); //$$ GetSysColorBrushを用いた実装のほうが効率は良い
+	gr.SetPen( DarkMode.GetSysColor( nIndex ) );
+	gr.SetBrushColor( DarkMode.GetSysColor( nIndex ) ); //$$ GetSysColorBrushを用いた実装のほうが効率は良い
 	for( int i = 0; i < _countof(ptBase); i++ )
 	{
 		pt[i].x = ptBase[i].x + rcBtn.left;
@@ -2620,6 +2708,7 @@ void CTabWnd::DrawCloseFigure( CGraphics& gr, const RECT& rcBtn )
 */
 void CTabWnd::DrawCloseBtn( CGraphics& gr, const LPRECT lprcClient )
 {
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
 	static const POINT ptBase2[10][2] = // [xx]描画イメージ形状（矩形10個）
 	{
 		{{3, 4}, {5, 6}},
@@ -2641,7 +2730,7 @@ void CTabWnd::DrawCloseBtn( CGraphics& gr, const LPRECT lprcClient )
 	GetCloseBtnRect( lprcClient, &rcBtn );
 
 	// ボタンの左側にセパレータを描画する	// 2007.02.27 ryoji
-	gr.SetPen( ::GetSysColor( COLOR_3DSHADOW ) );
+	gr.SetPen( DarkMode.GetSysColor( COLOR_3DSHADOW ) );
 	::MoveToEx( gr, rcBtn.left - DpiScaleX(4), rcBtn.top + 1, NULL );
 	::LineTo( gr, rcBtn.left - DpiScaleX(4), rcBtn.bottom - 1 );
 
@@ -2654,8 +2743,8 @@ void CTabWnd::DrawCloseBtn( CGraphics& gr, const LPRECT lprcClient )
 	rcBtn.bottom = rcBtn.top + (rcBtnBase.bottom - rcBtnBase.left);
 
 	int nIndex = m_bCloseBtnHilighted? COLOR_MENUTEXT: COLOR_BTNTEXT;
-	gr.SetPen( ::GetSysColor(nIndex) );
-	gr.SetBrushColor( ::GetSysColor(nIndex) );
+	gr.SetPen( DarkMode.GetSysColor(nIndex) );
+	gr.SetBrushColor( DarkMode.GetSysColor(nIndex) );
 	if( m_pShareData->m_Common.m_sTabBar.m_bDispTabWnd &&
 		!m_pShareData->m_Common.m_sTabBar.m_bDispTabWndMultiWin &&
 		!m_pShareData->m_Common.m_sTabBar.m_bTab_CloseOneWin			// 2007.02.13 ryoji 条件追加（ウィンドウの閉じるボタンは全部閉じる）
@@ -2682,6 +2771,7 @@ void CTabWnd::DrawCloseBtn( CGraphics& gr, const LPRECT lprcClient )
 */
 void CTabWnd::DrawTabCloseBtn( CGraphics& gr, const LPRECT lprcClient, bool selected, bool bHover )
 {
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
 	RECT rcBtn;
 	GetTabCloseBtnRect( lprcClient, &rcBtn, selected );
 
@@ -2694,8 +2784,8 @@ void CTabWnd::DrawTabCloseBtn( CGraphics& gr, const LPRECT lprcClient, bool sele
 	rcBtn.bottom = rcBtn.top + (rcBtnBase.bottom - rcBtnBase.left);
 
 	int nIndex = COLOR_BTNTEXT;
-	gr.SetPen( ::GetSysColor(nIndex) );
-	gr.SetBrushColor( ::GetSysColor(nIndex) );
+	gr.SetPen( DarkMode.GetSysColor(nIndex) );
+	gr.SetBrushColor( DarkMode.GetSysColor(nIndex) );
 	DrawCloseFigure( gr, rcBtn );
 }
 

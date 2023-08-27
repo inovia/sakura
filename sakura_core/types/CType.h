@@ -62,6 +62,7 @@ enum EOutlineType{
 	OUTLINE_ERLANG,		//	2009.08.10 genta Erlangアウトライン解析
 	OUTLINE_XML,		//  2014.12.25 Moca
 	OUTLINE_CPP,		//  2015.11.13 Moca
+	OUTLINE_HSP3,		//	2023.08.22 inovia
 	//	新しいアウトライン解析は必ずこの直前へ挿入
 	OUTLINE_CODEMAX,
 	OUTLINE_BOOKMARK,	//	2001.12.03 hor

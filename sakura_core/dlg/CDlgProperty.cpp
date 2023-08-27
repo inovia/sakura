@@ -43,6 +43,7 @@
 #include "charset/charcode.h"	// rastiv, 2006/06/28
 #include "charset/CCodePage.h"
 #include "charset/CESI.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "io/CBinaryStream.h"
 #include "util/shell.h"
 #include "apiwrap/StdControl.h"
@@ -64,6 +65,33 @@ const DWORD p_helpids[] = {	//12600
 int CDlgProperty::DoModal( HINSTANCE hInstance, HWND hwndParent, LPARAM lParam )
 {
 	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_PROPERTY_FILE, lParam );
+}
+
+/*!
+	標準以外のメッセージを捕捉する
+*/
+INT_PTR CDlgProperty::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
+{
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
+	/* 基底クラスメンバ */
+	return CDialog::DispatchEvent(hWnd, wMsg, wParam, lParam);
+}
+
+BOOL CDlgProperty::OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam)
+{
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
+
+	/* 基底クラスメンバ */
+	return CDialog::OnInitDialog(hwndDlg, wParam, lParam);
 }
 
 BOOL CDlgProperty::OnBnClicked( int wID )

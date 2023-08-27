@@ -37,6 +37,9 @@
 */
 BOOL CEditView::CreateScrollBar()
 {
+	// ダークモード
+	const auto& DarkMode = CHsp3DarkMode::GetInstance();
+
 	SCROLLINFO	si;
 
 	/* スクロールバーの作成 */
@@ -54,6 +57,13 @@ BOOL CEditView::CreateScrollBar()
 		G_AppInstance(),						/* instance owning this window */
 		(LPVOID) NULL						/* pointer not needed */
 	);
+
+	if ( DarkMode.IsSystemUseDarkMode())
+	{
+		DarkMode.AllowDarkModeForWindow( m_hwndVScrollBar, true);
+		::SetWindowTheme(m_hwndVScrollBar, L"DarkMode_Explorer", nullptr);
+	}
+
 	si.cbSize = sizeof( si );
 	si.fMask = SIF_ALL | SIF_DISABLENOSCROLL;
 	si.nMin  = 0;
@@ -81,6 +91,13 @@ BOOL CEditView::CreateScrollBar()
 			G_AppInstance(),						/* instance owning this window */
 			(LPVOID) NULL						/* pointer not needed */
 		);
+
+		if (DarkMode.IsSystemUseDarkMode())
+		{
+			DarkMode.AllowDarkModeForWindow(m_hwndHScrollBar, true);
+			::SetWindowTheme(m_hwndHScrollBar, L"DarkMode_Explorer", nullptr);
+		}
+
 		si.cbSize = sizeof( si );
 		si.fMask = SIF_ALL | SIF_DISABLENOSCROLL;
 		si.nMin  = 0;
@@ -91,6 +108,9 @@ BOOL CEditView::CreateScrollBar()
 		::SetScrollInfo( m_hwndHScrollBar, SB_CTL, &si, TRUE );
 		::ShowScrollBar( m_hwndHScrollBar, SB_CTL, TRUE );
 	}
+
+	
+	
 
 	/* サイズボックス */
 	if( GetDllShareData().m_Common.m_sWindow.m_nFUNCKEYWND_Place == 0 ){	/* ファンクションキー表示位置／0:上 1:下 */

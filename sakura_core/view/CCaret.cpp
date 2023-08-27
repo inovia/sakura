@@ -48,6 +48,7 @@
 #include "charset/CCodePage.h"
 #include "charset/CCodeFactory.h"
 #include "charset/CCodeBase.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "window/CEditWnd.h"
 #include "CSelectLang.h"
 #include "apiwrap/CommonControl.h"
@@ -864,14 +865,31 @@ void CCaret::ShowCaretPosInfo()
 		if( m_bClearStatus ){
 			setStatusText( 0, SBT_NOBORDERS, L"" );
 		}
+
 		int nIndex = 1;
-		setStatusText( nIndex++, 0,             szRowCol );
-		setStatusText( nIndex++, 0,             szEolMode );
-		setStatusText( nIndex++, 0,             szCaretChar );
-		setStatusText( nIndex++, 0,             pszCodeName );
-		setStatusText( nIndex++, SBT_OWNERDRAW, L"" );
-		setStatusText( nIndex++, 0,             szInsMode );
-		setStatusText( nIndex++, 0,             szFontSize );
+
+		const auto& DarkMode = CHsp3DarkMode::GetInstance();
+		if ( DarkMode.IsSystemUseDarkMode())
+		{
+			setStatusText( nIndex++, SBT_OWNERDRAW, szRowCol );
+			setStatusText( nIndex++, SBT_OWNERDRAW, szEolMode );
+			setStatusText( nIndex++, SBT_OWNERDRAW, szCaretChar );
+			setStatusText( nIndex++, SBT_OWNERDRAW, pszCodeName );
+			setStatusText( nIndex++, SBT_OWNERDRAW, L"" );
+			setStatusText( nIndex++, SBT_OWNERDRAW, szInsMode );
+			setStatusText( nIndex++, SBT_OWNERDRAW, szFontSize );
+		}
+		else
+		{
+			setStatusText(nIndex++, 0,				szRowCol);
+			setStatusText(nIndex++, 0,				szEolMode);
+			setStatusText(nIndex++, 0,				szCaretChar);
+			setStatusText(nIndex++, 0,				pszCodeName);
+			setStatusText(nIndex++, SBT_OWNERDRAW,	L"");
+			setStatusText(nIndex++, 0,				szInsMode);
+			setStatusText(nIndex++, 0,				szFontSize);
+		}
+		
 		::SendMessage(hWnd, WM_SETREDRAW, TRUE, 0);
 		InvalidateRect(hWnd, &updatedRect, TRUE);
 		UpdateWindow(hWnd);

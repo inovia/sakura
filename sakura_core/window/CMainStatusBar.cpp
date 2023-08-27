@@ -27,6 +27,7 @@
 #include "window/CEditWnd.h"
 #include "CEditApp.h"
 #include "apiwrap/CommonControl.h"
+#include "hsp/CHsp3DarkMode.h"
 
 CMainStatusBar::CMainStatusBar(CEditWnd* pOwner)
 : m_pOwner(pOwner)
@@ -53,6 +54,10 @@ void CMainStatusBar::CreateStatusBar()
 		CEditApp::getInstance()->GetAppInstance(),
 		nullptr
 	);
+
+	// ダークモード
+	const auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeStatusBar(m_hwndStatusBar);
 
 	/* プログレスバー */
 	m_hwndProgressBar = ::CreateWindowEx(
@@ -149,7 +154,7 @@ bool CMainStatusBar::SetStatusText(int nIndex, int nOption, const WCHAR* pszText
 		// オーナードローの場合は SB_SETTEXT メッセージを無条件に発行するように判定
 		// 本来表示に変化が無い場合には呼び出さない方が表示のちらつきが減るので好ましいが
 		// 判定が難しいので諦める
-		if( nOption == SBT_OWNERDRAW ){
+		if( nOption && SBT_OWNERDRAW ){
 			break;
 		}
 		// オーナードローではない場合で NULLの場合は空文字に置き換える

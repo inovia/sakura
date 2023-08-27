@@ -179,6 +179,7 @@ bool CShareData_IO::ShareData_IO_2( bool bRead )
 	ShareData_IO_Macro( cProfile );
 	ShareData_IO_Statusbar( cProfile );		// 2008/6/21 Uchi
 	ShareData_IO_MainMenu( cProfile );		// 2010/5/15 Uchi
+	ShareData_IO_HSP( cProfile );
 	ShareData_IO_Other( cProfile );
 
 	delete pcMenuDrawer;					// 2010/7/4 Uchi
@@ -2275,6 +2276,46 @@ void CShareData_IO::IO_MainMenu( CDataProfile& cProfile, std::vector<std::wstrin
 				mainmenu.m_nMenuTopIdx[nIdx++] = i;
 			}
 		}
+	}
+}
+
+void CShareData_IO::ShareData_IO_HSP(CDataProfile& cProfile)
+{
+	IO_HSP(cProfile, GetDllShareData().m_Common.m_sHSP);
+}
+
+/*!
+	@brief 共有データのHSPセクションの入出力
+	@param[in,out]	cProfile	INIファイル入出力クラス
+	@param[in,out]	mainmenu	共通設定HSPクラス
+
+	@date 2023/8/27 inovia
+*/
+void CShareData_IO::IO_HSP(CDataProfile& cProfile, CommonSetting_HSP& hsp)
+{
+	const WCHAR*	pszSecName = LTEXT("HSP");
+
+	if ( cProfile.IsReadingMode())
+	{
+		// 読み込み時（設定ファイルに保存しないのでここで初期化する）
+		hsp.m_nVersion = 1;
+		hsp.m_szCommandLineOption[0] = L'\0';
+		hsp.m_szExecuteExternalFile_Name[0] = L'\0';
+		hsp.m_bExecuteExternalFile_CreateObjectOnly = false;
+		hsp.m_bExecuteExternalFile_UTF8Mode = false;
+
+		// ファイルから読み込み
+		if (!cProfile.IOProfileData(pszSecName, LTEXT("ShowDebugWindow"), hsp.m_bShowDebugWindow))
+			hsp.m_bShowDebugWindow = false;
+
+		if (!cProfile.IOProfileData(pszSecName, LTEXT("AssistantAutoStartEnabled"), hsp.m_bHspAssistantAutoStartEnabled))
+			hsp.m_bHspAssistantAutoStartEnabled = true;
+	}
+	else
+	{
+		// 書き込み時
+		cProfile.IOProfileData(pszSecName, LTEXT("ShowDebugWindow"), hsp.m_bShowDebugWindow);
+		cProfile.IOProfileData(pszSecName, LTEXT("AssistantAutoStartEnabled"), hsp.m_bHspAssistantAutoStartEnabled);
 	}
 }
 

@@ -544,43 +544,79 @@ BOOL CViewCommander::HandleCommand(
 		break;
 
 	/* HSP */
-	case F_HSP_OPEN_SRC_FOLDER:
+	case F_HSP_LABEL_LIST:						/* ラベル・関数一覧(&L) */
+		bRet = Command_FUNCLIST((int)lparam1, OUTLINE_DEFAULT);
+		break;
+	case F_HSP_COMPILE_RUN:						/* コンパイル+実行(&C) */
+		Command_HSP_COMPILE_RUN();
+		break;
+	case F_HSP_RUN:								/* 実行(&R) */
+		Command_HSP_RUN();
+		break;
+	case F_HSP_COMPILE_ONLY:					/* コンパイルのみ(&P) */
+		Command_HSP_COMPILE_ONLY();
+		break;
+	case F_HSP_SHOW_ERR:						/* エラー表示(&E) */
+		Command_HSP_SHOW_ERROR();
+		break;
+	case F_HSP_CREATE_OBJ:						/* オブジェクトファイル作成(&B) */
+		Command_HSP_CREATE_OBJ();
+		break;
+	case F_HSP_CREATE_STARTAX:					/* START.AXファイル作成(&S) */
+		Command_HSP_CREATE_STARTAX();
+		break;
+	case F_HSP_CREATE_EXE_AUTO:					/* 実行ファイル自動作成(&A) */
+		Command_HSP_CREATE_EXE_AUTO();
+		break;
+	case F_HSP_RUN_EXTERNAL:					/* 外部ファイル実行(&F) */
+		Command_HSP_RUN_EXTERNAL();
+		break;
+	case F_HSP_RESV_KEYWORD_LIST:				/* 予約キーワード一覧(&K) */
+		Command_HSP_RESERVED_KEYWORD_LIST();
+		break;
+	case F_HSP_RUN_OPTIONS:						/* 起動オプション(&O) */
+		Command_HSP_COMMANDLINE_OPTION();
+		break;
+	case F_HSP_SHOW_DEBUG_WINDOW:				/* Debugウィンドウ表示(&D) */
+		Command_HSP_SHOW_DEBUG_WINDOW();
+		break;
+	case F_HSP_OPEN_SRC_FOLDER:					/* ソースフォルダを開く(&O) */
 		Command_HSP_OPEN_SRC_FOLDER();
 		break;
-	case F_HSP_RUN_ASSIST:
+	case F_HSP_RUN_ASSIST:						/* HSPアシスタント起動(&F) */
 		Command_HSP_RUN_ASSIST();
 		break;
-	case F_HSP_RUN_HSPTV:
+	case F_HSP_RUN_HSPTV:						/* HSPTVブラウザ起動(&H) */
 		Command_HSP_RUN_HSPTV();
 		break;
-	case F_HSP_CREATE_DPM:
+	case F_HSP_CREATE_DPM:						/* 指定フォルダからDPM作成(&D) */
 		Command_HSP_CREATE_DPM();
 		break;
-	case F_HSP_CREATE_PACKOPT:
+	case F_HSP_CREATE_PACKOPT:					/* PACKOPT項目の作成(&P) */
 		Command_HSP_CREATE_PACKOPT();
 		break;
-	case F_HSP_CONVERT_DISH_C:
+	case F_HSP_CONVERT_DISH_C:					/* HSP3Dish / Cソース変換(&C) */
 		Command_HSP_CONVERT_DISH_C();
 		break;
-	case F_HSP_OPEN_HGIMG4_TOOL:
+	case F_HSP_OPEN_HGIMG4_TOOL:				/* HGIMG4ツールを開く(&G) */
 		Command_HSP_OPEN_HGIMG4_TOOL();
 		break;
-	case F_HSP_OPEN_PAINT_TOOL:
+	case F_HSP_OPEN_PAINT_TOOL:					/* ペイントツールを開く(&W) */
 		Command_HSP_OPEN_PAINT_TOOL();
 		break;
-	case F_HSP_OPEN_HELP_SOURCE_EDITOR:
+	case F_HSP_OPEN_HELP_SOURCE_EDITOR:			/* Help Source Editorを開く(&E) */
 		Command_HSP_OPEN_HELP_SOURCE_EDITOR();
 		break;
-	case F_HSP_SEARCH_KEYWORD:
+	case F_HSP_SEARCH_KEYWORD:					/* HSPキーワード検索(&K) */
 		Command_HSP_SEARCH_KEYWORD();
 		break;
-	case F_HSP_OPEN_PG_MANUAL:
+	case F_HSP_OPEN_PG_MANUAL:					/* HSPプログラミング・マニュアルを開く(&P) */
 		Command_HSP_OPEN_PG_MANUAL();
 		break;
-	case F_HSP_OPEN_FUNC_REF:
+	case F_HSP_OPEN_FUNC_REF:					/* HSP命令リファレンスを開く(&R) */
 		Command_HSP_OPEN_FUNC_REF();
 		break;
-	case F_HSP_OPEN_MANUAL_INDEX:
+	case F_HSP_OPEN_MANUAL_INDEX:				/* HSPマニュアル目次(&I) */
 		Command_HSP_OPEN_MANUAL_INDEX();
 		break;
 

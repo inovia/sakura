@@ -42,6 +42,7 @@
 #include "util/window.h"
 #include "util/os.h"
 #include "apiwrap/StdControl.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "CSelectLang.h"
 #include "util/string_ex.h"
 #include "sakura_rc.h"	// 2002/2/10 aroka
@@ -145,9 +146,31 @@ int CDlgPrintSetting::DoModal(
 	return nRet;
 }
 
+/*!
+	標準以外のメッセージを捕捉する
+*/
+INT_PTR CDlgPrintSetting::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
+{
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
+	/* 基底クラスメンバ */
+	return CDialog::DispatchEvent(hWnd, wMsg, wParam, lParam);
+}
+
 BOOL CDlgPrintSetting::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
 	_SetHwnd( hwndDlg );
+
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
+
 
 	/* コンボボックスのユーザー インターフェースを拡張インターフェースにする */
 	Combo_SetExtendedUI( GetItemHwnd( IDC_COMBO_SETTINGNAME ), TRUE );

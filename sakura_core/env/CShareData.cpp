@@ -671,6 +671,18 @@ bool CShareData::InitShareData()
 			CShareData_IO::IO_MainMenu( cProfile, &data, m_pShareData->m_Common.m_sMainMenu, false );
 		}
 
+		// [HSP] タブ
+		{
+			CommonSetting_HSP& sHSP = m_pShareData->m_Common.m_sHSP;
+			sHSP.m_nVersion = 1;
+			sHSP.m_bExecuteExternalFile_CreateObjectOnly = false;
+			sHSP.m_bExecuteExternalFile_UTF8Mode = false;
+			sHSP.m_bHspAssistantAutoStartEnabled = true;
+			sHSP.m_bShowDebugWindow = false;
+			sHSP.m_szCommandLineOption[0] = L'\0';
+			sHSP.m_szExecuteExternalFile_Name[0] = L'\0';
+		}
+
 		{
 			InitTypeConfigs( m_pShareData, *m_pvTypeSettings );
 		}
@@ -1238,9 +1250,9 @@ void CShareData::InitToolButtons(DLLSHAREDATA* pShareData)
 		346,	//コマンド一覧	//Oct. 8, 2000 JEPRO 追加
 		0,
 
-		151,	// コンパイル+実行
-		152,	// オブジェクトファイル作成
-		153,	// 外部ファイル実行
+		151,	// HSP:コンパイル+実行
+		152,	// HSP:オブジェクトファイル作成
+		153,	// HSP:外部ファイル実行
 
 	};
 

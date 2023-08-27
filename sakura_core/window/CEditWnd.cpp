@@ -80,6 +80,8 @@
 #include "recent/CRecentFile.h"
 #include "recent/CRecentFolder.h"
 #include "hsp/CHsp3Font.h"
+#include "hsp/CHsp3DarkMode.h"
+#include "uiparts/CGraphics.h"
 
 //@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたので
 //	定義を削除
@@ -649,6 +651,24 @@ HWND CEditWnd::Create(
 	if(!hWnd)return NULL;
 	m_hWnd = hWnd;
 
+	// ダークモード
+	const auto& DarkMode = CHsp3DarkMode::GetInstance();
+	if (DarkMode.IsSystemUseDarkMode())
+	{
+		DarkMode.AllowDarkModeForApp(true);
+		DarkMode.AllowDarkModeForWindow(hWnd, true);
+		DarkMode.SetDarkModeTitleBar19(hWnd);
+		DarkMode.SetDarkModeTitleBar(hWnd);
+	}
+	//::SetClassLongPtr( hWnd, GCLP_HBRBACKGROUND, (LONG_PTR)::GetStockObject(BLACK_BRUSH));
+	//DarkMode.SetDarkModeHwnd(hWnd);
+	//DarkMode.SetPreferredAppMode(CHsp3DarkMode::APPMODE_ALLOWDARK);
+	//DarkMode.FlushMenuThemes();
+	//DarkMode.RefreshImmersiveColorPolicyState();
+
+	//DarkMode.AllowDarkModeForWindow(hWnd, true);
+	//DarkMode.SetDarkModeHwnd(hWnd);
+
 	// 初回アイドリング検出用のゼロ秒タイマーをセットする	// 2008.04.19 ryoji
 	// ゼロ秒タイマーが発動（初回アイドリング検出）したら MYWM_FIRST_IDLE を起動元プロセスにポストする。
 	// ※起動元での起動先アイドリング検出については CControlTray::OpenNewEditor を参照
@@ -1155,6 +1175,15 @@ LRESULT CEditWnd::DispatchEvent(
 	LRESULT				lRes;
 	CTypeConfig			cTypeNew;
 
+
+	// ダークモード
+	LRESULT lr = 0;
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	if ( DarkMode.WndProcDarkMode( hwnd, uMsg, wParam, lParam, lr))
+	{
+		return lr;
+	}
+
 	switch( uMsg ){
 	case WM_PAINTICON:
 		return 0;
@@ -1217,24 +1246,64 @@ LRESULT CEditWnd::DispatchEvent(
 
 			const WCHAR* pszItemStr = cmemWork.GetStringPtr();
 
-			m_cStatusBar.SetStatusText(0, SBT_NOBORDERS, pszItemStr);
+			int nOption = SBT_NOBORDERS;
+			if ( DarkMode.IsSystemUseDarkMode())
+			{
+				nOption |= SBT_OWNERDRAW;
+			}
+
+			m_cStatusBar.SetStatusText(0, nOption, pszItemStr);
 		}
 		return 0;
 
 	case WM_DRAWITEM:
 		idCtl = (UINT) wParam;				/* コントロールのID */
 		lpdis = (DRAWITEMSTRUCT*) lParam;	/* 項目描画情報 */
+
+		//::SetBkColor(lpdis->hDC, RGB(255, 0, 0));
+		//::SetBkMode(lpdis->hDC, OPAQUE);
+
 		if( IDW_STATUSBAR == idCtl ){
+
+			if ( DarkMode.IsSystemUseDarkMode())
+			{
+				// ステータスバーの指定した項目が SBT_OWNERDRAW かどうかを確認
+				LPARAM result = SendMessage(lpdis->hwndItem, SB_GETTEXTLENGTH, (WPARAM)lpdis->itemID, 0);
+				// auto bOwnerDraw = HIWORD(result) & SBT_OWNERDRAW;
+
+				if (lpdis->itemID != 5/* && (lpdis->itemAction & ODA_DRAWENTIRE) == ODA_DRAWENTIRE*/)
+				{
+					::SetTextColor(lpdis->hDC, DarkMode.GetSysColor(COLOR_BTNTEXT));
+					::SetBkMode(lpdis->hDC, TRANSPARENT);
+
+					// テキストを取得
+					LPCTSTR lpszText = (LPCTSTR)lpdis->itemData;
+					::DrawText(lpdis->hDC, lpszText, -1, &lpdis->rcItem, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+				}
+				//else if (0 == lpdis->itemID)
+				//{
+				//	::SetTextColor(lpdis->hDC, DarkMode.GetSysColor(COLOR_BTNTEXT));
+				//	::SetBkMode(lpdis->hDC, TRANSPARENT);
+
+				//	// テキストを取得
+				//	LPCTSTR lpszText = (LPCTSTR)lpdis->itemData;
+				//	::DrawText(lpdis->hDC, lpszText, -1, &lpdis->rcItem, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+				//}
+			}
+
 			if( 5 == lpdis->itemID ){ // 2003.08.26 Moca idがずれて作画されなかった
 				int	nColor;
 				if( m_pShareData->m_sFlags.m_bRecordingKeyMacro	/* キーボードマクロの記録中 */
 				 && m_pShareData->m_sFlags.m_hwndRecordingKeyMacro == GetHwnd()	/* キーボードマクロを記録中のウィンドウ */
 				){
-					nColor = COLOR_BTNTEXT;
+					nColor = DarkMode.GetSysColor(COLOR_BTNTEXT);
 				}else{
-					nColor = COLOR_3DSHADOW;
+					if ( DarkMode.IsSystemUseDarkMode())
+						nColor = RGB(128, 128, 128);
+					else
+						nColor = DarkMode.GetSysColor(COLOR_3DSHADOW);
 				}
-				::SetTextColor( lpdis->hDC, ::GetSysColor( nColor ) );
+				::SetTextColor( lpdis->hDC, nColor);
 				::SetBkMode( lpdis->hDC, TRANSPARENT );
 
 				// 2003.08.26 Moca 上下中央位置に作画
@@ -3335,6 +3404,15 @@ LRESULT CEditWnd::OnSize2( WPARAM wParam, LPARAM lParam, bool bUpdateStatus )
 		TRUE
 	);
 	//@@@ To 2003.05.31 MIK
+
+	/* TODO: ダークモード時の再描画*/
+	const auto& DarkMode = CHsp3DarkMode::GetInstance();
+	if ( DarkMode.IsSystemUseDarkMode())
+	{
+		// 印刷プレビューモードでなければ
+		if (!m_pPrintPreview)
+			GetEditWnd().GetActiveView().GetCaret().ShowCaretPosInfo();
+	}
 
 	/* 印刷プレビューモードか */
 //@@@ 2002.01.14 YAZAKI 印刷プレビューをCPrintPreviewに独立させたことによる変更

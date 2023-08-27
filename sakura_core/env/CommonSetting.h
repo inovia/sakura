@@ -713,6 +713,19 @@ struct CommonSetting_MainMenu
 	bool 			m_bMainMenuKeyParentheses;			//!< アクセスキーを( )付で表示
 };
 
+//! HSP固有の設定
+struct CommonSetting_HSP
+{
+	int				m_nVersion;										//!< (未保存)本構造体のバージョン
+	wchar_t			m_szCommandLineOption[4096];					//!< (未保存)コマンドライン引数
+	wchar_t			m_szExecuteExternalFile_Name[_MAX_PATH];		//!< (未保存)外部ファイル実行のファイル名
+	bool			m_bExecuteExternalFile_CreateObjectOnly;		//!< (未保存)外部ファイル実行のオブジェクト作成のみ
+	bool			m_bShowDebugWindow;								//!< Debugウィンドウ表示
+	bool			m_bHspAssistantAutoStartEnabled;				//!< 起動時にHSPアシスタントを自動起動
+	bool			m_bExecuteExternalFile_UTF8Mode;				//!< (未保存)外部ファイル実行のUTF-8モード
+	bool			m_PADDING[4];									//!< (未保存)未使用: Padding領域
+};
+
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                                                             //
 //                          まとめ                             //
@@ -747,5 +760,7 @@ struct CommonSetting
 	CommonSetting_Statusbar			m_sStatusbar;		//!< ステータスバー		// 2008/6/21 Uchi
 	CommonSetting_Plugin			m_sPlugin;			//!< プラグイン 2009/11/30 syat
 	CommonSetting_MainMenu			m_sMainMenu;		//!< メインメニュー		// 2010/5/15 Uchi
+	//
+	CommonSetting_HSP				m_sHSP;				//!< HSP				// 2023/08/26 inovia
 };
 #endif /* SAKURA_COMMONSETTING_2CBDBC26_EA7F_466E_842F_AFB0D93207D2_H_ */

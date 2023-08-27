@@ -51,6 +51,7 @@ public:
 
 protected:
 
+	INT_PTR DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam) override;
 	BOOL OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
 	BOOL OnBnClicked(int wID) override;
 	BOOL OnEnSetFocus(HWND hwndCtl, int wID) override;

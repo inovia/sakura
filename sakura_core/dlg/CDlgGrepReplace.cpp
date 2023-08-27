@@ -24,6 +24,7 @@
 #include "util/shell.h"
 #include "util/os.h"
 #include "util/window.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "env/DLLSHAREDATA.h"
 #include "env/CSakuraEnvironment.h"
 #include "apiwrap/StdApi.h"
@@ -127,9 +128,31 @@ int CDlgGrepReplace::DoModal( HINSTANCE hInstance, HWND hwndParent, const WCHAR*
 	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_GREP_REPLACE, lParam );
 }
 
+/*!
+	標準以外のメッセージを捕捉する
+*/
+INT_PTR CDlgGrepReplace::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
+{
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
+	INT_PTR result;
+	result = CDialog::DispatchEvent(hWnd, wMsg, wParam, lParam);
+	return result;
+}
+
 BOOL CDlgGrepReplace::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
 	_SetHwnd( hwndDlg );
+
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
 
 	/* コンボボックスのユーザー インターフェースを拡張インターフェースにする */
 	Combo_SetExtendedUI( GetItemHwnd( IDC_COMBO_TEXT2 ), TRUE );

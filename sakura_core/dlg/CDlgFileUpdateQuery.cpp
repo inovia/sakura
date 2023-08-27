@@ -34,12 +34,35 @@
 #include "StdAfx.h"
 #include "dlg/CDlgFileUpdateQuery.h"
 #include "apiwrap/StdControl.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "CSelectLang.h"
 #include "sakura_rc.h"
 #include "String_define.h"
 
+/*!
+	標準以外のメッセージを捕捉する
+*/
+INT_PTR CDlgFileUpdateQuery::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
+{
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
+	/* 基底クラスメンバ */
+	return CDialog::DispatchEvent(hWnd, wMsg, wParam, lParam);
+}
+
+
 BOOL CDlgFileUpdateQuery::OnInitDialog( HWND hWnd, WPARAM wParam, LPARAM lParam )
 {
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog(hWnd, wParam, lParam);
+
 	::DlgItem_SetText( hWnd, IDC_UPDATEDFILENAME, m_pFilename );
 	::DlgItem_SetText( hWnd, IDC_QUERYRELOADMSG, m_bModified ?
 		LS(STR_ERR_DLGUPQRY1):LS(STR_ERR_DLGUPQRY2) );

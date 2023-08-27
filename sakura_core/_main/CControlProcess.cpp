@@ -153,6 +153,9 @@ bool CControlProcess::InitializeProcess()
 	
 	/* 共有メモリを初期化 */
 	if( !CProcess::InitializeProcess() ){
+
+		// TODO: 微妙。初期化した扱いにしないとエディタプロセスが待機してしまう。
+		::SetEvent(m_hEventCPInitialized);
 		return false;
 	}
 

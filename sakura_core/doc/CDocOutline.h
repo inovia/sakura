@@ -51,6 +51,7 @@ public:
 	void	MakeTopicList_wztxt( CFuncInfoArr* pcFuncInfoArr );					//!< 階層付きテキスト アウトライン解析 // 2003.05.20 zenryaku
 	void	MakeTopicList_html(CFuncInfoArr* pcFuncInfoArr, bool bXml);			//!< HTML アウトライン解析 // 2003.05.20 zenryaku
 	void	MakeTopicList_tex(CFuncInfoArr* pcFuncInfoArr);						//!< TeX アウトライン解析 // 2003.07.20 naoh
+	void	MakeFuncList_HSP3(CFuncInfoArr* pcFuncInfoArr);						//!< HSP3 アウトライン解析 // 2023.08.22 inovia
 	void	MakeFuncList_RuleFile( CFuncInfoArr* pcFuncInfoArr,
 								   std::wstring& sTitleOverride );				//!< ルールファイルを使ってリスト作成 2002.04.01 YAZAKI
 	int		ReadRuleFile( const WCHAR* pszFilename, SOneRule* pcOneRule,

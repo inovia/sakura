@@ -32,6 +32,7 @@
 #include "version.h"
 #include "util/std_macro.h"
 #include "env/DLLSHAREDATA.h"
+#include "hsp/CHsp3DarkMode.h"
 
 /*!
 	Windows Entry point
@@ -65,6 +66,17 @@ int WINAPI wWinMain(
 
 		setlocale( LC_ALL, "Japanese" ); //2007.08.16 kobake 追加
 		::OleInitialize( NULL );	// 2009.01.07 ryoji 追加
+
+		auto& DarkMode = CHsp3DarkMode::GetInstance();
+		if ( DarkMode.Load())
+		{
+			// DarkMode.AllowDarkModeForApp(true);
+			DarkMode.SetPreferredAppMode(
+				CHsp3DarkMode::PreferredAppMode::APPMODE_DEFAULT);
+			DarkMode.SetPreferredAppMode(
+				CHsp3DarkMode::PreferredAppMode::APPMODE_ALLOWDARK);
+			DarkMode.RefreshImmersiveColorPolicyState();
+		}
 	}
 	
 	//開発情報

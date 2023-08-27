@@ -362,6 +362,17 @@ public:
 //	To Here 2006.12.03 maru 引数の拡張
 
 	/* HSP */
+	void Command_HSP_RESERVED_KEYWORD_LIST(void);
+	void Command_HSP_COMPILE_RUN(void);
+	void Command_HSP_RUN(void);
+	void Command_HSP_COMPILE_ONLY(void);
+	void Command_HSP_SHOW_ERROR(void);
+	void Command_HSP_CREATE_OBJ(void);
+	void Command_HSP_CREATE_STARTAX(void);
+	void Command_HSP_CREATE_EXE_AUTO(void);
+	void Command_HSP_RUN_EXTERNAL(void);
+	void Command_HSP_COMMANDLINE_OPTION(void);
+	void Command_HSP_SHOW_DEBUG_WINDOW(void);
 	void Command_HSP_OPEN_SRC_FOLDER(void);
 	void Command_HSP_RUN_ASSIST(void);
 	void Command_HSP_RUN_HSPTV(void);
@@ -429,6 +440,8 @@ private:
 	void AlertNotFound(HWND hwnd, bool bReplaceAll, LPCWSTR format, ...);
 	void DelCharForOverwrite(const wchar_t* pszInput, int nLen);	// 上書き用の一文字削除	// 2009.04.11 ryoji
 	bool Sub_PreProcTagJumpByTagsFile( WCHAR* szCurrentPath, int count ); // タグジャンプの前処理
+	bool Sub_HSP_GetFileName( WCHAR* szHSPTmpFilePath, WCHAR* szHSPFilePath, WCHAR* szHSPObjFilePath);
+
 public:
 	CLogicInt ConvertEol(const wchar_t* pszText, CLogicInt nTextLen, wchar_t* pszConvertedText);
 	void Sub_BoxSelectLock( int flags );

@@ -46,6 +46,7 @@
 #include "CEditApp.h"
 #include "util/shell.h"
 #include "util/window.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "apiwrap/StdControl.h"
 #include "sakura_rc.h"
 #include "String_define.h"
@@ -76,10 +77,22 @@ INT_PTR CPropCommon::DlgProc(
 	HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 )
 {
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hwndDlg, uMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
 	PROPSHEETPAGE*	pPsp;
 	CPropCommon*	pCPropCommon;
 	switch( uMsg ){
 	case WM_INITDIALOG:
+
+		// ダークモード
+		DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
+
 		pPsp = (PROPSHEETPAGE*)lParam;
 		pCPropCommon = ( CPropCommon* )(pPsp->lParam);
 		if( NULL != pCPropCommon ){
@@ -106,9 +119,21 @@ INT_PTR CPropCommon::DlgProc2(
 	HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
 )
 {
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hwndDlg, uMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
 	CPropCommon*	pCPropCommon;
 	switch( uMsg ){
 	case WM_INITDIALOG:
+
+		// ダークモード
+		DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
+
 		pCPropCommon = ( CPropCommon* )(lParam);
 		if( NULL != pCPropCommon ){
 			UpdateDialogFont( hwndDlg );

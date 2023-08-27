@@ -50,6 +50,7 @@
 #include "config/maxdata.h" //MAX_MRU
 #include "env/CShareData.h"
 #include "env/DLLSHAREDATA.h"
+#include "_main/CProcess.h"
 #include "doc/CEditDoc.h"
 #include "_main/CAppMode.h"
 #include "CEditApp.h"
@@ -1366,8 +1367,60 @@ bool IsFuncChecked( const CEditDoc* pcEditDoc, const DLLSHAREDATA* pShareData, E
 	case F_OUTLINE_TOGGLE: // 20060201 aroka アウトラインウィンドウ
 		// ToDo:ブックマークリストが出ているときもへこんでしまう。
 		return GetEditWnd().m_cDlgFuncList.GetHwnd() != NULL;
+	case F_HSP_SHOW_DEBUG_WINDOW:
+	{
+		const auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+		return Hsp3.IsShowDebugWindow();
+	}
+		
 	}
 	//End 2004.07.14 Kazika
+
+	return false;
+}
+
+/* 機能がチェック項目か調べる */
+bool IsFuncCheckItem(EFunctionCode nId)
+{
+	switch (nId)
+	{
+		case F_FILE_REOPEN_SJIS:
+		case F_FILE_REOPEN_JIS:
+		case F_FILE_REOPEN_EUC:;
+		case F_FILE_REOPEN_LATIN1:
+		case F_FILE_REOPEN_UNICODE:
+		case F_FILE_REOPEN_UNICODEBE:
+		case F_FILE_REOPEN_UTF8:
+		case F_FILE_REOPEN_CESU8:
+		case F_FILE_REOPEN_UTF7:
+		case F_RECKEYMACRO:
+		case F_SHOWTOOLBAR:
+		case F_SHOWFUNCKEY:
+		case F_SHOWTAB:
+		case F_SHOWSTATUSBAR:
+		case F_SHOWMINIMAP:
+		case F_TMPWRAPNOWRAP:
+		case F_TMPWRAPSETTING:
+		case F_TMPWRAPWINDOW:
+		case F_SELECT_COUNT_MODE:
+		case F_VIEWMODE:
+		case F_CHGMOD_EOL_CRLF:
+		case F_CHGMOD_EOL_LF:
+		case F_CHGMOD_EOL_CR:
+		case F_CHGMOD_INS:
+		case F_TOGGLE_KEY_SEARCH:
+		case F_BIND_WINDOW:
+		case F_TOPMOST:
+		case F_ISEARCH_NEXT:
+		case F_ISEARCH_PREV:
+		case F_ISEARCH_REGEXP_NEXT:
+		case F_ISEARCH_REGEXP_PREV:
+		case F_ISEARCH_MIGEMO_NEXT:
+		case F_ISEARCH_MIGEMO_PREV:
+		case F_OUTLINE_TOGGLE:
+		case F_HSP_SHOW_DEBUG_WINDOW:
+		return true;
+	}
 
 	return false;
 }

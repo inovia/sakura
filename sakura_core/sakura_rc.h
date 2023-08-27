@@ -792,6 +792,9 @@
 #define IDC_COMBO_EXCLUDE_FILE          1735
 #define IDC_UPDOWN_BACKIMG_TRANSPARENCY 1736
 #define IDC_CHECK_VISTA_STYLE_FILEDIALOG 1737
+#define IDC_HSP_EDIT_INPUT              1738
+#define IDC_HSP_CHECK1                  1739
+#define IDC_HSP_CHECK2                  1740
 #define IDS_AUTHOR_PAGE                 4054
 #define IDS_ABOUT_DESCRIPTION           4056
 #define IDD_TYPELIST                    5000
@@ -826,15 +829,17 @@
 #define IDD_PLUGIN_OPTION               5221
 #define IDD_PROFILEMGR                  5222
 #define IDD_FILETREE                    5223
+#define IDD_HSP_REPORTS                 5224
+#define IDD_HSP_INPUT2                  5225
 #define IDC_STATIC                      -1
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        5224
+#define _APS_NEXT_RESOURCE_VALUE        5226
 #define _APS_NEXT_COMMAND_VALUE         101
-#define _APS_NEXT_CONTROL_VALUE         1738
+#define _APS_NEXT_CONTROL_VALUE         1740
 #define _APS_NEXT_SYMED_VALUE           10000
 #endif
 #endif

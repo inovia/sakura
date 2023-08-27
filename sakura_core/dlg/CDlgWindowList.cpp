@@ -24,6 +24,7 @@
 #include "Funccode_enum.h"
 #include "util/shell.h"
 #include "util/window.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "apiwrap/StdApi.h"
 #include "debug/Debug2.h"
 #include "util/string_ex.h"
@@ -181,6 +182,14 @@ LPVOID CDlgWindowList::GetHelpIdTable()
 
 INT_PTR CDlgWindowList::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
 {
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
 	INT_PTR result;
 	result = CDialog::DispatchEvent(hWnd, wMsg, wParam, lParam);
 
@@ -195,6 +204,10 @@ BOOL CDlgWindowList::OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam)
 	_SetHwnd(hwndDlg);
 
 	CreateSizeBox();
+
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
 
 	RECT rc;
 	::GetWindowRect(hwndDlg, &rc);

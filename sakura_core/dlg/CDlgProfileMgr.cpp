@@ -35,6 +35,7 @@
 #include "util/file.h"
 #include "util/shell.h"
 #include "util/window.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "apiwrap/StdControl.h"
 #include "CSelectLang.h"
 #include "func/Funccode.h"
@@ -278,6 +279,14 @@ BOOL CDlgProfileMgr::OnBnClicked( int wID )
 
 INT_PTR CDlgProfileMgr::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam )
 {
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
 	INT_PTR result;
 	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
 	switch( wMsg ){
@@ -296,6 +305,16 @@ INT_PTR CDlgProfileMgr::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPAR
 		}
 	}
 	return result;
+}
+
+BOOL CDlgProfileMgr::OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam)
+{
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
+
+	/* 基底クラスメンバ */
+	return CDialog::OnInitDialog(hwndDlg, wParam, lParam);
 }
 
 void CDlgProfileMgr::UpdateIni()

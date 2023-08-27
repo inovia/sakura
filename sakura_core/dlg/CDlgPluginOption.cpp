@@ -37,6 +37,7 @@
 #include "util/window.h"
 #include "util/string_ex2.h"
 #include "util/module.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "apiwrap/StdControl.h"
 #include "CSelectLang.h"
 #include "sakura_rc.h"
@@ -286,6 +287,23 @@ int CDlgPluginOption::GetData( void )
 	return TRUE;
 }
 
+/*!
+	標準以外のメッセージを捕捉する
+*/
+INT_PTR CDlgPluginOption::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
+{
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
+	/* 基底クラスメンバ */
+	return CDialog::DispatchEvent(hWnd, wMsg, wParam, lParam);
+}
+
 BOOL CDlgPluginOption::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
 	HWND		hwndList;
@@ -294,6 +312,10 @@ BOOL CDlgPluginOption::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam 
 	long		lngStyle;
 
 	_SetHwnd( hwndDlg );
+
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
 
 	hwndList = GetDlgItem( hwndDlg, IDC_LIST_PLUGIN_OPTIONS );
 	::GetWindowRect( hwndList, &rc );

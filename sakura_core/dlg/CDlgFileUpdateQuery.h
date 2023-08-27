@@ -51,6 +51,7 @@ public:
 	, m_bModified( IsModified )
 	{
 	}
+	INT_PTR DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam) override;
 	BOOL OnInitDialog( HWND hWnd, WPARAM wParam, LPARAM lParam ) override;
 	BOOL OnBnClicked( int id ) override;
 

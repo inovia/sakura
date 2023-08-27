@@ -27,6 +27,7 @@
 #include "util/module.h"
 #include "util/shell.h"
 #include "util/window.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "sakura_rc.h" // 2002/2/10 aroka 復帰
 #include "version.h"
 #include "apiwrap/StdApi.h"
@@ -127,6 +128,14 @@ const DWORD p_helpids[] = {	//12900
 */
 INT_PTR CDlgAbout::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam )
 {
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
 	INT_PTR result;
 	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
 	switch( wMsg ){
@@ -158,6 +167,10 @@ int CDlgAbout::DoModal( HINSTANCE hInstance, HWND hwndParent )
 BOOL CDlgAbout::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
 	_SetHwnd( hwndDlg );
+
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
 
 	WCHAR			szFile[_MAX_PATH];
 
@@ -458,7 +471,20 @@ LRESULT CALLBACK CUrlWnd::UrlWndProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 
 		// テキスト描画
 		SetBkMode( hdc, TRANSPARENT );
-		SetTextColor( hdc, pUrlWnd->m_bHilighted? RGB( 0x84, 0, 0 ): RGB( 0, 0, 0xff ) );
+		{
+			const auto& DarkMode = CHsp3DarkMode::GetInstance();
+			if (DarkMode.IsSystemUseDarkMode())
+			{
+				// ダークモード
+				SetTextColor(hdc, pUrlWnd->m_bHilighted ? RGB(0x84, 0, 0) : RGB(0x80, 0x80, 0xff));
+			}
+			else
+			{
+				// 非ダークモード
+				SetTextColor(hdc, pUrlWnd->m_bHilighted ? RGB(0x84, 0, 0) : RGB(0, 0, 0xff));
+			}
+		}
+		
 		hFontOld = (HFONT)SelectObject( hdc, (HGDIOBJ)hFont );
 		TextOut( hdc, ::DpiScaleX( 2 ), 0, szText, wcslen( szText ) );
 		SelectObject( hdc, (HGDIOBJ)hFontOld );

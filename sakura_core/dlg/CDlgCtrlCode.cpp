@@ -35,6 +35,7 @@
 #include "dlg/CDlgCtrlCode.h"
 #include "func/Funccode.h"
 #include "util/shell.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "CSelectLang.h"
 #include "basis/CMyString.h"
 #include "sakura_rc.h"
@@ -199,6 +200,23 @@ int CDlgCtrlCode::GetData( void )
 	return TRUE;
 }
 
+/*!
+	標準以外のメッセージを捕捉する
+*/
+INT_PTR CDlgCtrlCode::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
+{
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
+	/* 基底クラスメンバ */
+	return CDialog::DispatchEvent(hWnd, wMsg, wParam, lParam);
+}
+
 BOOL CDlgCtrlCode::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
 	HWND		hwndList;
@@ -206,6 +224,10 @@ BOOL CDlgCtrlCode::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	RECT		rc;
 
 	_SetHwnd( hwndDlg );
+
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
 
 	hwndList = GetDlgItem( hwndDlg, IDC_LIST_CTRLCODE );
 	::GetWindowRect( hwndList, &rc );

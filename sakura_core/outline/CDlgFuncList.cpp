@@ -32,6 +32,7 @@
 #include "window/CEditWnd.h"	//	2006/2/11 aroka 追加
 #include "doc/CEditDoc.h"
 #include "uiparts/CGraphics.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "util/shell.h"
 #include "util/os.h"
 #include "util/input.h"
@@ -232,6 +233,14 @@ CDlgFuncList::CDlgFuncList() : CDialog(true)
 */
 INT_PTR CDlgFuncList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam )
 {
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if ( DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
 	INT_PTR result;
 	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
 
@@ -487,6 +496,11 @@ void CDlgFuncList::SetData()
 		m_nViewType = VIEWTYPE_TREE;
 		SetTree(hInsertAfter);
 		::SetWindowText( GetHwnd(), L"XML" );
+	}
+	else if ( OUTLINE_HSP3 == m_nListType ){ // HSP3
+		m_nViewType = VIEWTYPE_LIST;
+		SetListHSP3();
+		::SetWindowText(GetHwnd(), L"HSP3");
 	}
 	else if ( OUTLINE_FILETREE == m_nListType ){
 		m_nViewType = VIEWTYPE_TREE;
@@ -1370,6 +1384,116 @@ void CDlgFuncList::SetListVB (void)
 	return;
 }
 
+/*!
+  リストビューコントロールの初期化：HSP3
+  @date Aug 22, 2023  inovia
+*/
+void CDlgFuncList::SetListHSP3(void)
+{
+	int				i;
+	WCHAR			szType[64];
+	const CFuncInfo*	pcFuncInfo;
+	LV_ITEM			item;
+	HWND			hwndList;
+
+	::EnableWindow(GetItemHwnd(IDC_BUTTON_COPY), TRUE);
+
+	hwndList = GetItemHwnd(IDC_LIST_FL);
+
+	m_cmemClipText.SetString(L"");
+	{
+		const int nBuffLenTag = 17 + wcslen(m_pcFuncInfoArr->m_szFilePath);
+		const int nNum = m_pcFuncInfoArr->GetNum();
+		int nBuffLen = 0;
+		for (int i = 0; i < nNum; i++)
+		{
+			const CFuncInfo* pcFuncInfo = m_pcFuncInfoArr->GetAt(i);
+			nBuffLen += pcFuncInfo->m_cmemFuncName.GetStringLength();
+		}
+		m_cmemClipText.AllocStringBuffer(nBuffLen + nBuffLenTag * nNum);
+	}
+
+	WCHAR			szText[2048];
+	for (i = 0; i < m_pcFuncInfoArr->GetNum(); ++i)
+	{
+		/* 現在の解析結果要素 */
+		pcFuncInfo = m_pcFuncInfoArr->GetAt(i);
+
+		//	From Here Apr. 23, 2005 genta 行番号を左端へ
+		/* 行番号の表示 false=折り返し単位／true=改行単位 */
+		if (m_bLineNumIsCRLF)
+		{
+			auto_sprintf(szText, L"%d", pcFuncInfo->m_nFuncLineCRLF);
+		}
+		else
+		{
+			auto_sprintf(szText, L"%d", pcFuncInfo->m_nFuncLineLAYOUT);
+		}
+		item.mask = LVIF_TEXT | LVIF_PARAM;
+		item.pszText = szText;
+		item.iItem = i;
+		item.iSubItem = FL_COL_ROW;
+		item.lParam = i;
+		ListView_InsertItem(hwndList, &item);
+
+		item.mask = LVIF_TEXT;
+		item.pszText = const_cast<WCHAR*>(pcFuncInfo->m_cmemFuncName.GetStringPtr());
+		item.iItem = i;
+		item.iSubItem = FL_COL_NAME;
+		ListView_SetItem(hwndList, &item);
+
+		item.mask = LVIF_TEXT;
+		switch ( pcFuncInfo->m_nInfo)
+		{
+			case 0:
+				wcscpy(szType, LS(STR_DLGFNCLST_HSP3_LABEL));
+				break;
+			case 1:
+				wcscpy(szType, LS(STR_DLGFNCLST_HSP3_DEFFUNC));
+				break;
+			case 2:
+				wcscpy(szType, LS(STR_DLGFNCLST_HSP3_DEFCFUNC));
+				break;
+			default:
+				szType[0] = L'\0';
+				break;
+		}
+
+		item.pszText = szType;
+		item.iItem = i;
+		item.iSubItem = FL_COL_REMARK;
+		ListView_SetItem(hwndList, &item);
+
+		/* クリップボードにコピーするテキストを編集 */
+		auto_sprintf(
+			szText,
+			L"%s(%d): ",
+			m_pcFuncInfoArr->m_szFilePath.c_str(),		/* 解析対象ファイル名 */
+			pcFuncInfo->m_nFuncLineCRLF					/* 検出行番号 */
+		);
+		m_cmemClipText.AppendString(szText);
+		// "%s(%s)\r\n"
+		m_cmemClipText.AppendNativeData(pcFuncInfo->m_cmemFuncName);
+		m_cmemClipText.AppendString(L"(");
+		m_cmemClipText.AppendString(item.pszText);
+		m_cmemClipText.AppendString(L")\r\n");
+	}
+
+	//2002.02.08 hor Listは列幅調整とかを実行する前に表示しとかないと変になる
+	::ShowWindow(hwndList, SW_SHOW);
+
+	/* 列の幅をデータに合わせて調整 */
+	ListView_SetColumnWidth(hwndList, FL_COL_ROW, LVSCW_AUTOSIZE);
+	ListView_SetColumnWidth(hwndList, FL_COL_COL, 0);
+	ListView_SetColumnWidth(hwndList, FL_COL_NAME, LVSCW_AUTOSIZE);
+	ListView_SetColumnWidth(hwndList, FL_COL_REMARK, LVSCW_AUTOSIZE);
+	ListView_SetColumnWidth(hwndList, FL_COL_ROW, ListView_GetColumnWidth(hwndList, FL_COL_ROW) + 16);
+	ListView_SetColumnWidth(hwndList, FL_COL_NAME, ListView_GetColumnWidth(hwndList, FL_COL_NAME) + 16);
+	ListView_SetColumnWidth(hwndList, FL_COL_REMARK, ListView_GetColumnWidth(hwndList, FL_COL_REMARK) + 16);
+
+	return;
+}
+
 /*! 汎用ツリーコントロールの初期化：CFuncInfo::m_nDepthを利用して親子を設定
 
 	@param[in] tagjump タグジャンプ形式で出力する
@@ -1880,6 +2004,29 @@ BOOL CDlgFuncList::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 		}
 	}
 
+	// ダークモード
+	{
+		auto& DarkMode = CHsp3DarkMode::GetInstance();
+		DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
+
+		// ツールチップを取得
+		if ( m_hwndToolTip != nullptr)
+		{
+			DarkMode.AllowDarkModeForWindow(m_hwndToolTip, true);
+			::SetWindowTheme(m_hwndToolTip, L"DarkMode_Explorer", nullptr);
+		}
+
+		// ツリービュー
+		HWND hWndTree = GetItemHwnd(IDC_TREE_FL);
+		if ( hWndTree)
+		{
+			::SendMessage(hWndTree,
+				TVM_SETTEXTCOLOR, 0, DarkMode.GetSysColor(COLOR_BTNTEXT));
+			::SendMessage(hWndTree,
+				TVM_SETBKCOLOR, 0, DarkMode.GetSysColor(COLOR_BTNFACE));
+		}
+	}
+
 	return CDialog::OnInitDialog( hwndDlg, wParam, lParam );
 }
 
@@ -2062,7 +2209,11 @@ BOOL CDlgFuncList::OnNotify(NMHDR* pNMHDR)
 
 #ifdef DEFINE_SYNCCOLOR
 	if( IsDocking() ){
-		if( hwndList == pNMHDR->hwndFrom || hwndTree == pNMHDR->hwndFrom ){
+		// ダークモード以外のみ
+		const auto& DarkMode = CHsp3DarkMode::GetInstance();
+		if ( !DarkMode.IsSystemUseDarkMode())
+		{
+			if( hwndList == pNMHDR->hwndFrom || hwndTree == pNMHDR->hwndFrom ){
 			if(pNMHDR->code == NM_CUSTOMDRAW ){
 				LPNMCUSTOMDRAW lpnmcd = (LPNMCUSTOMDRAW)pNMHDR;
 				switch( lpnmcd->dwDrawStage ){
@@ -2095,6 +2246,8 @@ BOOL CDlgFuncList::OnNotify(NMHDR* pNMHDR)
 				return TRUE;
 			}
 		}
+		}
+
 	}
 #endif
 
@@ -2136,7 +2289,11 @@ void CDlgFuncList::SortListView(HWND hwndList, int sortcol)
 	//	col.pszText = L"関数名 *";
 		if(OUTLINE_BOOKMARK == m_nListType){
 			col.pszText = const_cast<WCHAR*>( sortcol == col_no ? LS(STR_DLGFNCLST_LIST_TEXT_M) : LS(STR_DLGFNCLST_LIST_TEXT) );
-		}else{
+		}
+		else if (OUTLINE_HSP3 == m_nListType) {
+			col.pszText = const_cast<WCHAR*>(sortcol == col_no ? LS(STR_DLGFNCLST_LIST_NAME_M) : LS(STR_DLGFNCLST_LIST_NAME));
+		}
+		else {
 			col.pszText = const_cast<WCHAR*>( sortcol == col_no ? LS(STR_DLGFNCLST_LIST_FUNC_M) : LS(STR_DLGFNCLST_LIST_FUNC) );
 		}
 	// To Here 2001.12.03 hor
@@ -3081,6 +3238,9 @@ INT_PTR CDlgFuncList::OnNcPaint( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	if( !IsDocking() )
 		return 0L;
 
+	// ダークモード
+	const auto& DarkMode = CHsp3DarkMode::GetInstance();
+
 	EDockSide eDockSide = GetDockSide();
 
 	HDC hdc;
@@ -3117,9 +3277,33 @@ INT_PTR CDlgFuncList::OnNcPaint( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	rcWk = rcCaption;
 	rcWk.top += 1;
 	rcWk.right -= DOCK_BUTTON_NUM * (::GetSystemMetrics( SM_CXSMSIZE ));
-	// ↓DrawCaption() に DC_SMALLCAP を指定してはいけないっぽい
-	// ↓DC_SMALLCAP 指定のものを Win7(64bit版) で動かしてみたら描画位置が下にずれて上半分しか見えなかった（x86ビルド/x64ビルドのどちらも NG）
-	::DrawCaption( hwnd, gr, &rcWk, DC_TEXT | (bGradient? DC_GRADIENT: 0) /*| DC_SMALLCAP*/ | (bActive? DC_ACTIVE: 0) );
+
+	// ダークモード
+	if ( DarkMode.IsSystemUseDarkMode())
+	{
+		bGradient = FALSE;
+
+		// タイトルテキスト
+		int length = GetWindowTextLengthW(hwnd) + 1;
+		std::unique_ptr<wchar_t[]> title(new wchar_t[length]);
+		::GetWindowTextW( hwnd, title.get(), length);
+
+		auto hOldFont = ::SelectObject(gr, DarkMode.GetSystemFont());
+		::MyFillRect(gr, rcWk, (bActive ? COLOR_ACTIVECAPTION : COLOR_INACTIVECAPTION));
+		::SetBkMode(gr, OPAQUE);
+		::SetBkColor(gr, DarkMode.GetSysColor((bActive ? COLOR_ACTIVECAPTION : COLOR_INACTIVECAPTION)));
+		::SetTextColor(gr, DarkMode.GetSysColor(COLOR_MENUTEXT));
+		rcWk.left += 2;
+		::DrawText(gr, title.get(), -1, &rcWk, DT_SINGLELINE | DT_LEFT | DT_VCENTER | DT_END_ELLIPSIS);
+		::SelectObject(gr, hOldFont);
+	}
+	else
+	{
+		// ↓DrawCaption() に DC_SMALLCAP を指定してはいけないっぽい
+		// ↓DC_SMALLCAP 指定のものを Win7(64bit版) で動かしてみたら描画位置が下にずれて上半分しか見えなかった（x86ビルド/x64ビルドのどちらも NG）
+		::DrawCaption( hwnd, gr, &rcWk, DC_TEXT | (bGradient? DC_GRADIENT: 0) /*| DC_SMALLCAP*/ | (bActive? DC_ACTIVE: 0) );
+	}
+
 	rcWk.left = rcCaption.right;
 	int nClrCaption;
 	if( bGradient )
@@ -3163,7 +3347,7 @@ INT_PTR CDlgFuncList::OnNcPaint( HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 			nClrCaptionText = ( bActive? COLOR_CAPTIONTEXT: COLOR_INACTIVECAPTIONTEXT );
 		}
 		gr.PushMyFont( hFontBtn[i] );
-		::SetTextColor( gr, ::GetSysColor( nClrCaptionText ) );
+		::SetTextColor( gr, DarkMode.GetSysColor( nClrCaptionText ) );
 		::DrawText( gr, &szBtn[i], 1, &rcBtn, DT_SINGLELINE | DT_CENTER | DT_VCENTER );
 		::OffsetRect( &rcBtn, -(rcBtn.right - rcBtn.left), 0 );
 		gr.PopMyFont();

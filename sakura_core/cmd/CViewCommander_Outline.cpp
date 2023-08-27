@@ -128,6 +128,7 @@ BOOL CViewCommander::Command_FUNCLIST(
 	case OUTLINE_PYTHON:	GetDocument()->m_cDocOutline.MakeFuncList_python(&cFuncInfoArr);break;		// 2007.02.08 genta
 	case OUTLINE_ERLANG:	GetDocument()->m_cDocOutline.MakeFuncList_Erlang(&cFuncInfoArr);break;		// 2009.08.10 genta
 	case OUTLINE_XML:		GetDocument()->m_cDocOutline.MakeTopicList_html(&cFuncInfoArr, true);break;		// 2014.12.25 Moca
+	case OUTLINE_HSP3:		GetDocument()->m_cDocOutline.MakeFuncList_HSP3(&cFuncInfoArr); break;		// 2023.08.22 inovia
 	case OUTLINE_FILETREE:	/* 特に何もしない*/ ;break;	// 2013.12.08 Moca
 	case OUTLINE_TEXT:
 		//	fall though

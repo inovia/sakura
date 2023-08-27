@@ -43,6 +43,8 @@ class CDlgProperty final : public CDialog
 {
 public:
 	int DoModal(HINSTANCE hInstance, HWND hwndParent, LPARAM lParam);	/* モーダルダイアログの表示 */
+	INT_PTR DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam) override;
+	BOOL OnInitDialog(HWND, WPARAM wParam, LPARAM lParam) override;
 protected:
 	/*
 	||  実装ヘルパ関数

@@ -15,9 +15,377 @@
 #include "CViewCommander.h"
 #include "CViewCommander_inline.h"
 
+#include "CWriteManager.h"
 #include "env/CFormatManager.h"
 #include "_main/CProcess.h"
 #include "doc/CEditDoc.h"
+
+// バッファサイズ
+static const int BUF_SIZE = 1024;
+
+bool CViewCommander::Sub_HSP_GetFileName(
+	WCHAR* szHSPTmpFilePath, WCHAR* szHSPFilePath, WCHAR* szHSPObjFilePath)
+{
+	WCHAR szFolderPath[BUF_SIZE] = { 0 };		// 保存フォルダ
+
+	const auto& pDoc = GetDocument();
+	if ( pDoc->m_cDocFile.GetFilePathClass().IsValidPath())
+	{
+		// ファイルパスごとコピー
+		::wcsncpy_s(
+			szFolderPath, pDoc->m_cDocFile.GetFilePath(), BUF_SIZE);
+
+		// フォルダパスのみにする
+		::PathRemoveFileSpec(szFolderPath);
+
+		// ファイルパス
+		wcscpy( szHSPFilePath, pDoc->m_cDocFile.GetFilePath());
+	}
+	else
+	{
+		// 現在のカレントディレクトリを取得
+		DWORD dwRet = ::GetCurrentDirectory(BUF_SIZE, szFolderPath);
+		if (dwRet == 0)
+		{
+			return false;	// まず、失敗しない思う
+		}
+
+		// ファイルパス
+		wcscpy(szHSPFilePath, L"???");	// 未保存なので確定しない
+	}
+
+	// hsptmp/objを付与
+	::PathCombine(szHSPTmpFilePath, szFolderPath, L"hsptmp");
+	::PathCombine(szHSPObjFilePath, szFolderPath, L"obj");
+	return true;
+}
+
+void CViewCommander::Command_HSP_COMPILE_RUN(void)
+{
+	WCHAR szHSPTmpFilePath[BUF_SIZE]	= { 0 };		// hsptmp ファイルパス
+	WCHAR szHSPFilePath[BUF_SIZE]		= { 0 };		// .hsp のパス(未保存時は???)
+	WCHAR szHSPObjFilePath[BUF_SIZE]	= { 0 };		// obj ファイルパス
+
+	auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+	if (! Sub_HSP_GetFileName(
+		szHSPTmpFilePath, szHSPFilePath, szHSPObjFilePath))
+	{
+		return;
+	}
+
+	// hsptmp を一時保存
+	if (! Command_PUTFILE( szHSPTmpFilePath, CODE_AUTODETECT, 0x00))
+	{
+		return;
+	}
+
+	// 文字コード
+	const auto& pDoc = GetDocument();
+	ECodeType codeType = pDoc->GetDocumentEncoding();
+	
+	// コンパイル実行
+	if (! Hsp3.CompileRun( m_pCommanderView->GetHwnd(),
+		szHSPTmpFilePath, szHSPFilePath,
+		szHSPObjFilePath,
+		false					/* レポート強制表示モードOFF */,
+		(codeType == CODE_UTF8)	/* UTF-8 モード? */,
+		false					/* コンパイル+実行 */,
+		false					/* Debug */
+	))
+	{
+		return;
+	}
+
+	return;
+}
+
+void CViewCommander::Command_HSP_RUN(void)
+{
+	WCHAR szHSPTmpFilePath[BUF_SIZE]	= { 0 };	// hsptmp ファイルパス
+	WCHAR szHSPFilePath[BUF_SIZE]		= { 0 };	// .hsp のパス(未保存時は???)
+	WCHAR szHSPObjFilePath[BUF_SIZE]	= { 0 };	// obj ファイルパス
+
+	auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+	if (!Sub_HSP_GetFileName(
+		szHSPTmpFilePath, szHSPFilePath, szHSPObjFilePath))
+	{
+		return;
+	}
+
+	// 実行のみ
+	if (!Hsp3.Run(
+		m_pCommanderView->GetHwnd(),szHSPObjFilePath))
+	{
+		return;
+	}
+
+	return;
+}
+
+void CViewCommander::Command_HSP_COMPILE_ONLY(void)
+{
+	WCHAR szHSPTmpFilePath[BUF_SIZE]	= { 0 };	// hsptmp ファイルパス
+	WCHAR szHSPFilePath[BUF_SIZE]		= { 0 };	// .hsp のパス(未保存時は???)
+	WCHAR szHSPObjFilePath[BUF_SIZE]	= { 0 };	// obj ファイルパス
+
+	auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+	if (!Sub_HSP_GetFileName(
+		szHSPTmpFilePath, szHSPFilePath, szHSPObjFilePath))
+	{
+		return;
+	}
+
+	// hsptmp を一時保存
+	if (!Command_PUTFILE(szHSPTmpFilePath, CODE_AUTODETECT, 0x00))
+	{
+		return;
+	}
+
+	// 文字コード
+	const auto& pDoc = GetDocument();
+	ECodeType codeType = pDoc->GetDocumentEncoding();
+
+	// コンパイル実行
+	if (!Hsp3.CompileRun(m_pCommanderView->GetHwnd(),
+		szHSPTmpFilePath, szHSPFilePath,
+		szHSPObjFilePath,
+		true					/* レポート強制表示モードON */,
+		(codeType == CODE_UTF8)	/* UTF-8 モード? */,
+		true					/* コンパイルのみ */,
+		false					/* Debug */,
+		false					/* パックファイルOFF */
+	))
+	{
+		return;
+	}
+	return;
+}
+
+void CViewCommander::Command_HSP_SHOW_ERROR(void)
+{
+	auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+	if (! Hsp3.ShowErrorReport(m_pCommanderView->GetHwnd()))
+	{
+		return;
+	}
+	return;
+}
+
+void CViewCommander::Command_HSP_CREATE_OBJ(void)
+{
+	WCHAR szHSPTmpFilePath[BUF_SIZE]	= { 0 };	// hsptmp ファイルパス
+	WCHAR szHSPFilePath[BUF_SIZE]		= { 0 };	// .hsp のフルパス
+	WCHAR szHSPFileName[_MAX_PATH]		= { 0 };	// ファイル名のみ
+	WCHAR szHSPObjFilePath[BUF_SIZE]	= { 0 };	// obj ファイルパス -> .ax
+
+	// ファイルパスがある場合のみ実行
+	const auto& pDoc = GetDocument();
+	if ( !pDoc->m_cDocFile.GetFilePathClass().IsValidPath())
+	{
+		return;	// 新規作成などのファイルパスが未確定状態
+	}
+
+	// 一旦保存する
+	Command_FILESAVE(false, false);
+
+	// ファイルパス取得
+	auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+	if ( !Sub_HSP_GetFileName(
+		szHSPTmpFilePath, szHSPFilePath, szHSPObjFilePath))
+	{
+		return;
+	}
+
+	// 新しいファイル名生成する
+	// (test.hsp -> test.ax)
+	const auto& lpszFileName =
+		::PathFindFileName( szHSPFilePath);
+	wcscpy_s( szHSPFileName, lpszFileName);
+	::PathRemoveExtension( szHSPFileName);
+	::PathAddExtension( szHSPFileName, L".ax");
+
+	// フルパスから obj を除去し、新しいファイ名を付与
+	// (C:\test\obj -> C:\test\ -> C:\test\test.ax)
+	::PathRemoveFileSpec( szHSPObjFilePath);
+	::PathAppend( szHSPObjFilePath, szHSPFileName);
+
+	// 文字コード
+	ECodeType codeType = pDoc->GetDocumentEncoding();
+
+	// コンパイル
+	if ( !Hsp3.CompileRun( m_pCommanderView->GetHwnd(),
+		szHSPTmpFilePath, szHSPFilePath,
+		szHSPObjFilePath,
+		false					/* レポート強制表示モードOFF */,
+		(codeType == CODE_UTF8)	/* UTF-8 モード? */,
+		true					/* コンパイルのみ */,
+		true					/* Release */,
+		false					/* パックファイルOFF */
+	))
+	{
+		return;	// 失敗
+	}
+
+	// メッセージ表示
+	CNativeW msg;
+	msg.AppendStringF(
+		L"%s\r\nPath = %s",
+		L"オブジェクトファイルを作成しました。",
+		szHSPObjFilePath
+	);
+
+	::MessageBox(
+		m_pCommanderView->GetHwnd(), msg.GetStringPtr(),
+		L"Info", MB_OK | MB_ICONINFORMATION);
+
+	return;
+}
+
+void CViewCommander::Command_HSP_CREATE_STARTAX(void)
+{
+	WCHAR szHSPTmpFilePath[BUF_SIZE]	= { 0 };	// hsptmp ファイルパス
+	WCHAR szHSPFilePath[BUF_SIZE]		= { 0 };	// .hsp のフルパス
+	WCHAR szHSPObjFilePath[BUF_SIZE]	= { 0 };	// obj ファイルパス	-> start.ax
+
+	auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+	if (!Sub_HSP_GetFileName(
+		szHSPTmpFilePath, szHSPFilePath, szHSPObjFilePath))
+	{
+		return;
+	}
+
+	// hsptmp を一時保存
+	if (!Command_PUTFILE( szHSPTmpFilePath, CODE_AUTODETECT, 0x00))
+	{
+		return;
+	}
+
+	// フルパスから obj を除去し、新しいファイ名を付与
+	// (C:\test\obj -> C:\test\ -> C:\test\start.ax)
+	::PathRemoveFileSpec(szHSPObjFilePath);
+	::PathAppend(szHSPObjFilePath, L"start.ax");
+
+	// 文字コード
+	const auto& pDoc = GetDocument();
+	ECodeType codeType = pDoc->GetDocumentEncoding();
+
+	// コンパイル
+	if (!Hsp3.CompileRun( m_pCommanderView->GetHwnd(),
+		szHSPTmpFilePath, szHSPFilePath,
+		szHSPObjFilePath,
+		false					/* レポート強制表示モードOFF */,
+		(codeType == CODE_UTF8)	/* UTF-8 モード? */,
+		true					/* コンパイルのみ */,
+		true					/* Release */,
+		false					/* パックファイルOFF */
+	))
+	{
+		return;	// 失敗
+	}
+
+	// メッセージ表示
+	CNativeW msg;
+	msg.AppendStringF(
+		L"%s\r\nPath = %s",
+		L"START.AXを作成しました。",
+		szHSPObjFilePath
+		);
+
+	::MessageBox(
+		m_pCommanderView->GetHwnd(), msg.GetStringPtr(),
+		L"Info", MB_OK | MB_ICONINFORMATION);
+
+	return;
+}
+
+void CViewCommander::Command_HSP_CREATE_EXE_AUTO(void)
+{
+	WCHAR szHSPTmpFilePath[BUF_SIZE]	= { 0 };	// hsptmp ファイルパス
+	WCHAR szHSPFilePath[BUF_SIZE]		= { 0 };	// .hsp のフルパス
+	WCHAR szHSPObjFilePath[BUF_SIZE]	= { 0 };	// obj ファイルパス	-> start.ax
+	
+	auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+	if (!Sub_HSP_GetFileName(
+		szHSPTmpFilePath, szHSPFilePath, szHSPObjFilePath))
+	{
+		return;
+	}
+
+	// hsptmp を一時保存
+	if (!Command_PUTFILE(szHSPTmpFilePath, CODE_AUTODETECT, 0x00))
+	{
+		return;
+	}
+
+	// フルパスから obj を除去し、新しいファイ名を付与
+	// (C:\test\obj -> C:\test\ -> C:\test\start.ax)
+	::PathRemoveFileSpec(szHSPObjFilePath);
+	::PathAppend(szHSPObjFilePath, L"start.ax");
+
+	// 文字コード
+	const auto& pDoc = GetDocument();
+	ECodeType codeType = pDoc->GetDocumentEncoding();
+
+	// コンパイル
+	if (!Hsp3.CompileRun( m_pCommanderView->GetHwnd(),
+		L"hsptmp" /* フルパス渡すと何故かバグる */, szHSPFilePath,
+		szHSPObjFilePath,
+		false					/* レポート強制表示モードOFF */,
+		(codeType == CODE_UTF8)	/* UTF-8 モード? */,
+		true					/* コンパイルのみ */,
+		true					/* Release */,
+		true					/* パックファイルON */
+	))
+	{
+		return;	// 失敗
+	}
+
+	// DPMファイル生成
+	if (!Hsp3.Make(m_pCommanderView->GetHwnd()))
+	{
+		return;	// 失敗
+	}
+
+	// メッセージ表示
+	CNativeW msg;
+	msg.AppendStringF(
+		L"%s",
+		L"実行ファイルを作成しました。"
+	);
+
+	::MessageBox(
+		m_pCommanderView->GetHwnd(), msg.GetStringPtr(),
+		L"Info", MB_OK | MB_ICONINFORMATION);
+	return;
+}
+
+void CViewCommander::Command_HSP_RUN_EXTERNAL(void)
+{
+	auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+	Hsp3.RunExternal( m_pCommanderView->GetHwnd());
+	return;
+}
+
+void CViewCommander::Command_HSP_RESERVED_KEYWORD_LIST(void)
+{
+	auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+	Hsp3.ReservedKeywordList( m_pCommanderView->GetHwnd());
+	return;
+}
+
+void CViewCommander::Command_HSP_COMMANDLINE_OPTION(void)
+{
+	auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+	Hsp3.CommandLineOption( m_pCommanderView->GetHwnd());
+	return;
+}
+
+void CViewCommander::Command_HSP_SHOW_DEBUG_WINDOW(void)
+{
+	auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+	Hsp3.SetShowDebugWindow( !Hsp3.IsShowDebugWindow());
+	return;
+}
 
 void CViewCommander::Command_HSP_OPEN_SRC_FOLDER(void)
 {

@@ -37,6 +37,8 @@
 #include "apiwrap/StdControl.h"
 #include "CSelectLang.h"
 #include "String_define.h"
+#include "hsp/CHsp3DarkMode.h"
+#include "uiparts/CGraphics.h"
 
 CMainToolBar::CMainToolBar(CEditWnd* pOwner)
 : m_pOwner(pOwner)
@@ -128,6 +130,8 @@ void CMainToolBar::CreateToolBar( void )
 {
 	if( m_hwndToolBar )return;
 
+	const auto& DarkMode = CHsp3DarkMode::GetInstance();
+
 	REBARINFO		rbi;
 	REBARBANDINFO	rbBand;
 	int				nFlag;
@@ -140,12 +144,19 @@ void CMainToolBar::CreateToolBar( void )
 	// 2006.06.17 ryoji
 	// Rebar ウィンドウの作成
 	if( IsVisualStyle() ){	// ビジュアルスタイル有効
+
+		DWORD dwStyle = WS_CHILD/* | WS_VISIBLE*/ | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |	// 2007.03.08 ryoji WS_VISIBLE 除去
+			 CCS_NODIVIDER;
+		if ( ! DarkMode.IsSystemUseDarkMode())	// ダークモードの時は違和感がある
+		{
+			dwStyle |= RBS_BANDBORDERS;
+		}
+
 		m_hwndReBar = ::CreateWindowEx(
 			WS_EX_TOOLWINDOW,
 			REBARCLASSNAME, //レバーコントロール
 			NULL,
-			WS_CHILD/* | WS_VISIBLE*/ | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |	// 2007.03.08 ryoji WS_VISIBLE 除去
-			RBS_BANDBORDERS | CCS_NODIVIDER,
+			dwStyle,
 			0, 0, 0, 0,
 			m_pOwner->GetHwnd(),
 			NULL,
@@ -156,6 +167,13 @@ void CMainToolBar::CreateToolBar( void )
 		if( NULL == m_hwndReBar ){
 			TopWarningMessage( m_pOwner->GetHwnd(), LS(STR_ERR_DLGEDITWND04) );
 			return;
+		}
+
+		 // ダークモード
+		if (DarkMode.IsSystemUseDarkMode())
+		{
+			DarkMode.AllowDarkModeForWindow(m_hwndReBar, true);
+			::SetWindowTheme(m_hwndReBar, L"Media", nullptr);
 		}
 
 		if( GetDllShareData().m_Common.m_sToolBar.m_bToolBarIsFlat ){	/* フラットツールバーにする／しない */
@@ -196,6 +214,22 @@ void CMainToolBar::CreateToolBar( void )
 		DestroyToolBar();	// 2006.06.17 ryoji
 	}
 	else{
+
+		// ダークモード
+		if ( DarkMode.IsSystemUseDarkMode())
+		{
+			// ツールバーのツールチップを取得
+			HWND hTooltip = (HWND)::SendMessage(m_hwndToolBar, TB_GETTOOLTIPS, 0, 0);
+			if ( hTooltip)
+			{
+				DarkMode.AllowDarkModeForWindow(hTooltip, true);
+				::SetWindowTheme(hTooltip, L"DarkMode_Explorer", nullptr);
+			}
+
+			DarkMode.AllowDarkModeForWindow(m_hwndToolBar, true);
+			::SetWindowTheme(m_hwndToolBar, L"DarkMode_BBComposited", nullptr);
+		}
+
 		// 2006.09.06 ryoji ツールバーをサブクラス化する
 		g_pOldToolBarWndProc = (WNDPROC)::SetWindowLongPtr(
 			m_hwndToolBar,
@@ -469,6 +503,15 @@ LPARAM CMainToolBar::ToolBarOwnerDraw( LPNMCUSTOMDRAW pnmh )
 		if( pnmh->dwItemSpec == F_SEARCH_BOX ){
 			return CDRF_SKIPDEFAULT;
 		}
+
+		//{
+		//	const auto& DarkMode = CHsp3DarkMode::GetInstance();
+		//	if ( DarkMode.IsSystemUseDarkMode())
+		//	{
+		//		::MyFillRect(pnmh->hdc, pnmh->rc, RGB(128, 24, 24));
+		//	}
+		//}
+		
 		return CDRF_NOTIFYPOSTPAINT;
 	
 	case CDDS_ITEMPOSTPAINT:

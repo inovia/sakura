@@ -15,6 +15,7 @@
 #include "dlg/CDlgSetCharSet.h"
 #include "func/Funccode.h"
 #include "util/shell.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "env/DLLSHAREDATA.h"
 #include "charset/CCodePage.h"
 #include "apiwrap/StdControl.h"
@@ -47,9 +48,31 @@ int CDlgSetCharSet::DoModal( HINSTANCE hInstance, HWND hwndParent, ECodeType* pn
 	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_SETCHARSET, (LPARAM)NULL );
 }
 
+/*!
+	標準以外のメッセージを捕捉する
+*/
+INT_PTR CDlgSetCharSet::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
+{
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
+	INT_PTR result;
+	result = CDialog::DispatchEvent(hWnd, wMsg, wParam, lParam);
+	return result;
+}
+
 BOOL CDlgSetCharSet::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
 	_SetHwnd( hwndDlg );
+
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
 	
 	m_hwndCharSet = GetItemHwnd( IDC_COMBO_CHARSET );	// 文字コードセットコンボボックス
 	m_hwndCheckBOM = GetItemHwnd( IDC_CHECK_BOM );		// BOMチェックボックス

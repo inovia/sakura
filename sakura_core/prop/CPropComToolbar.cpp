@@ -24,6 +24,7 @@
 #include "uiparts/CMenuDrawer.h" // 2002/2/10 aroka
 #include "util/shell.h"
 #include "util/window.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "apiwrap/StdApi.h"
 #include "apiwrap/StdControl.h"
 #include "CSelectLang.h"
@@ -557,6 +558,9 @@ int CPropToolbar::GetData( HWND hwndDlg )
 */
 void CPropToolbar::DrawToolBarItemList( DRAWITEMSTRUCT* pDis )
 {
+	// ダークモード
+	const auto& DarkMode = CHsp3DarkMode::GetInstance();
+
 	// pixel数をベタ書きするとHighDPI環境でずれるのでシステム値を取得して使う
 	const int cxBorder = ::GetSystemMetrics(SM_CXBORDER);
 	const int cyBorder = ::GetSystemMetrics(SM_CYBORDER);
@@ -573,7 +577,10 @@ void CPropToolbar::DrawToolBarItemList( DRAWITEMSTRUCT* pDis )
 	RECT rcFrame = rcText;
 
 	// アイテム背景をウインドウ背景色で塗りつぶす
-	::MyFillRect( pDis->hDC, rcItem, COLOR_WINDOW );
+	if ( DarkMode.IsSystemUseDarkMode())
+		::MyFillRect( pDis->hDC, rcItem, COLOR_BTNFACE);
+	else
+		::MyFillRect( pDis->hDC, rcItem, COLOR_WINDOW);
 
 	// 背景色と前景色
 	int bkColor;
@@ -584,14 +591,23 @@ void CPropToolbar::DrawToolBarItemList( DRAWITEMSTRUCT* pDis )
 		bkColor = COLOR_HIGHLIGHT;
 		textColor = COLOR_HIGHLIGHTTEXT;
 	}else{
-		bkColor = COLOR_WINDOW;
-		textColor = COLOR_WINDOWTEXT;
+
+		if ( DarkMode.IsSystemUseDarkMode())
+		{
+			bkColor = COLOR_BTNFACE;
+			textColor = COLOR_BTNTEXT;
+		}
+		else
+		{
+			bkColor = COLOR_WINDOW;
+			textColor = COLOR_WINDOWTEXT;
+		}
 	}
 
 	// デバイスコンテキストのオプションを設定する
 	int bkModeOld = ::SetBkMode( pDis->hDC, TRANSPARENT );
-	COLORREF bkColorOld = ::SetBkColor( pDis->hDC, ::GetSysColor( bkColor ) );
-	COLORREF textColorOld = ::SetTextColor( pDis->hDC, ::GetSysColor( textColor ) );
+	COLORREF bkColorOld = ::SetBkColor( pDis->hDC, DarkMode.GetSysColor( bkColor ) );
+	COLORREF textColorOld = ::SetTextColor( pDis->hDC, DarkMode.GetSysColor( textColor ) );
 
 	// itemDataに紐づくボタン情報を取得する
 	TBBUTTON tbb = m_pcMenuDrawer->getButton(pDis->itemData);

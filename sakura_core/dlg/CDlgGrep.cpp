@@ -27,6 +27,7 @@
 #include "util/shell.h"
 #include "util/os.h"
 #include "util/window.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "env/DLLSHAREDATA.h"
 #include "env/CSakuraEnvironment.h"
 #include "apiwrap/StdApi.h"
@@ -298,9 +299,31 @@ int CDlgGrep::DoModal( HINSTANCE hInstance, HWND hwndParent, const WCHAR* pszCur
 LRESULT CALLBACK OnFolderProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam);
 WNDPROC g_pOnFolderProc;
 
+/*!
+	標準以外のメッセージを捕捉する
+*/
+INT_PTR CDlgGrep::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
+{
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if ( DarkMode.DarkModeDispatchEvent( hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
+	INT_PTR result;
+	result = CDialog::DispatchEvent(hWnd, wMsg, wParam, lParam);
+	return result;
+}
+
 BOOL CDlgGrep::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
 	_SetHwnd( hwndDlg );
+
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
 
 	/* カレントフォルダーが初期値 */
 	if((m_szFolder[0] == L'\0' || m_pShareData->m_Common.m_sSearch.m_bGrepDefaultFolder) &&

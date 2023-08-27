@@ -41,6 +41,7 @@
 #include "util/shell.h"
 #include "util/window.h"
 #include "util/os.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "apiwrap/StdControl.h"
 #include "CSelectLang.h"
 #include "sakura_rc.h"
@@ -348,6 +349,23 @@ int CDlgFileTree::GetDataItem( SFileTreeItem& item )
 	return TRUE;
 }
 
+/*!
+	標準以外のメッセージを捕捉する
+*/
+INT_PTR CDlgFileTree::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
+{
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
+	/* 基底クラスメンバ */
+	return CDialog::DispatchEvent(hWnd, wMsg, wParam, lParam);
+}
+
 BOOL CDlgFileTree::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 {
 	_SetHwnd(hwndDlg);
@@ -361,6 +379,22 @@ BOOL CDlgFileTree::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	CFilePath path;
 	m_pcDlgFuncList->LoadFileTreeSetting(m_fileTreeSetting, path);
 	SetDataInit();
+
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
+	if ( DarkMode.IsSystemUseDarkMode())
+	{
+		// ツリービュー
+		HWND hWndTree = GetItemHwnd(IDC_TREE_FL);
+		if ( hWndTree)
+		{
+			::SendMessage( hWndTree,
+				TVM_SETTEXTCOLOR, 0, DarkMode.GetSysColor(COLOR_BTNTEXT));
+			::SendMessage( hWndTree,
+				TVM_SETBKCOLOR, 0, DarkMode.GetSysColor(COLOR_BTNFACE));
+		}
+	}
 
 	/* 基底クラスメンバ */
 	return CDialog::OnInitDialog(GetHwnd(), wParam, lParam);

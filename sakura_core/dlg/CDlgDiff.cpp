@@ -26,6 +26,7 @@
 #include "util/shell.h"
 #include "util/string_ex2.h"
 #include "util/file.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "apiwrap/StdApi.h"
 #include "apiwrap/StdControl.h"
 #include "sakura_rc.h"
@@ -472,6 +473,14 @@ LPVOID CDlgDiff::GetHelpIdTable( void )
 
 INT_PTR CDlgDiff::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam )
 {
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
 	INT_PTR result;
 	result = CDialog::DispatchEvent( hWnd, wMsg, wParam, lParam );
 
@@ -486,6 +495,11 @@ BOOL CDlgDiff::OnInitDialog( HWND hwndDlg, WPARAM wParam, LPARAM lParam )
 	_SetHwnd(hwndDlg);
 
 	CreateSizeBox();
+
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
+
 	CDialog::OnSize();
 	
 	LONG_PTR lStyle;

@@ -28,6 +28,7 @@
 #include "func/CKeyBind.h"
 #include "uiparts/CGraphics.h"
 #include "util/window.h"
+#include "hsp/CHsp3DarkMode.h"
 
 // メニューアイコンの背景をボタンの色にする
 #define DRAW_MENU_ICON_BACKGROUND_3DFACE
@@ -785,6 +786,12 @@ void CMenuDrawer::MyAppendMenu(
 	int				nForceIconId	//お気に入り	//@@@ 2003.04.08 MIK
 )
 {
+	const bool bMenuIconDraw = !!m_pShareData->m_Common.m_sWindow.m_bMenuIcon;
+	const int cxSmIcon = ::GetSystemMetrics(SM_CXSMICON);
+	const int cySmIcon = ::GetSystemMetrics(SM_CYSMICON);
+	const RECT rectIcon{ 0, 0, cxSmIcon, cySmIcon };
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+
 	WCHAR		szLabel[_MAX_PATH * 2+ 30];
 	WCHAR		szKey[10];
 	int			nFlagAdd = 0;
@@ -842,6 +849,7 @@ void CMenuDrawer::MyAppendMenu(
 	mii.cbSize = sizeof(MENUITEMINFO);
 	mii.fMask = MIIM_CHECKMARKS | MIIM_DATA | MIIM_ID | MIIM_STATE | MIIM_SUBMENU | MIIM_TYPE;
 	mii.fType = 0;
+
 	if( MF_OWNERDRAW	& ( nFlag | nFlagAdd ) ) mii.fType |= MFT_OWNERDRAW;
 	if( MF_SEPARATOR	& ( nFlag | nFlagAdd ) ) mii.fType |= MFT_SEPARATOR;
 	if( MF_STRING		& ( nFlag | nFlagAdd ) ) mii.fType |= MFT_STRING;
@@ -854,8 +862,72 @@ void CMenuDrawer::MyAppendMenu(
 
 	mii.wID = nFuncId;
 	mii.hSubMenu = (nFlag&MF_POPUP)?((HMENU)nFuncId):NULL;
+
 	mii.hbmpChecked = NULL;
 	mii.hbmpUnchecked = NULL;
+
+	// ダークモードの場合
+	if ( DarkMode.IsSystemUseDarkMode())
+	{
+		// オーナードローを無効化する
+		if ( mii.fType && MFT_OWNERDRAW)
+			mii.fType &= ~MFT_OWNERDRAW;
+
+		// セパレータかサブメニュー
+		if ( nFlag & (MF_SEPARATOR | MF_POPUP))
+		{
+			// nop
+		}
+		else if ( IsFuncCheckItem((EFunctionCode)nForceIconId))
+		{
+			// チェック状態を持つメニューアイテムは見にくいので、
+			// 画像ではなく標準のものに切り替える
+		}
+		else
+		{
+			// それ以外
+			// fTypeを無効化する
+			if ( mii.fMask && MIIM_TYPE)
+				mii.fMask &= ~MIIM_TYPE;
+
+			// 文字列を有効化
+			mii.fMask |= MIIM_STRING;
+
+			/* 機能の画像が存在するならメニューアイコン?を描画する */
+			int nIconNo = GetIconIdByFuncId(nForceIconId);
+			if (nIconNo != -1)
+			{
+				// 空のビットマップ作成
+				HBITMAP hBitmap = nullptr;
+				{
+					HDC hMemDC = DarkMode.CreateEmptyBitmapAndHDC(
+						cySmIcon, cySmIcon, hBitmap);
+
+					// 背景描画
+					::FillRect(hMemDC, &rectIcon,
+						DarkMode.GetSysColorBrush(COLOR_MENU));
+
+					// メニューアイコン描画
+					m_pcIcons->DrawToolIcon(
+						hMemDC,
+						0,
+						0,
+						nIconNo,
+						(mii.fState & MFS_GRAYED) ? ILD_MASK : ILD_NORMAL,
+						cxSmIcon,
+						cySmIcon
+					);
+
+					::DeleteDC(hMemDC);
+				}
+
+				// ビットマップを有効化
+				mii.fMask |= MIIM_BITMAP;
+				mii.hbmpItem = hBitmap;
+			}
+		}
+	}
+
 	mii.dwItemData = (ULONG_PTR)this;
 	mii.dwTypeData = szLabel;
 	mii.cch = 0;
@@ -960,6 +1032,8 @@ int CMenuDrawer::MeasureItem( int nFuncID, int* pnItemHeight )
 */
 void CMenuDrawer::DrawItem( DRAWITEMSTRUCT* lpdis )
 {
+	const auto& DarkMode = CHsp3DarkMode::GetInstance();
+
 	// pixel数をベタ書きするとHighDPI環境でずれるのでシステム値を取得して使う
 	const int cxBorder = ::GetSystemMetrics(SM_CXBORDER);
 	const int cyBorder = ::GetSystemMetrics(SM_CYBORDER);
@@ -1022,10 +1096,10 @@ void CMenuDrawer::DrawItem( DRAWITEMSTRUCT* lpdis )
 			//rc1.left += (nIndentLeft - 3);
 		}
 #ifdef DRAW_MENU_SELECTION_LIGHT
-		HPEN hPenBorder = ::CreatePen( PS_SOLID, 1, ::GetSysColor( COLOR_HIGHLIGHT ) );
+		HPEN hPenBorder = ::CreatePen( PS_SOLID, 1, DarkMode.GetSysColor( COLOR_HIGHLIGHT ) );
 		HPEN hOldPen = (HPEN)::SelectObject( hdc, hPenBorder );
-		COLORREF colHilight = ::GetSysColor( COLOR_HIGHLIGHT );
-		COLORREF colMenu = ::GetSysColor( COLOR_MENU );
+		COLORREF colHilight = DarkMode.GetSysColor( COLOR_HIGHLIGHT );
+		COLORREF colMenu = DarkMode.GetSysColor( COLOR_MENU );
 		BYTE valR = ((GetRValue(colHilight) * 4 + GetRValue(colMenu) * 6) / 10) | 0x18;
 		BYTE valG = ((GetGValue(colHilight) * 4 + GetGValue(colMenu) * 6) / 10) | 0x18;
 		BYTE valB = ((GetBValue(colHilight) * 4 + GetBValue(colMenu) * 6) / 10) | 0x18;
@@ -1048,8 +1122,8 @@ void CMenuDrawer::DrawItem( DRAWITEMSTRUCT* lpdis )
 		::MyFillRect( hdc, rcFillMenuBack, COLOR_MENU );
 
 //		hBrush = ::GetSysColorBrush( COLOR_3DFACE );
-		COLORREF colMenu   = ::GetSysColor( COLOR_MENU );
-		COLORREF colFace = ::GetSysColor( COLOR_3DFACE );
+		COLORREF colMenu   = DarkMode.GetSysColor( COLOR_MENU );
+		COLORREF colFace = DarkMode.GetSysColor( COLOR_3DFACE );
 		COLORREF colIconBack;
 		// 明度らしきもの
 		if( 64 < t_abs(t_max(t_max(GetRValue(colFace),GetGValue(colFace)),GetBValue(colFace))
@@ -1079,8 +1153,8 @@ void CMenuDrawer::DrawItem( DRAWITEMSTRUCT* lpdis )
 
 	if( bMenuIconDraw ){
 		// アイコンとテキストの間に縦線を描画する
-		int nSepColor = (::GetSysColor(COLOR_3DSHADOW) != ::GetSysColor(COLOR_MENU) ? COLOR_3DSHADOW : COLOR_3DHIGHLIGHT);
-		HPEN hPen = ::CreatePen( PS_SOLID, cxBorder, ::GetSysColor(nSepColor) );
+		int nSepColor = (DarkMode.GetSysColor(COLOR_3DSHADOW) != DarkMode.GetSysColor(COLOR_MENU) ? COLOR_3DSHADOW : COLOR_3DHIGHLIGHT);
+		HPEN hPen = ::CreatePen( PS_SOLID, cxBorder, DarkMode.GetSysColor(nSepColor) );
 		HPEN hPenOld = (HPEN)::SelectObject( hdc, hPen );
 		::MoveToEx( hdc, lpdis->rcItem.left + nIndentLeft, lpdis->rcItem.top, NULL );
 		::LineTo(   hdc, lpdis->rcItem.left + nIndentLeft, lpdis->rcItem.bottom );
@@ -1092,8 +1166,8 @@ void CMenuDrawer::DrawItem( DRAWITEMSTRUCT* lpdis )
 	if( lpdis->itemID == F_0 ){
 		// セパレータの作画(セパレータのFuncCodeはF_SEPARETORではなくF_0)
 		int y = lpdis->rcItem.top + (lpdis->rcItem.bottom - lpdis->rcItem.top) / 2;
-		int nSepColor = (::GetSysColor(COLOR_3DSHADOW) != ::GetSysColor(COLOR_MENU) ? COLOR_3DSHADOW : COLOR_3DHIGHLIGHT);
-		HPEN hPen = ::CreatePen( PS_SOLID, 1, ::GetSysColor(nSepColor) );
+		int nSepColor = (DarkMode.GetSysColor(COLOR_3DSHADOW) != DarkMode.GetSysColor(COLOR_MENU) ? COLOR_3DSHADOW : COLOR_3DHIGHLIGHT);
+		HPEN hPen = ::CreatePen( PS_SOLID, 1, DarkMode.GetSysColor(nSepColor) );
 		HPEN hPenOld = (HPEN)::SelectObject( hdc, hPen );
 		::MoveToEx( hdc, lpdis->rcItem.left + (bMenuIconDraw ? nIndentLeft : cxEdge + cxBorder) + cxEdge, y, NULL );
 		::LineTo(   hdc, lpdis->rcItem.right - cxEdge, y );
@@ -1111,15 +1185,15 @@ void CMenuDrawer::DrawItem( DRAWITEMSTRUCT* lpdis )
 	COLORREF textColor;
 	if( lpdis->itemState & ODS_DISABLED ){
 		// アイテムが使用不可(淡色表示にする)
-		textColor = ::GetSysColor( COLOR_GRAYTEXT );
+		textColor = DarkMode.GetSysColor( COLOR_GRAYTEXT );
 	}else if( lpdis->itemState & ODS_SELECTED ){
 #ifdef DRAW_MENU_SELECTION_LIGHT
-		textColor = ::GetSysColor( COLOR_MENUTEXT );
+		textColor = DarkMode.GetSysColor( COLOR_MENUTEXT );
 #else
-		textColor = ::GetSysColor( COLOR_HIGHLIGHTTEXT );
+		textColor = DarkMode.GetSysColor( COLOR_HIGHLIGHTTEXT );
 #endif
 	}else{
-		textColor = ::GetSysColor( COLOR_MENUTEXT );
+		textColor = DarkMode.GetSysColor( COLOR_MENUTEXT );
 	}
 
 #ifdef _DEBUG
@@ -1133,7 +1207,7 @@ void CMenuDrawer::DrawItem( DRAWITEMSTRUCT* lpdis )
 	){
 		//@@@ 2001.12.21 YAZAKI
 		if( lpdis->itemState & ODS_SELECTED ){
-			textColor = ::GetSysColor( COLOR_HIGHLIGHTTEXT );	//	ハイライトカラー
+			textColor = DarkMode.GetSysColor( COLOR_HIGHLIGHTTEXT );	//	ハイライトカラー
 		}
 		else {
 			textColor = RGB( 0, 0, 255 );	//	青くしてる。
@@ -1197,8 +1271,8 @@ void CMenuDrawer::DrawItem( DRAWITEMSTRUCT* lpdis )
 			::InflateRect( &rcFrame, cxEdge * 2, cyEdge * 2 );
 			::MyFillRect( hdc, rcFrame, COLOR_HIGHLIGHT );
 
-			COLORREF colHilight = ::GetSysColor( COLOR_HIGHLIGHT );
-			COLORREF colMenu = ::GetSysColor( COLOR_MENU );
+			COLORREF colHilight = DarkMode.GetSysColor( COLOR_HIGHLIGHT );
+			COLORREF colMenu = DarkMode.GetSysColor( COLOR_MENU );
 			// 16bitカラーの黒色でも少し明るくするように or 0x18 する
 			BYTE valR;
 			BYTE valG;
@@ -1245,7 +1319,7 @@ void CMenuDrawer::DrawItem( DRAWITEMSTRUCT* lpdis )
 				HPEN hPen   = NULL;
 				HPEN hPenOld = NULL;
 				// 2010.05.31 チェックの色を黒(未指定)からテキスト色に変更
-				hPen = ::CreatePen( PS_SOLID, 1, ::GetSysColor(COLOR_MENUTEXT) );
+				hPen = ::CreatePen( PS_SOLID, 1, DarkMode.GetSysColor(COLOR_MENUTEXT) );
 				hPenOld = (HPEN)::SelectObject( hdc, hPen );
 #if 0
 // チェックマークも自分で書く場合

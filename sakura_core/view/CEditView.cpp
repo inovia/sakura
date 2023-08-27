@@ -60,6 +60,7 @@
 #include "util/string_ex2.h"
 #include "util/os.h" //WM_MOUSEWHEEL,IMR_RECONVERTSTRING,WM_XBUTTON*,IMR_CONFIRMRECONVERTSTRING
 #include "util/module.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "debug/CRunningTimer.h"
 #include "apiwrap/StdApi.h"
 #include "config/system_constants.h"
@@ -824,7 +825,21 @@ LRESULT CEditView::DispatchEvent(
 
 		SetHwnd(NULL);
 		return 0L;
-
+	case WM_CTLCOLORSTATIC:
+	{
+		if ((HWND)lParam == m_hwndSizeBoxPlaceholder)  // このコントロールに対しての処理かどうかを確認
+		{
+			auto& DarkMode = CHsp3DarkMode::GetInstance();
+			if ( DarkMode.IsSystemUseDarkMode())
+			{
+				HDC hdcStatic = (HDC)wParam;
+				::SetTextColor(hdcStatic, DarkMode.GetSysColor(COLOR_BTNTEXT));
+				::SetBkColor(hdcStatic, DarkMode.GetSysColor(COLOR_BTNFACE));
+				return (LRESULT)DarkMode.GetSysColorBrush(COLOR_BTNFACE);
+			}
+		}
+	}
+		
 	case MYWM_DOSPLIT:
 //		nPosX = (int)wParam;
 //		nPosY = (int)lParam;

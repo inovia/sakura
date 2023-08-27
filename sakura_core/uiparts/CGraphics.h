@@ -35,6 +35,7 @@
 #include <cassert>
 #include <vector>
 #include "doc/CDocTypeSetting.h"
+#include "hsp/CHsp3DarkMode.h"
 
 /*!
  * @brief API関数FillRectの高速版(ブラシ用)
@@ -72,7 +73,8 @@ inline bool MyFillRect( const HDC hDC, const RECT &rc, const int sysColor ) noex
 
 	if ( !hDC ) return false;
 
-	HBRUSH hBrush = ::GetSysColorBrush( sysColor );
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	HBRUSH hBrush = DarkMode.GetSysColorBrush( sysColor );
 	if ( hBrush == NULL ) return false;
 
 	bool retMyFillRect = MyFillRect( hDC, rc, hBrush );

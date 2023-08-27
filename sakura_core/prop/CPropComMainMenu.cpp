@@ -35,6 +35,7 @@
 #include "typeprop/CImpExpManager.h"
 #include "dlg/CDlgInput1.h"
 #include "util/shell.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "apiwrap/StdControl.h"
 #include "sakura_rc.h"
 #include "sakura.hh"
@@ -289,6 +290,18 @@ INT_PTR CPropMainMenu::DispatchEvent(
 
 		bInMove = false;
 
+		// ダークモード
+		{
+			const auto& DarkMode = CHsp3DarkMode::GetInstance();
+			if ( DarkMode.IsSystemUseDarkMode())
+			{
+				::SendMessage(hwndTreeRes,
+					TVM_SETTEXTCOLOR, 0, DarkMode.GetSysColor(COLOR_BTNTEXT));
+				::SendMessage(hwndTreeRes,
+					TVM_SETBKCOLOR, 0, DarkMode.GetSysColor(COLOR_BTNFACE));
+			}
+		}
+		
 		return TRUE;
 
 	case WM_NOTIFY:

@@ -64,6 +64,7 @@ protected:
 	int CalcButtonSize( void );	/* ボタンのサイズを計算 */
 
 	/* 仮想関数 */
+	LRESULT DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam) override;
 
 	/* 仮想関数 メッセージ処理 詳しくは実装を参照 */
 	LRESULT OnTimer(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) override;	// WM_TIMERタイマーの処理

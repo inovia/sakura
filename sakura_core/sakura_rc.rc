@@ -90,7 +90,7 @@ CAPTION "指定行へジャンプ"
 FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x1
 BEGIN
     LTEXT           "行番号(&N)",IDC_STATIC,5,4,34,10
-    EDITTEXT        IDC_EDIT_LINENUM,40,4,50,12, ES_NUMBER
+    EDITTEXT        IDC_EDIT_LINENUM,40,4,50,12,ES_NUMBER
     CONTROL         "Spin1",IDC_SPIN_LINENUM,"msctls_updown32",UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,82,4,9,12
     CONTROL         "折り返し単位の行番号(&R)",IDC_RADIO_LINENUM_LAYOUT,"Button",BS_AUTORADIOBUTTON | WS_GROUP,94,5,97,10
     CONTROL         "改行単位の行番号(&W)",IDC_RADIO_LINENUM_CRLF,"Button",BS_AUTORADIOBUTTON,94,20,87,10
@@ -1701,6 +1701,29 @@ BEGIN
     PUSHBUTTON      "ヘルプ(&H)",IDC_BUTTON_HELP,286,229,50,14
 END
 
+IDD_HSP_REPORTS DIALOGEX 0, 0, 285, 238
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "汎用レポートダイアログ"
+FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_HSP_EDIT_INPUT,7,20,271,193,ES_MULTILINE | ES_READONLY | WS_VSCROLL
+    DEFPUSHBUTTON   "&OK",IDOK,228,217,50,14
+    LTEXT           "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",IDC_STATIC_MSG,6,5,175,10
+END
+
+IDD_HSP_INPUT2 DIALOGEX 0, 0, 185, 91
+STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "汎用入力ダイアログ"
+FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_EDIT_INPUT1,5,17,175,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "&OK",IDOK,37,70,50,14
+    PUSHBUTTON      "キャンセル(&X)",IDCANCEL,98,70,50,14
+    LTEXT           "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",IDC_STATIC_MSG,6,5,175,10
+    CONTROL         "",IDC_HSP_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,34,171,10
+    CONTROL         "",IDC_HSP_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,51,171,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1858,6 +1881,10 @@ BEGIN
         BOTTOMMARGIN, 68
     END
 
+    IDD_FILEOPEN, DIALOG
+    BEGIN
+    END
+
     IDD_FILEUPDATEQUERY, DIALOG
     BEGIN
         LEFTMARGIN, 7
@@ -1920,6 +1947,10 @@ BEGIN
         RIGHTMARGIN, 180
         TOPMARGIN, 7
         BOTTOMMARGIN, 216
+    END
+
+    IDD_TYPE_ASCERTAIN, DIALOG
+    BEGIN
     END
 
     IDD_PROP_SCREEN, DIALOG
@@ -2086,12 +2117,44 @@ BEGIN
         BOTTOMMARGIN, 237
     END
 
+    IDD_PROP_MAINMENU, DIALOG
+    BEGIN
+    END
+
     IDD_WINPOSSIZE, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 170
         TOPMARGIN, 7
         BOTTOMMARGIN, 152
+    END
+
+    IDD_PLUGIN_OPTION, DIALOG
+    BEGIN
+    END
+
+    IDD_FILETREE, DIALOG
+    BEGIN
+    END
+
+    IDD_WINLIST, DIALOG
+    BEGIN
+    END
+
+    IDD_HSP_REPORTS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 278
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 231
+    END
+
+    IDD_HSP_INPUT2, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 178
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 84
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -2188,6 +2251,16 @@ BEGIN
     0
 END
 
+IDD_HSP_REPORTS AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_HSP_INPUT2 AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2209,12 +2282,30 @@ BEGIN
     F_EDIT_TOPMENU          "編集"
     F_CONVERT_TOPMENU       "変換"
     F_SEARCH_TOPMENU        "検索"
-	F_HSP_TOPMENU           "ＨＳＰ"
     F_TOOL_TOPMENU          "ツール"
     F_OPTION_TOPMENU        "設定"
     F_WINDOW_TOPMENU        "ウィンドウ"
     F_HELP_TOPMENU          "ヘルプ"
     F_WINDOW_LIST_SUBMENU   "ウィンドウ一覧"
+END
+
+STRINGTABLE
+BEGIN
+    STR_FILEDIALOG_MRU      "最近のファイル(&F):"
+    STR_FILEDIALOG_OPENFOLDER "最近のフォルダー(&D):"
+    STR_IMPEXP_REGEX4       "キーワードが長過ぎるため切り捨てました。"
+    STR_STATUS_FONTZOOM_0   "%4.0f %%"
+    STR_STATUS_FONTZOOM_1   "%4.1f %%"
+    STR_DLGGREP_THISDOC     "(現在のドキュメント)"
+    STR_DLGGREP_THISDOC_ERROR "対象ファイルに:HWND:は入力できません"
+    STR_ERR_DLGFUNCLKUP20   "ＨＳＰ"
+    F_HSP_TOPMENU           "ＨＳＰ"
+    STR_OUTLINE_HSP3        "HSP3"
+    STR_DLGFNCLST_HSP3_LABEL "ラベル"
+    STR_DLGFNCLST_HSP3_DEFFUNC "命令"
+    STR_DLGFNCLST_HSP3_DEFCFUNC "関数"
+    STR_DLGFNCLST_LIST_NAME "名前"
+    STR_DLGFNCLST_LIST_NAME_M "名前 *"
 END
 
 STRINGTABLE
@@ -2302,6 +2393,8 @@ STRINGTABLE
 BEGIN
     F_OPEN_POWERSHELL       "PowerShellを開く"
     F_OPEN_POWERSHELL_AS_ADMIN "管理者としてPowerShellを開く"
+    F_HSP_LABEL_LIST        "HSPのラベル・関数一覧..."
+    F_HSP_COMPILE_RUN       "コンパイル + 実行"
 END
 
 STRINGTABLE
@@ -2833,43 +2926,41 @@ END
 
 STRINGTABLE
 BEGIN
-	F_HSP_LABEL_LIST				"HSPのラベル・関数一覧..."
-	F_HSP_COMPILE_RUN				"コンパイル + 実行"
-	F_HSP_RUN						"実行"
-	F_HSP_COMPILE_ONLY				"コンパイルのみ"
-	F_HSP_SHOW_ERR					"エラー表示..."
-	F_HSP_CREATE_OBJ				"オブジェクトファイル作成"
-	F_HSP_CREATE_STARTAX			"START.AXファイル作成"
-	F_HSP_CREATE_EXE_AUTO			"実行ファイル自動作成"
-	F_HSP_RUN_EXTERNAL				"外部ファイル実行..."
-	F_HSP_RESV_KEYWORD_LIST			"予約キーワード一覧..."
-	F_HSP_RUN_OPTIONS				"起動オプション..."
-	F_HSP_SHOW_DEBUG_WINDOW			"Debugウィンドウ表示"
-	F_HSP_OPEN_SRC_FOLDER			"ソースフォルダを開く..."
-	F_HSP_RUN_ASSIST				"HSPアシスタント起動..."
-	F_HSP_RUN_HSPTV					"HSPTVブラウザ起動..."
-	F_HSP_CREATE_DPM				"指定フォルダからDPM作成..."
-	F_HSP_CREATE_PACKOPT			"PACKOPT項目の作成..."
-	F_HSP_CONVERT_DISH_C			"HSP3Dish / Cソース変換..."
-	F_HSP_OPEN_HGIMG4_TOOL			"HGIMG4ツールを開く..."
-	F_HSP_OPEN_PAINT_TOOL			"ペイントツールを開く..."
-	F_HSP_OPEN_HELP_SOURCE_EDITOR	"Help Source Editorを開く..."
-	F_HSP_SEARCH_KEYWORD			"HSPキーワード検索..."
-	F_HSP_OPEN_PG_MANUAL			"HSPプログラミング・マニュアルを開く..."
-	F_HSP_OPEN_FUNC_REF				"HSP命令リファレンスを開く..."
-	F_HSP_OPEN_MANUAL_INDEX			"HSPマニュアル目次..."
+    F_HSP_RUN               "実行"
+    F_HSP_COMPILE_ONLY      "コンパイルのみ"
+    F_HSP_SHOW_ERR          "エラー表示..."
+    F_HSP_CREATE_OBJ        "オブジェクトファイル作成"
+    F_HSP_CREATE_STARTAX    "START.AXファイル作成"
+    F_HSP_CREATE_EXE_AUTO   "実行ファイル自動作成"
+    F_HSP_RUN_EXTERNAL      "外部ファイル実行..."
+    F_HSP_RESV_KEYWORD_LIST "予約キーワード一覧..."
+    F_HSP_RUN_OPTIONS       "起動オプション..."
+    F_HSP_SHOW_DEBUG_WINDOW "Debugウィンドウ表示"
+    F_HSP_OPEN_SRC_FOLDER   "ソースフォルダを開く..."
+    F_HSP_RUN_ASSIST        "HSPアシスタント起動..."
+    F_HSP_RUN_HSPTV         "HSPTVブラウザ起動..."
+    F_HSP_CREATE_DPM        "指定フォルダからDPM作成..."
+    F_HSP_CONVERT_DISH_C    "HSP3Dish / Cソース変換..."
+    F_HSP_OPEN_HGIMG4_TOOL  "HGIMG4ツールを開く..."
+END
+
+STRINGTABLE
+BEGIN
+    F_HSP_OPEN_PAINT_TOOL   "ペイントツールを開く..."
+    F_HSP_SEARCH_KEYWORD    "HSPキーワード検索..."
+    F_HSP_OPEN_PG_MANUAL    "HSPプログラミング・マニュアルを開く..."
+    F_HSP_OPEN_FUNC_REF     "HSP命令リファレンスを開く..."
+    F_HSP_OPEN_MANUAL_INDEX "HSPマニュアル目次..."
+    F_HSP_OPEN_HELP_SOURCE_EDITOR "Help Source Editorを開く..."
+    F_HSP_CREATE_PACKOPT    "PACKOPT項目の作成..."
+    F_CUSTMENU_1            "カスタムメニュー1"
+    F_CUSTMENU_2            "カスタムメニュー2"
+    F_CUSTMENU_3            "カスタムメニュー3"
 END
 
 STRINGTABLE
 BEGIN
     F_MENU_RBUTTON          "右クリックメニュー"
-END
-
-STRINGTABLE
-BEGIN
-    F_CUSTMENU_1            "カスタムメニュー1"
-    F_CUSTMENU_2            "カスタムメニュー2"
-    F_CUSTMENU_3            "カスタムメニュー3"
 END
 
 STRINGTABLE
@@ -3205,8 +3296,6 @@ BEGIN
     STR_DLGGREP4            "検索対象フォルダーを指定してください。"
     STR_DLGGREP5            "検索対象フォルダーが正しくありません。"
     STR_DLGGREP6            "検索対象フォルダーが長すぎます。"
-    STR_DLGGREP_THISDOC     "(現在のドキュメント)"
-    STR_DLGGREP_THISDOC_ERROR "対象ファイルに:HWND:は入力できません"
     STR_DLGJUMP1            "正しく行番号を入力してください。"
     STR_DLGJUMP_PSLQL       "%d 行  %s  パッケージ仕様部"
     STR_DLGOPNFL1           "変換なし"
@@ -3460,15 +3549,6 @@ END
 
 STRINGTABLE
 BEGIN
-    STR_FILEDIALOG_MRU      "最近のファイル(&F):"
-    STR_FILEDIALOG_OPENFOLDER "最近のフォルダー(&D):"
-    STR_IMPEXP_REGEX4       "キーワードが長過ぎるため切り捨てました。"
-    STR_STATUS_FONTZOOM_0   "%4.0f %%"
-    STR_STATUS_FONTZOOM_1   "%4.1f %%"
-END
-
-STRINGTABLE
-BEGIN
     STR_GREP_CASE_SENSITIVE "    (英大文字小文字を区別する)\r\n"
     STR_GREP_IGNORE_CASE    "    (英大文字小文字を区別しない)\r\n"
     STR_GREP_REGEX_DLL      "    (正規表現:"
@@ -3635,7 +3715,6 @@ BEGIN
     STR_ERR_DLGFUNCLKUP17   "支援"
     STR_ERR_DLGFUNCLKUP18   "その他"
     STR_ERR_DLGFUNCLKUP19   "プラグイン"
-	STR_ERR_DLGFUNCLKUP20   "ＨＳＰ"
     STR_ERR_DLGKEYBIND1     "キー\t機能名\t関数名\t機能番号\tキーマクロ記録可/不可"
     STR_ERR_DLGKEYBIND2     "---名前が定義されていない-----"
     STR_ERR_DLGKEYMACMGR1   "//キーボードマクロのファイル\r\n"

@@ -125,6 +125,15 @@
     <Filter Include="Cpp Source Files\hsp\res">
       <UniqueIdentifier>{345d9ea9-f70c-45d7-98ac-49bee2343a35}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Cpp Source Files\hsp\win32-custom-menubar-aero-theme">
+      <UniqueIdentifier>{31e0ace4-26f5-4d61-8edc-f4023189b2bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Cpp Source Files\hsp\PolyHook">
+      <UniqueIdentifier>{cb17b5bf-fc8f-4c9e-98a1-dbf6869f9400}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Cpp Source Files\hsp\win32-darkmode">
+      <UniqueIdentifier>{e6bca8fa-5318-40bc-b258-2358542a5c63}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\sakura_core\Funccode_define.h">
@@ -1132,6 +1141,24 @@
     </ClInclude>
     <ClInclude Include="..\sakura_core\hsp\CHsp3Font.h">
       <Filter>Cpp Source Files\hsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\hsp\CHsp3DarkMode.h">
+      <Filter>Cpp Source Files\hsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\hsp\win32-custom-menubar-aero-theme\UAHMenuBar.h">
+      <Filter>Cpp Source Files\hsp\win32-custom-menubar-aero-theme</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\hsp\PolyHook\IatHook.h">
+      <Filter>Cpp Source Files\hsp\PolyHook</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\hsp\win32-darkmode\DarkMode.h">
+      <Filter>Cpp Source Files\hsp\win32-darkmode</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\dlg\CDlgHspReports.h">
+      <Filter>Cpp Source Files\dlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\dlg\CDlgHspInput2.h">
+      <Filter>Cpp Source Files\dlg</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2353,6 +2380,18 @@
     </ClCompile>
     <ClCompile Include="..\sakura_core\hsp\CHsp3Font.cpp">
       <Filter>Cpp Source Files\hsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\hsp\CHsp3DarkMode.cpp">
+      <Filter>Cpp Source Files\hsp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\hsp\win32-custom-menubar-aero-theme\UAHMenuBar.cpp">
+      <Filter>Cpp Source Files\hsp\win32-custom-menubar-aero-theme</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\dlg\CDlgHspReports.cpp">
+      <Filter>Cpp Source Files\dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\dlg\CDlgHspInput2.cpp">
+      <Filter>Cpp Source Files\dlg</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -45,6 +45,7 @@ protected:
 
 	int GetData( void ) override;	/* ダイアログデータの取得 */
 	void SetData( void ) override;	/* ダイアログデータの設定 */
+	INT_PTR DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam) override;
 	BOOL OnInitDialog(HWND hwnd, WPARAM wParam, LPARAM lParam) override;
 	BOOL OnBnClicked(int wID) override;
 	LPVOID GetHelpIdTable(void) override;	//@@@ 2002.01.18 add

@@ -28,6 +28,7 @@
 #include "view/colors/EColorIndexType.h"
 #include "util/shell.h"
 #include "util/window.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "apiwrap/StdControl.h"
 #include "CSelectLang.h"
 #include "env/DLLSHAREDATA.h"
@@ -43,10 +44,22 @@ typedef INT_PTR (CPropTypes::*DISPATCH_EVENT_TYPE)(HWND,UINT,WPARAM,LPARAM);
 // 共通ダイアログプロシージャ
 INT_PTR CALLBACK PropTypesCommonProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam, DISPATCH_EVENT_TYPE pDispatch)
 {
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hwndDlg, uMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
 	PROPSHEETPAGE*	pPsp;
 	CPropTypes* pCPropTypes;
 	switch( uMsg ){
 	case WM_INITDIALOG:
+
+		// ダークモード
+		DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
+
 		pPsp = (PROPSHEETPAGE*)lParam;
 		pCPropTypes = reinterpret_cast<CPropTypes*>(pPsp->lParam);
 		if( NULL != pCPropTypes ){

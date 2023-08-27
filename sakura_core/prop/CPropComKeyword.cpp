@@ -27,6 +27,7 @@
 #include "dlg/CDlgInput1.h"
 #include "util/shell.h"
 #include "util/window.h"
+#include "hsp/CHsp3DarkMode.h"
 #include <memory>
 #include "apiwrap/StdControl.h"
 #include "sakura_rc.h"
@@ -157,6 +158,28 @@ INT_PTR CPropKeyword::DispatchEvent(
 
 		if( hwndLIST_KEYWORD == pNMHDR->hwndFrom ){
 			switch( pNMHDR->code ){
+
+			case NM_CUSTOMDRAW:
+			{
+				// ダークモード
+				const auto& DarkMode = CHsp3DarkMode::GetInstance();
+				if ( DarkMode.IsSystemUseDarkMode())
+				{
+					LPNMLVCUSTOMDRAW lplvcd = (LPNMLVCUSTOMDRAW)lParam;
+					switch (lplvcd->nmcd.dwDrawStage)
+					{
+					case CDDS_PREPAINT:
+						return CDRF_NOTIFYITEMDRAW;
+
+					case CDDS_ITEMPREPAINT:		// 何故か来ない件
+						lplvcd->clrText = DarkMode.GetSysColor(COLOR_BTNTEXT);
+						lplvcd->clrTextBk = DarkMode.GetSysColor(COLOR_BTNFACE);
+						return CDRF_NEWFONT;
+					}
+				}
+				break;
+			}
+
 			case NM_DBLCLK:
 //				MYTRACE( L"NM_DBLCLK     \n" );
 				/* リスト中で選択されているキーワードを編集する */

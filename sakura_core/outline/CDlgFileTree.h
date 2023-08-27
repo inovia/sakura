@@ -47,6 +47,7 @@ public:
 	int DoModal(HINSTANCE hInstance, HWND hwndParent, LPARAM lParam);
 
 private:
+	INT_PTR DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam) override;
 	BOOL	OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam) override;
 	BOOL	OnBnClicked(int wID) override;
 	BOOL	OnNotify(NMHDR* pNMHDR) override;

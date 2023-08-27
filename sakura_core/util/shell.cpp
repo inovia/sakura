@@ -45,6 +45,7 @@
 #include "util/os.h"
 #include "util/module.h"
 #include "util/window.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "env/CShareData.h"
 #include "env/DLLSHAREDATA.h"
 #include "extmodule/CHtmlHelp.h"
@@ -254,6 +255,29 @@ static LRESULT CALLBACK PropSheetWndProc( HWND hwnd, UINT uMsg, WPARAM wParam, L
 	return ::CallWindowProc( s_pOldPropSheetWndProc, hwnd, uMsg, wParam, lParam );
 }
 
+// サブクラス化(ダークモード用)
+static LRESULT CALLBACK PropSheetSubclassProc(
+	HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+	// ダークモード
+	CHsp3DarkMode* pThis = reinterpret_cast<CHsp3DarkMode*>(dwRefData);
+	LPARAM ret;
+	if (pThis->DarkModeDispatchEvent(hWnd, uMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
+	switch (uMsg)
+	{
+		case WM_DESTROY:
+		{
+			::RemoveWindowSubclass(hWnd, PropSheetSubclassProc, uIdSubclass);
+			break;
+		}
+	}
+	return ::DefSubclassProc(hWnd, uMsg, wParam, lParam);
+}
+
 /*!	独自拡張プロパティシートのコールバック関数
 	@author ryoji
 	@date 2007.05.25 新規
@@ -273,6 +297,18 @@ static int CALLBACK PropSheetProc( HWND hwndDlg, UINT uMsg, LPARAM lParam )
 			::SendMessage( hwndBtn, WM_SETFONT, (WPARAM)hFont, MAKELPARAM( FALSE, 0 ) );
 			::SetWindowPos( hwndBtn, ::GetDlgItem( hwndDlg, IDHELP), 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
 		}
+
+		// ダークモード
+		auto& DarkMode = CHsp3DarkMode::GetInstance();
+		DarkMode.DarkModeOnInitDialog(hwndDlg, 0, lParam);
+
+		// サブクラス化
+		if ( DarkMode.IsSystemUseDarkMode() )
+		{
+			::SetWindowSubclass(
+				hwndDlg, PropSheetSubclassProc, 0, reinterpret_cast<DWORD_PTR>(&DarkMode));
+		}
+		
 	}
 	return 0;
 }

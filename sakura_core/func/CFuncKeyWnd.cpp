@@ -24,6 +24,7 @@
 #include "env/DLLSHAREDATA.h"
 #include "window/CEditWnd.h"
 #include "doc/CEditDoc.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "util/input.h"
 #include "util/window.h"
 #include "apiwrap/StdApi.h"
@@ -169,6 +170,10 @@ HWND CFuncKeyWnd::Open( HINSTANCE hInstance, HWND hwndParent, CEditDoc* pCEditDo
 	Timer_ONOFF( true ); // 20060126 aroka
 	OnTimer( GetHwnd(), WM_TIMER, IDT_FUNCWND, ::GetTickCount() );	// 初回更新	// 2006.12.20 ryoji
 
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog( GetHwnd(), 0, 0);
+
 	return GetHwnd();
 }
 
@@ -246,6 +251,23 @@ LRESULT CFuncKeyWnd::DispatchEvent(
 	}
 }
 #endif//////////////////////////////////////////////////////////////
+
+/*!
+	標準以外のメッセージを捕捉する
+*/
+LRESULT CFuncKeyWnd::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
+{
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
+	/* 基底クラスメンバ */
+	return CWnd::DispatchEvent(hWnd, wMsg, wParam, lParam);
+}
 
 LRESULT CFuncKeyWnd::OnCommand( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {

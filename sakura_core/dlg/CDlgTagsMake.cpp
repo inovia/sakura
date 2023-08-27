@@ -38,6 +38,7 @@
 #include "env/DLLSHAREDATA.h"
 #include "func/Funccode.h"
 #include "util/shell.h"
+#include "hsp/CHsp3DarkMode.h"
 #include "apiwrap/StdControl.h"
 #include "CSelectLang.h"
 #include "sakura_rc.h"
@@ -76,6 +77,33 @@ int CDlgTagsMake::DoModal(
 	wcscpy( m_szPath, pszPath );
 
 	return (int)CDialog::DoModal( hInstance, hwndParent, IDD_TAG_MAKE, lParam );
+}
+
+/*!
+	標準以外のメッセージを捕捉する
+*/
+INT_PTR CDlgTagsMake::DispatchEvent(HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam)
+{
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
+	/* 基底クラスメンバ */
+	return CDialog::DispatchEvent(hWnd, wMsg, wParam, lParam);
+}
+
+BOOL CDlgTagsMake::OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam)
+{
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
+
+	/* 基底クラスメンバ */
+	return CDialog::OnInitDialog(hwndDlg, wParam, lParam);
 }
 
 BOOL CDlgTagsMake::OnBnClicked( int wID )
