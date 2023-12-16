@@ -124,7 +124,16 @@ public:
 
 	bool WhereCurrentWord( CLogicInt nLineNum, CLogicInt nIdx,
 						   CLogicInt* pnIdxFrom, CLogicInt* pnIdxTo,
-						   CNativeW* pcmcmWord, CNativeW* pcmcmWordLeft );	/* 現在位置の単語の範囲を調べる */
+						   CNativeW* pcmcmWord, CNativeW* pcmcmWordLeft,
+	                       bool bHSPMode = false);					/* 現在位置の単語の範囲を調べる */
+
+	/* 現在位置のダブルクオーテーションの範囲を調べる */
+	bool GetDoubleQuateCurrentWord(
+		CLogicInt	nLineNum,
+		CLogicInt	nIdx,
+		CLogicInt*	pnIdxFrom,
+		CLogicInt*	pnIdxTo
+	);
 
 	bool PrevOrNextWord( CLogicInt nLineNum, CLogicInt nIdx, CLogicInt* pnColumnNew,
 						 BOOL bLEFT, BOOL bStopsBothEnds );	/* 現在位置の左右の単語の先頭位置を調べる */

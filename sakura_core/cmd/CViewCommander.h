@@ -204,7 +204,7 @@ public:
 	void Command_MODIFYLINE_PREV( bool bSelect );	// 前の変更行へ
 
 	/* 選択系 */
-	bool Command_SELECTWORD( CLayoutPoint* pptCaretPos = NULL );		/* 現在位置の単語選択 */
+	bool Command_SELECTWORD( CLayoutPoint* pptCaretPos = NULL, bool bMoveCaretWordTop = true );		/* 現在位置の単語選択 */
 	void Command_SELECTALL( void );			/* すべて選択 */
 	void Command_SELECTLINE( int lparam );	/* 1行選択 */	// 2007.10.13 nasukoji
 	void Command_BEGIN_SELECT( void );		/* 範囲選択開始 */
@@ -281,7 +281,7 @@ public:
 	void Command_REPLACE_DIALOG( void );				/* 置換(置換ダイアログ) */
 	void Command_REPLACE( HWND hwndParent );			/* 置換(実行) 2002/04/08 YAZAKI 親ウィンドウを指定するように変更 */
 	void Command_REPLACE_ALL();							/* すべて置換(実行) */
-	void Command_SEARCH_CLEARMARK( void );				/* 検索マークのクリア */
+	void Command_SEARCH_CLEARMARK( bool bWordOnly = false, bool bRegistHistory = true );				/* 検索マークのクリア */
 	void Command_JUMP_SRCHSTARTPOS( void );				/* 検索開始位置へ戻る */	// 02/06/26 ai
 
 	void Command_GREP_DIALOG( void );					/* Grepダイアログの表示 */
@@ -381,11 +381,19 @@ public:
 	void Command_HSP_CONVERT_DISH_C(void);
 	void Command_HSP_OPEN_HGIMG4_TOOL(void);
 	void Command_HSP_OPEN_PAINT_TOOL(void);
+	void Command_HSP_OPEN_MAP_TOOL(void);
 	void Command_HSP_OPEN_HELP_SOURCE_EDITOR(void);
+	void Command_HSP_RUN_ICON_CONVERTER(void);
+	void Command_HSP_RUN_HSP3_UPDATER(void);
 	void Command_HSP_SEARCH_KEYWORD(void);
 	void Command_HSP_OPEN_PG_MANUAL(void);
 	void Command_HSP_OPEN_FUNC_REF(void);
 	void Command_HSP_OPEN_MANUAL_INDEX(void);
+	void Command_HSP_OPEN_DOCUMENT(void);
+	bool Command_HSP_OPEN_DOCUMENT_SUB(CNativeW &cmemCurText, WCHAR  szCommand[1024], const WCHAR  szHSPCommonDir[1024], const WCHAR  szHSPFileDir[1024]);
+	void Command_HSP_JUMP_DEFINITION(void);
+	void Command_HSP_JUMP_ALL_REFERENCES(void);
+	void Command_HSP_HIGHLIGHT_KEYWORDS(void);
 
 	/* カスタムメニュー */
 	void Command_MENU_RBUTTON( void );	/* 右クリックメニュー */
@@ -440,6 +448,7 @@ private:
 	void AlertNotFound(HWND hwnd, bool bReplaceAll, LPCWSTR format, ...);
 	void DelCharForOverwrite(const wchar_t* pszInput, int nLen);	// 上書き用の一文字削除	// 2009.04.11 ryoji
 	bool Sub_PreProcTagJumpByTagsFile( WCHAR* szCurrentPath, int count ); // タグジャンプの前処理
+	bool Sub_HSP_GetHSPFileDir(WCHAR* szHSPFileDirPath);
 	bool Sub_HSP_GetFileName( WCHAR* szHSPTmpFilePath, WCHAR* szHSPFilePath, WCHAR* szHSPObjFilePath);
 
 public:

@@ -45,6 +45,7 @@
 #include <ShlObj.h>
 
 #include "window/CEditWnd.h"
+#include "_main/CProcess.h"
 #include "_main/CControlTray.h"
 #include "_main/CCommandLine.h"	/// 2003/1/26 aroka
 #include "_main/CAppMode.h"
@@ -962,6 +963,19 @@ void CEditWnd::LayoutMainMenu()
 				}
 				break;
 			}
+			case F_HSPINIMENU_LIST:				// HSP用Menu.txtリスト
+			{
+				// Menu.txt からのアイテムを列挙する
+				auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+				const auto& items = Hsp3.GetMenuIniItems();
+				int nItemCount = items.size();
+
+				if ( nItemCount < MAX_HSPMENUINI)
+					nCount = nItemCount;
+				else
+					nCount = MAX_HSPMENUINI;	// リミッタ
+			}
+			break;
 			::AppendMenu( hMenu, MF_POPUP | MF_STRING | (nCount<=0 ? MF_GRAYED : 0), (UINT_PTR)CreatePopupMenu(),
 				CKeyBind::MakeMenuLabel( LS(cMainMenu->m_nFunc), cMainMenu->m_sKey ) );
 			break;
@@ -2328,6 +2342,18 @@ void CEditWnd::OnCommand( WORD wNotifyCode, WORD wID , HWND hwndCtl )
 				}
 			}
 		}
+		// HSP用 Menu.txt
+		else if (wID - IDM_SELHSPMENUINI >= 0 && wID - IDM_SELHSPMENUINI < MAX_HSPMENUINI) {
+			
+			// Menu.txt からのアイテムを列挙する
+			auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+			const auto& items = Hsp3.GetMenuIniItems();
+
+			if ((wID - IDM_SELHSPMENUINI) < items.size())
+			{
+				Hsp3.ExecMenuIniItem(GetHwnd(), items[wID - IDM_SELHSPMENUINI]);
+			}
+		}
 		//その他コマンド
 		else{
 			//ビューにフォーカスを移動しておく
@@ -2739,6 +2765,28 @@ bool CEditWnd::InitMenu_Special(HMENU hMenu, EFunctionCode eFunc)
 					TRUE, (*it)->GetFunctionCode() );
 			}
 			bInList = (prevPlugin != NULL);
+		}
+		break;
+	case F_HSPINIMENU_LIST:
+		{
+			// Menu.txt からのアイテムを列挙する
+			auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+			const auto& items = Hsp3.GetMenuIniItems();
+			int nItemCount = items.size();
+
+			bInList = (nItemCount > 0);
+
+			for (int i = 0; i < nItemCount; i++)
+			{
+				// リミッタ
+				if (MAX_HSPMENUINI <= i)
+					break;
+
+				const auto& item = items[i];
+
+				m_cMenuDrawer.MyAppendMenu(
+					hMenu, MF_BYPOSITION | MF_STRING, IDM_SELHSPMENUINI + i, item.menuName.c_str(), L"");
+			}
 		}
 		break;
 	}

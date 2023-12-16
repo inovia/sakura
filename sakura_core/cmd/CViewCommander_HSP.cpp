@@ -23,6 +23,30 @@
 // バッファサイズ
 static const int BUF_SIZE = 1024;
 
+bool CViewCommander::Sub_HSP_GetHSPFileDir( WCHAR* szHSPFileDirPath)
+{
+	const auto& pDoc = GetDocument();
+	if ( pDoc->m_cDocFile.GetFilePathClass().IsValidPath())
+	{
+		// ファイルパスごとコピー
+		::wcsncpy_s(
+			szHSPFileDirPath, BUF_SIZE, pDoc->m_cDocFile.GetFilePath(), BUF_SIZE);
+
+		// フォルダパスのみにする
+		::PathRemoveFileSpec(szHSPFileDirPath);
+	}
+	else
+	{
+		// 現在のカレントディレクトリを取得
+		DWORD dwRet = ::GetCurrentDirectory(BUF_SIZE, szHSPFileDirPath);
+		if ( dwRet == 0)
+		{
+			return false;	// まず、失敗しない思う
+		}
+	}
+	return true;
+}
+
 bool CViewCommander::Sub_HSP_GetFileName(
 	WCHAR* szHSPTmpFilePath, WCHAR* szHSPFilePath, WCHAR* szHSPObjFilePath)
 {
@@ -73,6 +97,15 @@ void CViewCommander::Command_HSP_COMPILE_RUN(void)
 		return;
 	}
 
+	// 実行前に自動保存するか？
+	if ( Hsp3.IsAutoSaveBeforeCompile())
+	{
+		if (!Command_FILESAVEALL())
+		{
+			return;
+		}
+	}
+
 	// hsptmp を一時保存
 	if (! Command_PUTFILE( szHSPTmpFilePath, CODE_AUTODETECT, 0x00))
 	{
@@ -84,7 +117,8 @@ void CViewCommander::Command_HSP_COMPILE_RUN(void)
 	ECodeType codeType = pDoc->GetDocumentEncoding();
 	
 	// コンパイル実行
-	if (! Hsp3.CompileRun( m_pCommanderView->GetHwnd(),
+	if (! Hsp3.CompileRun(
+		m_pCommanderView->GetHwnd(),
 		szHSPTmpFilePath, szHSPFilePath,
 		szHSPObjFilePath,
 		false					/* レポート強制表示モードOFF */,
@@ -133,6 +167,15 @@ void CViewCommander::Command_HSP_COMPILE_ONLY(void)
 		szHSPTmpFilePath, szHSPFilePath, szHSPObjFilePath))
 	{
 		return;
+	}
+
+	// 実行前に自動保存するか？
+	if ( Hsp3.IsAutoSaveBeforeCompile())
+	{
+		if (!Command_FILESAVEALL())
+		{
+			return;
+		}
 	}
 
 	// hsptmp を一時保存
@@ -448,10 +491,28 @@ void CViewCommander::Command_HSP_OPEN_PAINT_TOOL( void )
 	Hsp3.OpenPaintTool( m_pCommanderView->GetHwnd());
 }
 
+void CViewCommander::Command_HSP_OPEN_MAP_TOOL(void)
+{
+	const auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+	Hsp3.OpenMapTool( m_pCommanderView->GetHwnd());
+}
+
 void CViewCommander::Command_HSP_OPEN_HELP_SOURCE_EDITOR(void)
 {
 	const auto& Hsp3 = CProcess::getInstance()->GetHsp3();
-	Hsp3.OpenHelpSourceEditor(m_pCommanderView->GetHwnd());
+	Hsp3.OpenHelpSourceEditor( m_pCommanderView->GetHwnd());
+}
+
+void CViewCommander::Command_HSP_RUN_ICON_CONVERTER(void)
+{
+	const auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+	Hsp3.RunIconConverter(m_pCommanderView->GetHwnd());
+}
+
+void CViewCommander::Command_HSP_RUN_HSP3_UPDATER(void)
+{
+	const auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+	Hsp3.RunHSP3Updater(m_pCommanderView->GetHwnd());
 }
 
 // キーワード検索
@@ -459,7 +520,7 @@ void CViewCommander::Command_HSP_SEARCH_KEYWORD( void )
 {
 	/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
 	CNativeW		cmemCurText;
-	m_pCommanderView->GetCurrentTextForSearchDlg(cmemCurText);
+	m_pCommanderView->GetCurrentTextForSearchForHSP(cmemCurText);
 
 	const auto& Hsp3 = CProcess::getInstance()->GetHsp3();
 	Hsp3.SearchKeyword( m_pCommanderView->GetHwnd(), cmemCurText);
@@ -484,4 +545,219 @@ void CViewCommander::Command_HSP_OPEN_MANUAL_INDEX(void)
 
 	const auto& Hsp3 = CProcess::getInstance()->GetHsp3();
 	Hsp3.OpenManualIndex( m_pCommanderView->GetHwnd(), bJapanese);
+}
+
+void CViewCommander::Command_HSP_OPEN_DOCUMENT(void)
+{
+	// 現在のフォルダパス
+	WCHAR szHSPFileDir[BUF_SIZE] = { 0 };	// HSPファイルのフォルダパス
+	if (! Sub_HSP_GetHSPFileDir( szHSPFileDir))
+	{
+		return;
+	}
+
+	// Commonフォルダパス
+	WCHAR szHSPCommonDir[BUF_SIZE] = { 0 };		// Commonフォルダのパス
+	GetExedir( szHSPCommonDir, L"common");
+
+	/* 現在カーソル位置単語または選択範囲よりダブルクオーテーションで囲まれた文字列を取得 */
+	CNativeW		cmemCurText;
+	if (! m_pCommanderView->GetDoubleQuateCurrentWord(cmemCurText))
+	{
+		// ダブルクオーテーションなしでもチェックしてみる
+		if (!m_pCommanderView->GetCurrentTextForSearchForHSP(cmemCurText, false))
+		{
+			ErrorBeep();
+			return;
+		}
+	}
+
+	// エスケープ解除
+	cmemCurText.Replace(L"\\\n", L"\r\n");
+	cmemCurText.Replace(L"\\\t", L"\t");
+	cmemCurText.Replace(L"\\\"", L"\"");
+	cmemCurText.Replace(L"\\\\", L"\\");
+
+	// コマンド
+	WCHAR szCommand[BUF_SIZE] = { 0 };
+
+	// まずはそのまま
+	if (!Command_HSP_OPEN_DOCUMENT_SUB(
+		cmemCurText, szCommand, szHSPCommonDir, szHSPFileDir))
+	{
+		//
+		// #use対策
+		//
+
+		// .as の拡張子付与
+		CNativeW cmemFilePathAs(cmemCurText);
+		cmemFilePathAs.AppendString(L".as");
+		if (!Command_HSP_OPEN_DOCUMENT_SUB(
+			cmemFilePathAs, szCommand, szHSPCommonDir, szHSPFileDir))
+		{
+			// .hsp の拡張子付与
+			CNativeW cmemFilePathHsp(cmemCurText);
+			cmemFilePathHsp.AppendString(L".hsp");
+			if (!Command_HSP_OPEN_DOCUMENT_SUB(
+				cmemFilePathAs, szCommand, szHSPCommonDir, szHSPFileDir))
+			{
+				ErrorBeep();
+				return;
+			}
+		}
+	}
+
+	// パスが見つかった場合は開いてみる
+	const auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+	Hsp3.OpenDocument( m_pCommanderView->GetHwnd(), *this, szCommand);
+}
+
+bool CViewCommander::Command_HSP_OPEN_DOCUMENT_SUB(
+	CNativeW &cmemCurText,
+	WCHAR  szCommand[1024], const WCHAR  szHSPCommonDir[1024], const WCHAR  szHSPFileDir[1024])
+{
+	//
+	// パスの存在確認チェック処理
+	//
+
+	// 相対パスかチェック
+	if (::PathIsRelative(cmemCurText.GetStringPtr()))
+	{
+		// 相対パスは絶対パスに変える
+		// Commonから
+		::PathCombine(szCommand, szHSPCommonDir, cmemCurText.GetStringPtr());
+
+		// パス存在チェック
+		if (!::PathFileExists(szCommand)
+			&& !::PathIsDirectory(szCommand))
+		{
+			// HSPファイルのフォルダから
+			::PathCombine(szCommand, szHSPFileDir, cmemCurText.GetStringPtr());
+
+			// パス存在チェック
+			if (!::PathFileExists(szCommand)
+				&& !::PathIsDirectory(szCommand))
+			{
+				return false;
+			}
+		}
+	}
+	else
+	{
+		// 絶対パス
+		wcscpy(szCommand, cmemCurText.GetStringPtr());
+
+		// パス存在チェック
+		if (!::PathFileExists(szCommand)
+			&& !::PathIsDirectory(szCommand))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+void CViewCommander::Command_HSP_JUMP_DEFINITION(void)
+{
+	WCHAR szHSPTmpFilePath[BUF_SIZE]	= { 0 };	// hsptmp ファイルパス
+	WCHAR szHSPFilePath[BUF_SIZE]		= { 0 };	// .hsp のパス(未保存時は???)
+	WCHAR szHSPObjFilePath[BUF_SIZE]	= { 0 };	// obj ファイルパス
+	WCHAR szHSPFileDir[BUF_SIZE]		= { 0 };	// HSPファイルのフォルダパス
+	WCHAR szHSPCommonDir[BUF_SIZE]		= { 0 };	// Commonフォルダのパス
+
+	auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+
+	// ファイル名取得
+	if (! Sub_HSP_GetFileName(
+		szHSPTmpFilePath, szHSPFilePath, szHSPObjFilePath))
+	{
+		return;
+	}
+
+	// 現在のフォルダパス取得
+	if (! Sub_HSP_GetHSPFileDir(szHSPFileDir))
+	{
+		return;
+	}
+
+	// Commonフォルダパス取得
+	GetExedir(szHSPCommonDir, L"common");
+
+	// hsptmp を一時保存
+	if (! Command_PUTFILE( szHSPTmpFilePath, CODE_AUTODETECT, 0x00))
+	{
+		return;
+	}
+
+	//// 分割ウィンドウ
+	//if ( GetEditWindow()->m_cSplitterWnd.GetAllSplitRows() == 1)
+	//{
+	//	Command_SPLIT_V();
+	//}
+
+	/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
+	CNativeW		cmemCurText;
+	m_pCommanderView->GetCurrentTextForSearchForHSP(cmemCurText);
+
+	Hsp3.JumpDefinition(
+		m_pCommanderView->GetHwnd(), *this->m_pCommanderView,
+		cmemCurText, szHSPTmpFilePath, szHSPFilePath, szHSPFileDir, szHSPCommonDir);
+}
+
+void CViewCommander::Command_HSP_JUMP_ALL_REFERENCES(void)
+{
+	WCHAR szHSPTmpFilePath[BUF_SIZE] = { 0 };	// hsptmp ファイルパス
+	WCHAR szHSPFilePath[BUF_SIZE] = { 0 };	// .hsp のパス(未保存時は???)
+	WCHAR szHSPObjFilePath[BUF_SIZE] = { 0 };	// obj ファイルパス
+	WCHAR szHSPFileDir[BUF_SIZE] = { 0 };	// HSPファイルのフォルダパス
+	WCHAR szHSPCommonDir[BUF_SIZE] = { 0 };	// Commonフォルダのパス
+
+	auto& Hsp3 = CProcess::getInstance()->GetHsp3();
+
+	// ファイル名取得
+	if (!Sub_HSP_GetFileName(
+		szHSPTmpFilePath, szHSPFilePath, szHSPObjFilePath))
+	{
+		return;
+	}
+
+	// 現在のフォルダパス取得
+	if (!Sub_HSP_GetHSPFileDir(szHSPFileDir))
+	{
+		return;
+	}
+
+	// Commonフォルダパス取得
+	GetExedir(szHSPCommonDir, L"common");
+
+	// hsptmp を一時保存
+	if (!Command_PUTFILE(szHSPTmpFilePath, CODE_AUTODETECT, 0x00))
+	{
+		return;
+	}
+
+	/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
+	CNativeW		cmemCurText;
+	m_pCommanderView->GetCurrentTextForSearchForHSP(cmemCurText);
+
+	Hsp3.JumpAllReferences( m_pCommanderView->GetHwnd(), *this->m_pCommanderView,
+		cmemCurText, szHSPTmpFilePath, szHSPFilePath, szHSPFileDir, szHSPCommonDir);
+}
+
+void CViewCommander::Command_HSP_HIGHLIGHT_KEYWORDS(void)
+{
+	Command_SELECTWORD( NULL, false);
+
+	//CNativeW	cmemBuf;
+	//if (!m_pCommanderView->GetSelectedData(&cmemBuf, FALSE, NULL, FALSE, false)) {
+	//	ErrorBeep();
+	//	return;
+	//}
+
+	//GetEditWindow()->m_cDlgFind.m_strText = cmemBuf.GetStringPtr();
+
+	Command_SEARCH_CLEARMARK( true, false);
+
+	// 選択解除
+	m_pCommanderView->GetSelectionInfo().DisableSelectArea(true);
 }

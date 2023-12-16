@@ -1,13 +1,20 @@
 ﻿#pragma once
 #include <windows.h>
 #include <shlwapi.h>
+#include <cwctype>
+
 #include "mem/CNativeW.h"
 #include "charset/CShiftJis.h"
+#include "dlg/CDlgHspTagJumpList.h"
 
 #include "CKeyWordSetMgr.h"
 #include "CHsp3Dll.h"
 #include "CHsp3Font.h"
 #include "CHsp3Interface.h"
+#include "CHsp3MenuItemParser.h"
+
+class CEditView;
+class CViewCommander;
 
 class CHsp3
 {
@@ -22,18 +29,46 @@ public:
 
 private:
 
+	// パースしたデータを格納するための構造体
+	typedef struct
+	{
+		wchar_t keyword1_head;			// キーワード1の先頭文字（'d'または'r'）
+		std::wstring keyword1_tail;		// キーワード1の残りの部分
+		std::wstring keyword2;			// キーワード2
+		std::wstring filePath;			// ファイルパス
+		int lineNumber;					// 行番号
+	} ParsedData;
+
+private:
+
 	// hspcmp用（すべてのプロセスで生成されます）
 	CHsp3Dll* m_pHsp3Dll = nullptr;
 
 	// hsedsdk用（コントロールプロセスのみで生成されます）
 	CHsp3Interface* m_pHsp3If = nullptr;
 
+	// タグジャンプ（ダイアログが生成された場合に作成されます）
+	CDlgHspTagJumpList*	m_pDlgHspTagJumpList = nullptr;
+
+private:
+
+	// Menu.ini のアイテム
+	std::vector<MenuItem> m_MenuIniItems;
+
 public:
 	// デフォルトコンストラクタ
 	CHsp3() {  };
 
 	// デストラクタ
-	~CHsp3() { delete m_pHsp3Dll; delete m_pHsp3If; }
+	~CHsp3()
+	{
+		if ( m_pHsp3Dll != nullptr)
+			delete m_pHsp3Dll;
+		if ( m_pHsp3If != nullptr)
+			 delete m_pHsp3If;
+		if ( m_pDlgHspTagJumpList != nullptr)
+			delete m_pDlgHspTagJumpList;
+	}
 
 public:
 
@@ -136,6 +171,26 @@ public:
 		GetDllShareData().m_Common.m_sHSP.m_bHspAssistantAutoStartEnabled = bAutoStartEnabled;
 	}
 
+	inline const bool IsUseLegacyLabelAnalysis() const
+	{
+		return GetDllShareData().m_Common.m_sHSP.m_bUseLegacyLabelAnalysis;
+	}
+
+	inline void SetUseLegacyLabelAnalysis(bool bUseLegacyLabelAnalysis) const
+	{
+		GetDllShareData().m_Common.m_sHSP.m_bUseLegacyLabelAnalysis = bUseLegacyLabelAnalysis;
+	}
+
+	inline const bool IsAutoSaveBeforeCompile() const
+	{
+		return GetDllShareData().m_Common.m_sHSP.m_bAutoSaveBeforeCompile;
+	}
+
+	inline void SetAutoSaveBeforeCompile(bool bAutoSaveBeforeCompile) const
+	{
+		GetDllShareData().m_Common.m_sHSP.m_bAutoSaveBeforeCompile = bAutoSaveBeforeCompile;
+	}
+
 	bool InitKeyword(CKeyWordSetMgr& keywordMgr) const;
 
 private:
@@ -147,6 +202,32 @@ private:
 	BOOL HscGetMesW(CNativeW& msg) const;
 	BOOL HscGetRuntimeW(CNativeW& name, const CNativeW& strObj) const;
 	BOOL HscRunW(const CNativeW& strExeCmds) const;
+	int HscAnalysisW(
+		const CNativeW& keyword,
+		const CNativeW& filePath,
+		const CNativeW& refName,
+		std::vector<CHsp3::ParsedData>& data ) const;
+
+	bool TagJumpSub(CEditView& Commander, const HspTagJumpInfo& SelectedItem) const;
+	std::vector<std::wstring> SplitLines(const CNativeW& str) const;
+	std::vector<CHsp3::ParsedData> ParseLines(const CNativeW& str) const;
+	void ToLowerCase(wchar_t* str) const;
+
+public:
+
+	inline void ClearMenuIniItems()
+	{
+		m_MenuIniItems.clear();
+	}
+
+	inline std::vector<MenuItem> GetMenuIniItems() const
+	{
+		return m_MenuIniItems;
+	}
+
+	bool LoadMenuIniItems();
+
+	bool ExecMenuIniItem(HWND hParent, const MenuItem& item) const;
 
 public:
 	bool ReservedKeywordList(HWND hParent) const;
@@ -172,15 +253,27 @@ public:
 	bool OpenSrcFolder(HWND hParent) const;
 	bool OpenSrcFolder_File(HWND hParent, const CNativeW& strFilePath) const;
 	bool RunAssist(HWND hParent) const;
+	bool RunAssistAtOnce(HWND hParent) const;
 	bool RunHSPTV(HWND hParent) const;
 	bool CreateDPM(HWND hParent) const;
 	bool CreatePackopt(HWND hParent) const;
 	bool ConvertDishC(HWND hParent) const;
 	bool OpenHGIMG4Tool(HWND hParent) const;
 	bool OpenPaintTool(HWND hParent) const;
+	bool OpenMapTool(HWND hParent) const;
 	bool OpenHelpSourceEditor(HWND hParent) const;
+	bool RunIconConverter(HWND hParent) const;
+	bool RunHSP3Updater(HWND hParent) const;
 	bool SearchKeyword(HWND hParent, const CNativeW& strKeyword) const;
 	bool OpenPGManual(HWND hParent) const;
 	bool OpenFuncRef(HWND hParent) const;
 	bool OpenManualIndex(HWND hParent, bool bJapanese) const;
+	bool OpenDocument(HWND hParent, CViewCommander& Commander, const CNativeW& strCommand) const;
+	bool JumpDefinition(HWND hParent, CEditView& Commander,
+		const CNativeW& strKeyword, const CNativeW& strFileName, const CNativeW& strRefName,
+		const CNativeW& strFileDir, const CNativeW& strCommonDir) const;
+	bool JumpAllReferences(HWND hParent, CEditView& Commander,
+		const CNativeW& strKeyword, const CNativeW& strFileName, const CNativeW& strRefName,
+		const CNativeW& strFileDir, const CNativeW& strCommonDir);
+
 };

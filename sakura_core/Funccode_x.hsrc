@@ -20,6 +20,7 @@
 //	10000- : ウィンドウ一覧で使用する
 //	11000- : 最近使ったファイルで使用する
 //	12000- : 最近使ったフォルダーで使用する
+//	13000- : HSP用 Menu.txt で使用する
 
 //enum EFunctionCode{
 
@@ -53,8 +54,9 @@ F_FOLDER_USED_RECENTLY		= 29003,	// 最近使ったフォルダー
 F_CUSTMENU_LIST				= 29004,	// カスタムメニューリスト
 F_USERMACRO_LIST			= 29005,	// 登録済みマクロリスト
 F_PLUGIN_LIST				= 29006,	// プラグインコマンドリスト
+F_HSPINIMENU_LIST			= 29007,	// HSP用 Menu.txt リスト
 F_SPECIAL_FIRST				= F_WINDOW_LIST,
-F_SPECIAL_LAST				= F_PLUGIN_LIST,
+F_SPECIAL_LAST				= F_HSPINIMENU_LIST,
 
 F_MENU_FIRST				= 30000,
 
@@ -470,7 +472,7 @@ F_HSP_SHOW_DEBUG_WINDOW			= 31481,	// Debugウィンドウ表示
 F_HSP_OPEN_SRC_FOLDER			= 31482,	// ソースフォルダを開く
 F_HSP_RUN_ASSIST				= 31483,	// HSPアシスタント起動
 F_HSP_RUN_HSPTV					= 31484,	// HSPTVブラウザ起動
-F_HSP_CREATE_DPM				= 31485,	// 指定フォルダからDPM作成
+// F_HSP_CREATE_DPM				= 31485,	// 指定フォルダからDPM作成		-> HSP 3.7b7 以降はmenu.txt 経由
 F_HSP_CONVERT_DISH_C			= 31486,	// HSP3Dish / Cソース変換
 F_HSP_OPEN_HGIMG4_TOOL			= 31487,	// HGIMG4ツールを開く
 F_HSP_OPEN_PAINT_TOOL			= 31488,	// ペイントツールを開く
@@ -479,7 +481,13 @@ F_HSP_OPEN_PG_MANUAL			= 31490,	// HSPプログラミング・マニュアルを
 F_HSP_OPEN_FUNC_REF				= 31491,	// HSP命令リファレンスを開く
 F_HSP_OPEN_MANUAL_INDEX			= 31492,	// HSPマニュアル目次
 F_HSP_OPEN_HELP_SOURCE_EDITOR	= 31493,	// Help Source Editorを開く
-F_HSP_CREATE_PACKOPT			= 31494,	// PACKOPT項目の作成
+// F_HSP_CREATE_PACKOPT			= 31494,	// PACKOPT項目の作成			-> HSP 3.7b7 以降はmenu.txt 経由
+// F_HSP_OPEN_MAP_TOOL			= 31495,	// マップエディタを開く			-> HSP 3.7b7 以降はmenu.txt 経由
+F_HSP_RUN_ICON_CONVERTER		= 31496,	// アイコンコンバーター起動
+F_HSP_OPEN_DOCUMENT				= 31497,	// ドキュメントを開く
+F_HSP_JUMP_DEFINITION			= 31498,	// 定義へ移動
+F_HSP_JUMP_ALL_REFERENCES		= 31499,	// すべての参照を検索
+F_HSP_RUN_HSP3_UPDATER			= 31500,	// 機能の追加と削除
 
 //	Jul. 4, 2000 genta
 F_USERMACRO_0		= 31600,	// 登録マクロ開始

@@ -2303,6 +2303,7 @@ void CShareData_IO::IO_HSP(CDataProfile& cProfile, CommonSetting_HSP& hsp)
 		hsp.m_szExecuteExternalFile_Name[0] = L'\0';
 		hsp.m_bExecuteExternalFile_CreateObjectOnly = false;
 		hsp.m_bExecuteExternalFile_UTF8Mode = false;
+		hsp.m_bHspAssistantAutoStartFlag = false;
 
 		// ファイルから読み込み
 		if (!cProfile.IOProfileData(pszSecName, LTEXT("ShowDebugWindow"), hsp.m_bShowDebugWindow))
@@ -2310,12 +2311,18 @@ void CShareData_IO::IO_HSP(CDataProfile& cProfile, CommonSetting_HSP& hsp)
 
 		if (!cProfile.IOProfileData(pszSecName, LTEXT("AssistantAutoStartEnabled"), hsp.m_bHspAssistantAutoStartEnabled))
 			hsp.m_bHspAssistantAutoStartEnabled = true;
+		if (!cProfile.IOProfileData(pszSecName, LTEXT("UseLegacyLabelAnalysis"), hsp.m_bUseLegacyLabelAnalysis))
+			hsp.m_bUseLegacyLabelAnalysis = false;
+		if (!cProfile.IOProfileData(pszSecName, LTEXT("AutoSaveBeforeCompile"), hsp.m_bAutoSaveBeforeCompile))
+			hsp.m_bAutoSaveBeforeCompile = false;
 	}
 	else
 	{
 		// 書き込み時
 		cProfile.IOProfileData(pszSecName, LTEXT("ShowDebugWindow"), hsp.m_bShowDebugWindow);
 		cProfile.IOProfileData(pszSecName, LTEXT("AssistantAutoStartEnabled"), hsp.m_bHspAssistantAutoStartEnabled);
+		cProfile.IOProfileData(pszSecName, LTEXT("UseLegacyLabelAnalysis"), hsp.m_bUseLegacyLabelAnalysis);
+		cProfile.IOProfileData(pszSecName, LTEXT("AutoSaveBeforeCompile"), hsp.m_bAutoSaveBeforeCompile);
 	}
 }
 

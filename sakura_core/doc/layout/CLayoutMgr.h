@@ -139,7 +139,14 @@ public:
 	CLayout*		SearchLineByLayoutY( CLayoutInt nLineLayout ){ return const_cast<CLayout*>(static_cast<const CLayoutMgr*>(this)->SearchLineByLayoutY(nLineLayout)); }
 
 	//ワードを探す
-	bool			WhereCurrentWord( CLayoutInt , CLogicInt , CLayoutRange* pSelect, CNativeW*, CNativeW* );	/* 現在位置の単語の範囲を調べる */
+	bool			WhereCurrentWord( CLayoutInt , CLogicInt , CLayoutRange* pSelect, CNativeW*, CNativeW*, bool bHSPMode = false);	/* 現在位置の単語の範囲を調べる */
+
+	/* 現在位置のダブルクオーテーションの範囲を調べる */
+	bool GetDoubleQuateCurrentWord(
+		CLayoutInt		nLineNum,
+		CLogicInt		nIdx,
+		CLayoutRange*	pSelect		//!< [out]
+		);
 
 	//判定
 	bool			IsEndOfLine( const CLayoutPoint& ptLinePos );	/* 指定位置が行末(改行文字の直前)か調べる */	//@@@ 2002.04.18 MIK

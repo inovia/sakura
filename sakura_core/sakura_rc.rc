@@ -1724,6 +1724,20 @@ BEGIN
     CONTROL         "",IDC_HSP_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,51,171,10
 END
 
+IDD_PROP_HSP DIALOGEX 0, 0, 293, 240
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_CONTEXTHELP
+FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x1
+BEGIN
+    CONTROL         "HSPアシスタントを自動起動する(&A)",IDC_CHECK_bAutoRunHSPAssistant,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,14,206,10
+    GROUPBOX        "",-1,3,3,218,66,WS_GROUP
+    CONTROL         "従来方式のラベル解析を優先する(HSP 3.6互換)(&L)",IDC_CHECK_bUseLegacyLabelAnalysis,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,29,205,10
+    CONTROL         "コンパイル時、未保存のファイルを自動保存する(&S)",IDC_CHECK_bAutoSaveBeforeCompile,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,43,205,10
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2156,6 +2170,13 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 84
     END
+
+    IDD_PROP_HSP, DIALOG
+    BEGIN
+        LEFTMARGIN, 1
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 233
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -2257,6 +2278,11 @@ BEGIN
 END
 
 IDD_HSP_INPUT2 AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_PROP_HSP AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
@@ -2395,6 +2421,9 @@ BEGIN
     F_OPEN_POWERSHELL_AS_ADMIN "管理者としてPowerShellを開く"
     F_HSP_LABEL_LIST        "HSPのラベル・関数一覧..."
     F_HSP_COMPILE_RUN       "コンパイル + 実行"
+    F_HSP_OPEN_DOCUMENT     "ドキュメントを開く"
+    F_HSP_JUMP_DEFINITION   "定義へ移動"
+    F_HSP_JUMP_ALL_REFERENCES "すべての参照を検索"
 END
 
 STRINGTABLE
@@ -2939,7 +2968,6 @@ BEGIN
     F_HSP_OPEN_SRC_FOLDER   "ソースフォルダを開く..."
     F_HSP_RUN_ASSIST        "HSPアシスタント起動..."
     F_HSP_RUN_HSPTV         "HSPTVブラウザ起動..."
-    F_HSP_CREATE_DPM        "指定フォルダからDPM作成..."
     F_HSP_CONVERT_DISH_C    "HSP3Dish / Cソース変換..."
     F_HSP_OPEN_HGIMG4_TOOL  "HGIMG4ツールを開く..."
 END
@@ -2952,7 +2980,8 @@ BEGIN
     F_HSP_OPEN_FUNC_REF     "HSP命令リファレンスを開く..."
     F_HSP_OPEN_MANUAL_INDEX "HSPマニュアル目次..."
     F_HSP_OPEN_HELP_SOURCE_EDITOR "Help Source Editorを開く..."
-    F_HSP_CREATE_PACKOPT    "PACKOPT項目の作成..."
+    F_HSP_RUN_ICON_CONVERTER "アイコンコンバーター起動..."
+	F_HSP_RUN_HSP3_UPDATER	"機能の追加と削除..."
     F_CUSTMENU_1            "カスタムメニュー1"
     F_CUSTMENU_2            "カスタムメニュー2"
     F_CUSTMENU_3            "カスタムメニュー3"
@@ -3011,6 +3040,7 @@ BEGIN
     F_CUSTMENU_LIST         "カスタムメニューリスト"
     F_USERMACRO_LIST        "登録済みマクロリスト"
     F_PLUGIN_LIST           "プラグインコマンドリスト"
+	F_HSPINIMENU_LIST		"HSP用Menu.txtリスト"
 END
 
 STRINGTABLE
@@ -3865,6 +3895,7 @@ BEGIN
     STR_PROPCOMMON_EDITING  "編集"
     STR_PROPCOMMON_FILE     "ファイル"
     STR_PROPCOMMON_BACKUP   "バックアップ"
+	STR_PROPCOMMON_HSP      "HSP"
 END
 
 STRINGTABLE

@@ -1508,7 +1508,7 @@ void CViewCommander::Command_REPLACE_ALL()
 }
 
 //検索マークの切替え	// 2001.12.03 hor クリア を 切替え に変更
-void CViewCommander::Command_SEARCH_CLEARMARK( void )
+void CViewCommander::Command_SEARCH_CLEARMARK( bool bWordOnly, bool bRegistHistory )
 {
 // From Here 2001.12.03 hor
 
@@ -1525,11 +1525,14 @@ void CViewCommander::Command_SEARCH_CLEARMARK( void )
 			m_pCommanderView->m_sCurSearchOption = GetDllShareData().m_Common.m_sSearch.m_sSearchOption;
 		}
 		m_pCommanderView->m_sCurSearchOption.bRegularExp = false;		//正規表現使わない
-		m_pCommanderView->m_sCurSearchOption.bWordOnly = false;		//単語で検索しない
+		m_pCommanderView->m_sCurSearchOption.bWordOnly = bWordOnly;		//単語で検索しない
 
 		// 共有データへ登録
 		if( cmemCurText.GetStringLength() < _MAX_PATH ){
-			CSearchKeywordManager().AddToSearchKeyArr( cmemCurText.GetStringPtr() );
+			if ( bRegistHistory)
+			{
+				CSearchKeywordManager().AddToSearchKeyArr(cmemCurText.GetStringPtr());
+			}
 			GetDllShareData().m_Common.m_sSearch.m_sSearchOption = m_pCommanderView->m_sCurSearchOption;
 		}
 		m_pCommanderView->m_nCurSearchKeySequence = GetDllShareData().m_Common.m_sSearch.m_nSearchKeySequence;

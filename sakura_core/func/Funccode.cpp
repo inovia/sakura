@@ -530,12 +530,13 @@ const EFunctionCode pnFuncList_HSP[] = {
 	F_HSP_OPEN_SRC_FOLDER			,	/* ソースフォルダを開く(&O) */
 	F_HSP_RUN_ASSIST				,	/* HSPアシスタント起動(&F) */
 	F_HSP_RUN_HSPTV					,	/* HSPTVブラウザ起動(&H) */
-	F_HSP_CREATE_DPM				,	/* 指定フォルダからDPM作成(&D) */
-	F_HSP_CREATE_PACKOPT			,	/* PACKOPT項目の作成(&P) */
+	//F_HSP_CREATE_DPM				,	/* 指定フォルダからDPM作成(&D) */
+	//F_HSP_CREATE_PACKOPT			,	/* PACKOPT項目の作成(&P) */
 	F_HSP_CONVERT_DISH_C			,	/* HSP3Dish / Cソース変換(&C) */
 	F_HSP_OPEN_HGIMG4_TOOL			,	/* HGIMG4ツールを開く(&G) */
 	F_HSP_OPEN_PAINT_TOOL			,	/* ペイントツールを開く(&W) */
-	F_HSP_OPEN_HELP_SOURCE_EDITOR	,	/* Help Source Editorを開く(&E) */
+	//F_HSP_OPEN_MAP_TOOL				,	/* マップエディタを開く(&M) */
+	F_HSP_RUN_ICON_CONVERTER		,	/* アイコンコンバーター起動(&I) */
 	F_HSP_SEARCH_KEYWORD			,	/* HSPキーワード検索(&K) */
 	F_HSP_OPEN_PG_MANUAL			,	/* HSPプログラミング・マニュアルを開く(&P) */
 	F_HSP_OPEN_FUNC_REF				,	/* HSP命令リファレンスを開く(&R) */
@@ -551,6 +552,7 @@ const EFunctionCode nsFuncCode::pnFuncList_Special[] = {
 	F_CUSTMENU_LIST,
 	F_USERMACRO_LIST,
 	F_PLUGIN_LIST,
+	F_HSPINIMENU_LIST,
 };
 const int nsFuncCode::nFuncList_Special_Num = (int)_countof(nsFuncCode::pnFuncList_Special);
 

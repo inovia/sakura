@@ -618,6 +618,15 @@ void CEditView::OnRBUTTONUP( WPARAM fwKeys, int xPos , int yPos )
 		OnLBUTTONUP( fwKeys, xPos, yPos );
 	}
 
+	// 選択中以外は左クリックをエミュレーション by inovia
+	// HSPの定義へ移動、ドキュメントを開く際に
+	// この処理があったほうが、操作性が良い
+	if (! GetSelectionInfo().IsTextSelecting())
+	{
+		OnLBUTTONDOWN( fwKeys, xPos, yPos);
+		OnLBUTTONUP( fwKeys, xPos, yPos);
+	}
+
 	int		nIdx;
 	int		nFuncID;
 // novice 2004/10/10
@@ -1530,6 +1539,13 @@ void CEditView::OnLBUTTONUP( WPARAM fwKeys, int xPos , int yPos )
 			GetSelectionInfo().DisableSelectArea( true );
 		}
 	}
+
+	// 実験
+	//if (!GetSelectionInfo().IsTextSelecting())
+	//{
+	//	GetCommander().Command_HSP_HIGHLIGHT_KEYWORDS();
+	//}
+
 	if( m_bMiniMapMouseDown ){
 		m_bMiniMapMouseDown = false;
 		::ReleaseCapture();

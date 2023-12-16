@@ -68,6 +68,9 @@ enum maxdata{
 	MAX_CUSTMACRO				= 50,
 	MAX_CUSTMACRO_ICO			= 50,	// アイコンに専用位置を割り当てている数	// 2010.06.25 Moca 追加
 
+	// HSP側 Menu.txt 最大数メニュー
+	MAX_HSPMENUINI				= 100,
+
 	// 2004/06/21 novice タグジャンプ機能追加
 	MAX_TAGJUMPNUM				= 100,	// タブジャンプ情報最大値
 	MAX_TAGJUMP_KEYWORD			= 30,	//タグジャンプ用キーワード最大登録数2005.04.04 MIK

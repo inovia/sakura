@@ -38,6 +38,7 @@
 #define IDM_SELWINDOW		10000
 #define IDM_SELMRU			11000
 #define IDM_SELOPENFOLDER	12000
+#define IDM_SELHSPMENUINI	13000
 
 /* ダイアログ表示方法 */ // アウトラインウィンドウ用に作成 20060201 aroka
 enum enumShowDlg {

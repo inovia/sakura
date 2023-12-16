@@ -278,8 +278,11 @@ bool CShareData::InitShareData()
 			sWindow.m_nMiniMapQuality = NONANTIALIASED_QUALITY;
 			sWindow.m_nMiniMapWidth = 150;
 
-			sWindow.m_bSplitterWndHScroll = TRUE;	// 2001/06/20 asa-o 分割ウィンドウの水平スクロールの同期をとる
-			sWindow.m_bSplitterWndVScroll = TRUE;	// 2001/06/20 asa-o 分割ウィンドウの垂直スクロールの同期をとる
+			//sWindow.m_bSplitterWndHScroll = TRUE;	// 2001/06/20 asa-o 分割ウィンドウの水平スクロールの同期をとる
+			//sWindow.m_bSplitterWndVScroll = TRUE;	// 2001/06/20 asa-o 分割ウィンドウの垂直スクロールの同期をとる
+
+			sWindow.m_bSplitterWndHScroll = FALSE;	// 分割ウィンドウの水平スクロールの同期をとる 初期値変更 by inovia
+			sWindow.m_bSplitterWndVScroll = FALSE;	// 分割ウィンドウの垂直スクロールの同期をとる 初期値変更 by inovia
 
 			// 2001/06/14 asa-o 補完とキーワードヘルプはタイプ別に移動したので削除
 			//	2004.05.13 Moca ウィンドウサイズ固定指定追加に伴う指定方法変更
@@ -678,6 +681,8 @@ bool CShareData::InitShareData()
 			sHSP.m_bExecuteExternalFile_CreateObjectOnly = false;
 			sHSP.m_bExecuteExternalFile_UTF8Mode = false;
 			sHSP.m_bHspAssistantAutoStartEnabled = true;
+			sHSP.m_bUseLegacyLabelAnalysis = false;
+			sHSP.m_bAutoSaveBeforeCompile = false;
 			sHSP.m_bShowDebugWindow = false;
 			sHSP.m_szCommandLineOption[0] = L'\0';
 			sHSP.m_szExecuteExternalFile_Name[0] = L'\0';
@@ -1286,6 +1291,18 @@ void CShareData::InitPopupMenu(DLLSHAREDATA* pShareData)
 
 	/* 右クリックメニュー */
 	int n = 0;
+	rMenu.m_nCustMenuItemFuncArr[0][n] = F_HSP_OPEN_DOCUMENT;
+	rMenu.m_nCustMenuItemKeyArr [0][n] = 'O';
+	n++;
+	rMenu.m_nCustMenuItemFuncArr[0][n] = F_HSP_JUMP_DEFINITION;
+	rMenu.m_nCustMenuItemKeyArr [0][n] = 'G';
+	n++;
+	rMenu.m_nCustMenuItemFuncArr[0][n] = F_HSP_JUMP_ALL_REFERENCES;
+	rMenu.m_nCustMenuItemKeyArr [0][n] = 'A';
+	n++;
+	rMenu.m_nCustMenuItemFuncArr[0][n] = F_0;
+	rMenu.m_nCustMenuItemKeyArr [0][n] = '\0';
+	n++;
 	rMenu.m_nCustMenuItemFuncArr[0][n] = F_UNDO;
 	rMenu.m_nCustMenuItemKeyArr [0][n] = 'U';
 	n++;

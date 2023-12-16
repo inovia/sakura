@@ -11,7 +11,7 @@ class CHsp3Interface
 public:
 
 	// hsed public version
-	const static int HSED_PUBLIC_VER = 0x3702;
+	const static int HSED_PUBLIC_VER = 0x3700;
 
 	// hsed private version
 	const static int HSED_PRIVATE_VER = 0x20000;
@@ -108,11 +108,18 @@ public:
 	const static int HGW_MAIN			= 0;
 	const static int HGW_CLIENT			= 1;
 	const static int HGW_TAB			= 2;
-	const static int HGW_FOOTY			= 3;
+	const static int HGW_EDIT			= 3;
+	const static int HGW_FOOTY			= HGW_EDIT;
+	const static int HGW_SAKURA			= HGW_EDIT;
 	const static int HGW_TOOLBAR		= 4;
 	const static int HGW_STATUSBAR		= 5;
-	const static int HGW_SAKURA_TRAY	= 10;
-	const static int HGW_SAKURA_EDIT	= 11;
+
+	const static int HGW_SAKURA_MAIN		= 10;
+	const static int HGW_SAKURA_TAB			= 12;
+	const static int HGW_SAKURA_EDIT		= 13;
+	const static int HGW_SAKURA_TOOLBAR		= 14;
+	const static int HGW_SAKURA_STATUSBAR	= 15;
+	const static int HGW_SAKURA_TRAY		= 16;
 
 private:
 

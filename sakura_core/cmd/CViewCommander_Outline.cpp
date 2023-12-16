@@ -72,15 +72,21 @@ BOOL CViewCommander::Command_FUNCLIST(
 	if( NULL != GetEditWindow()->m_cDlgFuncList.GetHwnd() && nAction != SHOW_RELOAD ){
 		switch(nAction ){
 		case SHOW_NORMAL: // アクティブにする
-			//	開いているものと種別が同じならActiveにするだけ．異なれば再解析
-			GetEditWindow()->m_cDlgFuncList.SyncColor();
-			if( GetEditWindow()->m_cDlgFuncList.CheckListType( nOutlineType )){
-				if( bForeground ){
-					::SetFocus( GetEditWindow()->m_cDlgFuncList.GetHwnd() );
+
+			// HSP3 以外は通常通りの挙動
+			if ( nOutlineType != OUTLINE_HSP3)
+			{
+				//	開いているものと種別が同じならActiveにするだけ．異なれば再解析
+				GetEditWindow()->m_cDlgFuncList.SyncColor();
+				if( GetEditWindow()->m_cDlgFuncList.CheckListType( nOutlineType )){
+					if( bForeground ){
+						::SetFocus( GetEditWindow()->m_cDlgFuncList.GetHwnd() );
+					}
+					bIsProcessing = false;
+					return TRUE;
 				}
-				bIsProcessing = false;
-				return TRUE;
 			}
+
 			break;
 		case SHOW_TOGGLE: // 閉じる
 			//	開いているものと種別が同じなら閉じる．異なれば再解析

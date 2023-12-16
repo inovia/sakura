@@ -20,7 +20,7 @@
 #include "CViewCommander_inline.h"
 
 /* 現在位置の単語選択 */
-bool CViewCommander::Command_SELECTWORD( CLayoutPoint* pptCaretPos )
+bool CViewCommander::Command_SELECTWORD( CLayoutPoint* pptCaretPos, bool bMoveCaretWordTop)
 {
 	CLayoutRange sRange;
 	CLogicInt	nIdx;
@@ -55,8 +55,11 @@ bool CViewCommander::Command_SELECTWORD( CLayoutPoint* pptCaretPos )
 		m_pCommanderView->GetSelectionInfo().DrawSelectArea();
 
 		/* 単語の先頭にカーソルを移動 */
-		GetCaret().MoveCursor( sRange.GetTo(), true );
-		GetCaret().m_nCaretPosX_Prev = GetCaret().GetCaretLayoutPos().GetX2();
+		if ( bMoveCaretWordTop)
+		{
+			GetCaret().MoveCursor( sRange.GetTo(), true );
+			GetCaret().m_nCaretPosX_Prev = GetCaret().GetCaretLayoutPos().GetX2();
+		}
 
 		return true;	//	単語選択に成功。
 	}

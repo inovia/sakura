@@ -72,6 +72,7 @@ enum PropComSheetOrder {
 	ID_PROPCOM_PAGENUM_HELPER,			//!< 支援
 	ID_PROPCOM_PAGENUM_MACRO,			//!< マクロ
 	ID_PROPCOM_PAGENUM_PLUGIN,			//!< プラグイン
+	ID_PROPCOM_PAGENUM_HSP,				//!< HSP
 	ID_PROPCOM_PAGENUM_MAX,
 };
 /*-----------------------------------------------------------------------
@@ -543,5 +544,23 @@ private:
 
 	bool Check_MainMenu(HWND hwndTree, std::wstring& sErrMsg);						// メニューの検査
 	bool Check_MainMenu_Sub(HWND hwndTree, HTREEITEM htiTrg, int nLevel, std::wstring& sErrMsg);	// メニューの検査
+};
+
+//==============================================================
+//!	HSPページ
+class CPropHSP final : CPropCommon
+{
+public:
+	//!	Dialog Procedure
+	static INT_PTR CALLBACK DlgProc_page(
+		HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+protected:
+	//! Message Handler
+	INT_PTR DispatchEvent(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+	void SetData(HWND hwndDlg);	//!< ダイアログデータの設定
+	int  GetData(HWND hwndDlg);	//!< ダイアログデータの取得
+
+private:
+
 };
 #endif /* SAKURA_CPROPCOMMON_82053028_AB71_4E4C_AE50_0E46E173828C_H_ */

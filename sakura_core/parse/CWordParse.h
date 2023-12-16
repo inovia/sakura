@@ -71,18 +71,41 @@ public:
 		@retval false	失敗 現在位置のデータは「単語」とは言いきれない気がする。
 	*/
 	static bool WhereCurrentWord_2(
-		const wchar_t*	pLine,			//[in]  調べるメモリ全体の先頭アドレス
-		CLogicInt		nLineLen,		//[in]  調べるメモリ全体の有効長
-		CLogicInt		nIdx,			//[in]  調査開始地点:pLineからの相対的な位置
-		bool			bEnableExtEol,	//[in]  Unicode改行文字を改行とみなすかどうか
-		CLogicInt*		pnIdxFrom,		//[out] 単語が見つかった場合は、単語の先頭インデックスを返す。
-		CLogicInt*		pnIdxTo,		//[out] 単語が見つかった場合は、単語の終端の次のバイトの先頭インデックスを返す。
-		CNativeW*		pcmcmWord,		//[out] 単語が見つかった場合は、現在単語を切り出して指定されたCMemoryオブジェクトに格納する。情報が不要な場合はNULLを指定する。
-		CNativeW*		pcmcmWordLeft	//[out] 単語が見つかった場合は、現在単語の左に位置する単語を切り出して指定されたCMemoryオブジェクトに格納する。情報が不要な場合はNULLを指定する。
+		const wchar_t*	pLine,				//[in]  調べるメモリ全体の先頭アドレス
+		CLogicInt		nLineLen,			//[in]  調べるメモリ全体の有効長
+		CLogicInt		nIdx,				//[in]  調査開始地点:pLineからの相対的な位置
+		bool			bEnableExtEol,		//[in]  Unicode改行文字を改行とみなすかどうか
+		CLogicInt*		pnIdxFrom,			//[out] 単語が見つかった場合は、単語の先頭インデックスを返す。
+		CLogicInt*		pnIdxTo,			//[out] 単語が見つかった場合は、単語の終端の次のバイトの先頭インデックスを返す。
+		CNativeW*		pcmcmWord,			//[out] 単語が見つかった場合は、現在単語を切り出して指定されたCMemoryオブジェクトに格納する。情報が不要な場合はNULLを指定する。
+		CNativeW*		pcmcmWordLeft,		//[out] 単語が見つかった場合は、現在単語の左に位置する単語を切り出して指定されたCMemoryオブジェクトに格納する。情報が不要な場合はNULLを指定する。
+		bool			bHSPMode = false	//[in] HSP用特別モード(プリプロセッサ#の取り扱いを変更します)
+	);
+
+	/*!
+	@brief 現在位置のダブルクオーテーションの範囲を調べる staticメンバ
+	@author inovia
+	@retval true	成功 現在位置のデータはダブルクオーテーションで囲った文字列と認識する。
+	@retval false	失敗 現在位置のデータはダブルクオーテーションで囲った文字列とは言いきれない気がする。
+	*/
+	static bool GetDoubleQuateCurrentWord(
+		const wchar_t*	pLine,			//!< [in]  調べるメモリ全体の先頭アドレス
+		CLogicInt		nLineLen,		//!< [in]  調べるメモリ全体の有効長
+		CLogicInt		nIdx,			//!< [in]  調査開始地点:pLineからの相対的な位置
+		bool			bEnableExtEol,	//!< [in]  Unicode改行文字を改行とみなすかどうか
+		CLogicInt*		pnIdxFrom,		//!< [out] 単語が見つかった場合は、単語の先頭インデックスを返す。
+		CLogicInt*		pnIdxTo			//!< [out] 単語が見つかった場合は、単語の終端の次のバイトの先頭インデックスを返す。
 	);
 
 	//! 現在位置の文字の種類を調べる
 	static ECharKind WhatKindOfChar(
+		const wchar_t*	pData,
+		int				pDataLen,
+		int				nIdx
+	);
+
+	//! 現在位置の文字の種類を調べる For HSP
+	static ECharKind WhatKindOfCharForHSP(
 		const wchar_t*	pData,
 		int				pDataLen,
 		int				nIdx

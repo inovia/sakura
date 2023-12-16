@@ -589,12 +589,12 @@ BOOL CViewCommander::HandleCommand(
 	case F_HSP_RUN_HSPTV:						/* HSPTVブラウザ起動(&H) */
 		Command_HSP_RUN_HSPTV();
 		break;
-	case F_HSP_CREATE_DPM:						/* 指定フォルダからDPM作成(&D) */
-		Command_HSP_CREATE_DPM();
-		break;
-	case F_HSP_CREATE_PACKOPT:					/* PACKOPT項目の作成(&P) */
-		Command_HSP_CREATE_PACKOPT();
-		break;
+	//case F_HSP_CREATE_DPM:						/* 指定フォルダからDPM作成(&D) */
+	//	Command_HSP_CREATE_DPM();
+	//	break;
+	//case F_HSP_CREATE_PACKOPT:					/* PACKOPT項目の作成(&P) */
+	//	Command_HSP_CREATE_PACKOPT();
+	//	break;
 	case F_HSP_CONVERT_DISH_C:					/* HSP3Dish / Cソース変換(&C) */
 		Command_HSP_CONVERT_DISH_C();
 		break;
@@ -604,8 +604,17 @@ BOOL CViewCommander::HandleCommand(
 	case F_HSP_OPEN_PAINT_TOOL:					/* ペイントツールを開く(&W) */
 		Command_HSP_OPEN_PAINT_TOOL();
 		break;
+	//case F_HSP_OPEN_MAP_TOOL:					/* マップエディタを開く(&M) */
+	//	Command_HSP_OPEN_MAP_TOOL();
+	//	break;
 	case F_HSP_OPEN_HELP_SOURCE_EDITOR:			/* Help Source Editorを開く(&E) */
 		Command_HSP_OPEN_HELP_SOURCE_EDITOR();
+		break;
+	case F_HSP_RUN_ICON_CONVERTER:				/* アイコンコンバーター起動(&I) */
+		Command_HSP_RUN_ICON_CONVERTER();
+		break;
+	case F_HSP_RUN_HSP3_UPDATER:				/* 機能の追加と削除(&A) */
+		Command_HSP_RUN_HSP3_UPDATER();
 		break;
 	case F_HSP_SEARCH_KEYWORD:					/* HSPキーワード検索(&K) */
 		Command_HSP_SEARCH_KEYWORD();
@@ -618,6 +627,15 @@ BOOL CViewCommander::HandleCommand(
 		break;
 	case F_HSP_OPEN_MANUAL_INDEX:				/* HSPマニュアル目次(&I) */
 		Command_HSP_OPEN_MANUAL_INDEX();
+		break;
+	case F_HSP_OPEN_DOCUMENT:					/* ドキュメントを開く */
+		Command_HSP_OPEN_DOCUMENT();
+		break;
+	case F_HSP_JUMP_DEFINITION:					/* 定義へ移動 */
+		Command_HSP_JUMP_DEFINITION();
+		break;
+	case F_HSP_JUMP_ALL_REFERENCES:				/* すべての参照を検索 */
+		Command_HSP_JUMP_ALL_REFERENCES();
 		break;
 
 	/* カスタムメニュー */

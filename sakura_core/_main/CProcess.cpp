@@ -82,6 +82,9 @@ bool CProcess::InitializeProcess()
 		return false;
 	}
 
+	// HSP用 Menu.txt からロード
+	m_Hsp3.LoadMenuIniItems();
+
 	// 強調キーワードをコンパイラから取得して設定
 	auto& keywordMgr = GetDllShareData().m_Common.m_sSpecialKeyword.m_CKeyWordSetMgr;
 	if ( !m_Hsp3.InitKeyword( keywordMgr))

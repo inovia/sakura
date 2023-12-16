@@ -1160,6 +1160,12 @@
     <ClInclude Include="..\sakura_core\dlg\CDlgHspInput2.h">
       <Filter>Cpp Source Files\dlg</Filter>
     </ClInclude>
+    <ClInclude Include="..\sakura_core\dlg\CDlgHspTagJumpList.h">
+      <Filter>Cpp Source Files\dlg</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sakura_core\hsp\CHsp3MenuItemParser.h">
+      <Filter>Cpp Source Files\hsp</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\resource\auto_scroll_center.cur">
@@ -2392,6 +2398,15 @@
     </ClCompile>
     <ClCompile Include="..\sakura_core\dlg\CDlgHspInput2.cpp">
       <Filter>Cpp Source Files\dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\prop\CPropComHSP.cpp">
+      <Filter>Cpp Source Files\prop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\dlg\CDlgHspTagJumpList.cpp">
+      <Filter>Cpp Source Files\dlg</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sakura_core\hsp\CHsp3MenuItemParser.cpp">
+      <Filter>Cpp Source Files\hsp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

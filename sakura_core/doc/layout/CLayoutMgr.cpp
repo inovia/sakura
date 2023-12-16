@@ -664,7 +664,8 @@ bool CLayoutMgr::WhereCurrentWord(
 	CLogicInt		nIdx,
 	CLayoutRange*	pSelect,		//!< [out]
 	CNativeW*		pcmcmWord,		//!< [out]
-	CNativeW*		pcmcmWordLeft	//!< [out]
+	CNativeW*		pcmcmWordLeft,	//!< [out]
+	bool			bHSPMode
 )
 {
 	const CLayout* pLayout = SearchLineByLayoutY( nLineNum );
@@ -681,7 +682,8 @@ bool CLayoutMgr::WhereCurrentWord(
 		&nFromX,
 		&nToX,
 		pcmcmWord,
-		pcmcmWordLeft
+		pcmcmWordLeft,
+		bHSPMode
 	);
 
 	if( nRetCode ){
@@ -692,6 +694,42 @@ bool CLayoutMgr::WhereCurrentWord(
 
 		CLayoutPoint ptTo;
 		LogicToLayout( CLogicPoint(nToX, pLayout->GetLogicLineNo()), &ptTo, nLineNum );
+		pSelect->SetTo(ptTo);
+	}
+	return nRetCode;
+}
+
+
+/* 現在位置のダブルクオーテーションの範囲を調べる */
+bool CLayoutMgr::GetDoubleQuateCurrentWord(
+	CLayoutInt		nLineNum,
+	CLogicInt		nIdx,
+	CLayoutRange*	pSelect		//!< [out]
+)
+{
+	const CLayout* pLayout = SearchLineByLayoutY(nLineNum);
+	if (NULL == pLayout) {
+		return false;
+	}
+
+	// 現在位置のダブルクオーテーションの範囲を調べる -> ロジック単位pSelect, pcmemWord, pcmemWordLeft
+	CLogicInt nFromX;
+	CLogicInt nToX;
+	bool nRetCode = CSearchAgent(m_pcDocLineMgr).GetDoubleQuateCurrentWord(
+		pLayout->GetLogicLineNo(),
+		pLayout->GetLogicOffset() + CLogicInt(nIdx),
+		&nFromX,
+		&nToX
+	);
+
+	if (nRetCode) {
+		/* 論理位置→レイアウト位置変換 */
+		CLayoutPoint ptFrom;
+		LogicToLayout(CLogicPoint(nFromX, pLayout->GetLogicLineNo()), &ptFrom, nLineNum);
+		pSelect->SetFrom(ptFrom);
+
+		CLayoutPoint ptTo;
+		LogicToLayout(CLogicPoint(nToX, pLayout->GetLogicLineNo()), &ptTo, nLineNum);
 		pSelect->SetTo(ptTo);
 	}
 	return nRetCode;

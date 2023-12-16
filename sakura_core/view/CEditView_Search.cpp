@@ -294,7 +294,7 @@ bool CEditView::MiniMapCursorLineTip( POINT* po, RECT* rc, bool* pbHide )
 }
 
 /* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
-void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPath /* = true */, bool bTrimSpaceTab /* = false */ )
+void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPath /* = true */, bool bTrimSpaceTab /* = false */, bool bHSPMode /* = false */)
 {
 	int				i;
 	CNativeW		cmemTopic = L"";
@@ -327,7 +327,8 @@ void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPa
 				nIdx,
 				&sRange,
 				NULL,
-				NULL
+				NULL,
+				bHSPMode
 			);
 			if( bWhere ){
 				/* 選択範囲の変更 */
@@ -379,6 +380,93 @@ void CEditView::GetCurrentTextForSearch( CNativeW& cmemCurText, bool bStripMaxPa
 	cmemCurText.SetString( pTopic2, i );
 }
 
+/* 現在カーソル位置単語または選択範囲より検索等のキーを取得 */
+void CEditView::GetDoubleQuateCurrentWord(CNativeW& cmemCurText, bool bStripMaxPath /* = true */, bool bTrimSpaceTab /* = false */)
+{
+	int				i;
+	CNativeW		cmemTopic = L"";
+	const wchar_t*	pLine;
+	CLogicInt		nLineLen;
+	CLogicInt		nIdx;
+	CLayoutRange	sRange;
+
+	cmemCurText.SetString(L"");
+	if (GetSelectionInfo().IsTextSelected()) {	/* テキストが選択されているか */
+		/* 選択範囲のデータを取得 */
+		if (GetSelectedDataOne(cmemCurText, INT_MAX)) {
+			/* 検索文字列を現在位置の単語で初期化 */
+			if (bStripMaxPath) {
+				LimitStringLengthW(cmemCurText.GetStringPtr(), cmemCurText.GetStringLength(), _MAX_PATH - 1, cmemTopic);
+			}
+			else {
+				cmemTopic = cmemCurText;
+			}
+		}
+	}
+	else {
+		const CLayout*	pcLayout;
+		pLine = m_pcEditDoc->m_cLayoutMgr.GetLineStr(GetCaret().GetCaretLayoutPos().GetY2(), &nLineLen, &pcLayout);
+		if (NULL != pLine) {
+			/* 指定された桁に対応する行のデータ内の位置を調べる */
+			nIdx = LineColumnToIndex(pcLayout, GetCaret().GetCaretLayoutPos().GetX2());
+
+			/* 現在位置の単語の範囲を調べる */
+			bool bWhere = m_pcEditDoc->m_cLayoutMgr.GetDoubleQuateCurrentWord(
+				GetCaret().GetCaretLayoutPos().GetY2(),
+				nIdx,
+				&sRange
+			);
+			if (bWhere) {
+				/* 選択範囲の変更 */
+				GetSelectionInfo().m_sSelectBgn = sRange;
+				GetSelectionInfo().m_sSelect = sRange;
+
+				/* 選択範囲のデータを取得 */
+				if (GetSelectedDataOne(cmemCurText, INT_MAX)) {
+					/* 検索文字列を現在位置の単語で初期化 */
+					if (bStripMaxPath) {
+						LimitStringLengthW(cmemCurText.GetStringPtr(), cmemCurText.GetStringLength(), _MAX_PATH - 1, cmemTopic);
+					}
+					else {
+						cmemTopic = cmemCurText;
+					}
+				}
+				/* 現在の選択範囲を非選択状態に戻す */
+				GetSelectionInfo().DisableSelectArea(false);
+			}
+		}
+	}
+
+	wchar_t *pTopic2 = cmemTopic.GetStringPtr();
+	if (bTrimSpaceTab) {
+		// 前のスペース・タブを取り除く
+		while (L'\0' != *pTopic2 && (' ' == *pTopic2 || '\t' == *pTopic2)) {
+			pTopic2++;
+		}
+	}
+	int nTopic2Len = (int)wcslen(pTopic2);
+	/* 検索文字列は改行まで */
+	bool bExtEol = GetDllShareData().m_Common.m_sEdit.m_bEnableExtEol;
+	for (i = 0; i < nTopic2Len; ++i) {
+		if (WCODE::IsLineDelimiter(pTopic2[i], bExtEol)) {
+			break;
+		}
+	}
+
+	if (bTrimSpaceTab) {
+		// 後ろのスペース・タブを取り除く
+		int m = i - 1;
+		while (0 <= m &&
+			(L' ' == pTopic2[m] || L'\t' == pTopic2[m])) {
+			m--;
+		}
+		if (0 <= m) {
+			i = m + 1;
+		}
+	}
+	cmemCurText.SetString(pTopic2, i);
+}
+
 /*!	現在カーソル位置単語または選択範囲より検索等のキーを取得（ダイアログ用）
 	@return 値を設定したか
 	@date 2006.08.23 ryoji 新規作成
@@ -413,6 +501,55 @@ bool CEditView::GetCurrentTextForSearchDlg( CNativeW& cmemCurText, bool bGetHist
 			}
 		}
 	}
+	return 0 < cmemCurText.GetStringLength();
+}
+
+/*!	現在カーソル位置単語または選択範囲より検索等のキーを取得（HSP用）
+	@return 値を設定したか
+	@date 2023.09.13 inovia 新規作成
+*/
+bool CEditView::GetCurrentTextForSearchForHSP(CNativeW& cmemCurText, bool bGetHistory)
+{
+	bool bStripMaxPath = false;
+	cmemCurText.SetString(L"");
+
+	if (GetSelectionInfo().IsTextSelected()) {	// テキストが選択されている
+		GetCurrentTextForSearch(cmemCurText, bStripMaxPath);
+	}
+	else {	// テキストが選択されていない
+		bool bGet = false;
+		if (GetDllShareData().m_Common.m_sSearch.m_bCaretTextForSearch) {
+			GetCurrentTextForSearch(cmemCurText, bStripMaxPath, false, true);	// カーソル位置単語を取得
+			if (cmemCurText.GetStringLength() == 0 && bGetHistory) {
+				bGet = true;
+			}
+		}
+		else {
+			bGet = true;
+		}
+		if (bGet) {
+			if (0 < GetDllShareData().m_sSearchKeywords.m_aSearchKeys.size()
+				&& m_nCurSearchKeySequence < GetDllShareData().m_Common.m_sSearch.m_nSearchKeySequence) {
+				cmemCurText.SetString(GetDllShareData().m_sSearchKeywords.m_aSearchKeys[0]);	// 履歴からとってくる
+				return true; // ""でもtrue
+			}
+			else {
+				cmemCurText.SetString(m_strCurSearchKey.c_str());
+				return 0 <= m_nCurSearchKeySequence; // ""でもtrue.未設定のときはfalse
+			}
+		}
+	}
+	return 0 < cmemCurText.GetStringLength();
+}
+
+/*!	現在カーソル位置単語または選択範囲よりダブルクオーテーションで括られた文字列を取得
+	@return 値を設定したか
+	@date 2023.09.13 inovia 新規作成
+*/
+bool CEditView::GetDoubleQuateCurrentWord(CNativeW& cmemCurText)
+{
+	cmemCurText.SetString(L"");
+	GetDoubleQuateCurrentWord(cmemCurText, false, true);
 	return 0 < cmemCurText.GetStringLength();
 }
 

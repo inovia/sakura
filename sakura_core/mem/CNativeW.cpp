@@ -383,48 +383,26 @@ void CNativeW::Replace( const wchar_t* pszFrom, size_t nFromLen, const wchar_t* 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 
 //! 指定した位置の文字がwchar_t何個分かを返す
-CLogicInt CNativeW::GetSizeOfChar( const wchar_t* pData, int nDataLen, int nIdx )
+CLogicInt CNativeW::GetSizeOfChar(const wchar_t* pData, int nDataLen, int nIdx)
 {
-	int nLength = 0;
-	if( nIdx >= nDataLen )
-		return CLogicInt(nLength);
+	if (nIdx >= nDataLen)
+		return CLogicInt(0);
 
-	int i = nIdx;
-	while (i < nDataLen)
-	{
-		// サロゲートチェック					2008/7/5 Uchi
-		if ( (IsUTF16High(pData[i]))
-			&& (i + 1 < nDataLen && IsUTF16Low(pData[i + 1])))
-		{
+	// サロゲートチェック					2008/7/5 Uchi
+	if (IsUTF16High(pData[nIdx])) {
+		if (nIdx + 1 < nDataLen && IsUTF16Low(pData[nIdx + 1])) {
 			// サロゲートペア 2個分
-			nLength += 2; i += 2;
+			return CLogicInt(2);
 		}
-		else
-		{
-			nLength += 1; i++;
-		}
-
-		// 絵文字修飾コードが後続であるかも？
-		if ( i < nDataLen && pData[i] == 0xD83C )
-		{
-			if ((i + 1 < nDataLen && pData[i + 1] >= 0xDFFB && pData[i + 1] <= 0xDFFF))
-			{
-				// サロゲートペア 2個分
-				nLength += 2; i += 2;
-			}
-		}
-
-		// ZWJ?
-		if ( i < nDataLen && pData[i] == 0x200D)
-		{
-			nLength += 1; i++;
-			continue;
-		}
-
-		break;
 	}
 
-	return CLogicInt(nLength);
+	// IVSの異体字セレクタチェック
+	if (IsVariationSelector(pData + nIdx + 1)) {
+		// 正字 + 異体字セレクタで3個分
+		return CLogicInt(3);
+	}
+
+	return CLogicInt(1);
 }
 
 //! 指定した位置の文字が半角何個分かを返す

@@ -498,7 +498,7 @@ inline LRESULT CHsp3Interface::GetHspCmpVersion(HANDLE hPipe, bool bUnicode) con
 	const auto& Hsp3 = CProcess::getInstance()->GetHsp3();
 	if (!Hsp3.IsLoaded())
 		return -1;
-	Hsp3.Hsp3Dll()->hsc_ver()(0, 0, 0, (int)szRefstr);
+	Hsp3.Hsp3Dll()->hsc_ver()(0, 0, 0, (void*)szRefstr);
 
 	if (bUnicode)
 	{
@@ -524,30 +524,28 @@ inline LRESULT CHsp3Interface::GetWindowHandle(WPARAM wParam, LPARAM lParam) con
 {
 	switch (wParam)
 	{
-	case HGW_MAIN:
-		return (LRESULT)CProcess::getInstance()->GetMainWindow();
+		// メインウィンドウをファイルを開いた数だけ存在するため一意にならない
+		case HGW_MAIN:
+		case HGW_CLIENT:		
+			return (LRESULT)CProcess::getInstance()->GetMainWindow();	// コントロールプロセスを返却
 
-	case HGW_CLIENT:
-		return (LRESULT)CEditWnd::getInstance()->GetHwnd();
+		case HGW_TAB:
+			return (LRESULT)0L;
 
-	case HGW_TAB:
-		return (LRESULT)CEditWnd::getInstance()->m_cTabWnd.GetHwnd();
+		case HGW_EDIT:
+			return (LRESULT)GetEditWindowHandle((int)lParam);
 
-	case HGW_FOOTY:
-	case HGW_SAKURA_EDIT:
-		return (LRESULT)GetEditWindowHandle((int)lParam);
+		case HGW_TOOLBAR:
+			return (LRESULT)0L;
 
-	case HGW_TOOLBAR:
-		return (LRESULT)CEditWnd::getInstance()->m_cToolbar.GetToolbarHwnd();
+		case HGW_STATUSBAR:
+			return (LRESULT)0L;
 
-	case HGW_STATUSBAR:
-		return (LRESULT)CEditWnd::getInstance()->m_cStatusBar.GetStatusHwnd();
+		case HGW_SAKURA_TRAY:
+			return (LRESULT)m_pShareData->m_sHandles.m_hwndTray;	// コントロールプロセスを返却
 
-	case HGW_SAKURA_TRAY:
-		return (LRESULT)m_pShareData->m_sHandles.m_hwndTray;
-
-	default:
-		return (LRESULT)nullptr;
+		default:
+			return (LRESULT)nullptr;
 	}
 }
 
@@ -800,34 +798,15 @@ inline LRESULT CHsp3Interface::IsModified() const
 
 inline LRESULT CHsp3Interface::Copy() const
 {
+	// コマンダーにそのまま投げる
 	const auto& pEditWnd = CEditWnd::getInstance();
-	if ( pEditWnd == nullptr)
+	if (pEditWnd == nullptr)
 		return -2;
 
 	auto& pActiveView = pEditWnd->GetActiveView();
-
-	/* テキストが選択されているときは、選択範囲のデータを取得 */
-	CNativeW	cmemBuf;
-	bool		bBeginBoxSelect = false;
-
-	// 矩形選択？
-	if ( !pActiveView.GetSelectionInfo().IsBoxSelecting())
-	{
-		bBeginBoxSelect = true;
-	}
-
-	/* 選択範囲のデータを取得 */
-	/* 正常時はTRUE,範囲未選択の場合はFALSEを返す */
-	const auto& bAddCRLFWhenCopy = GetDllShareData().m_Common.m_sEdit.m_bAddCRLFWhenCopy;
-	if ( !pActiveView.GetSelectedData(
-		&cmemBuf, FALSE, NULL, FALSE, bAddCRLFWhenCopy, EEolType::none))
-	{	
-		return -5;
-	}
-
-	/* クリップボードにデータcmemBufの内容を設定 */
-	if ( !pActiveView.MySetClipboardData(
-		cmemBuf.GetStringPtr(), cmemBuf.GetStringLength(), bBeginBoxSelect, FALSE))
+	auto& pCommander = pActiveView.GetCommander();
+	if (!pCommander.HandleCommand(
+		F_COPY, true, 0, 0, 0, 0))
 	{
 		return -3;
 	}
@@ -837,128 +816,124 @@ inline LRESULT CHsp3Interface::Copy() const
 
 inline LRESULT CHsp3Interface::Cut() const
 {
-	// 処理はコピーとほぼ同じ
-	auto ret = Copy();
-	if (ret != 0)
-		return ret;
-
+	// コマンダーにそのまま投げる
 	const auto& pEditWnd = CEditWnd::getInstance();
-	if ( pEditWnd == nullptr)
+	if (pEditWnd == nullptr)
 		return -2;
-	auto& pActiveView = pEditWnd->GetActiveView();
 
-	/* カーソル位置または選択エリアを削除 */
-	pActiveView.DeleteData(true);
+	auto& pActiveView = pEditWnd->GetActiveView();
+	auto& pCommander = pActiveView.GetCommander();
+	if (!pCommander.HandleCommand(
+		F_CUT, true, 0, 0, 0, 0))
+	{
+		return -3;
+	}
 
 	return 0;
 }
 
 inline LRESULT CHsp3Interface::Paste() const
 {
+	// コマンダーにそのまま投げる
 	const auto& pEditWnd = CEditWnd::getInstance();
-	if ( pEditWnd == nullptr)
+	if (pEditWnd == nullptr)
 		return -2;
 
-	// 処理が複雑すぎるので、コマンダーにそのまま投げる
-	
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
-	pCommander.HandleCommand(
-		F_PASTE, true, 0, 0, 0, 0);
-
-	// ↓直接呼んではいけない
-	// pCommander.Command_PASTE(0);
+	if (!pCommander.HandleCommand(
+		F_PASTE, true, 0, 0, 0, 0))
+	{
+		return -3;
+	}
 
 	return 0;
 }
 
 inline LRESULT CHsp3Interface::Undo() const
 {
+	// コマンダーにそのまま投げる
 	const auto& pEditWnd = CEditWnd::getInstance();
 	if (pEditWnd == nullptr)
 		return -2;
 
-	// 処理が複雑すぎるので、コマンダーにそのまま投げる
-	
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
-	pCommander.HandleCommand(F_UNDO, true, 0, 0, 0, 0);
-
-	// ↓直接呼んではいけない
-	//pCommander.Command_UNDO();
+	if (!pCommander.HandleCommand(
+		F_UNDO, true, 0, 0, 0, 0))
+	{
+		return -3;
+	}
 
 	return 0;
 }
 
 inline LRESULT CHsp3Interface::Redo() const
 {
+	// コマンダーにそのまま投げる
 	const auto& pEditWnd = CEditWnd::getInstance();
 	if (pEditWnd == nullptr)
 		return -2;
 
-	// 処理が複雑すぎるので、コマンダーにそのまま投げる
-	
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
-	pCommander.HandleCommand(F_REDO, true, 0, 0, 0, 0);
-
-	// ↓直接呼んではいけない
-	// pCommander.Command_REDO();
+	if (!pCommander.HandleCommand(
+		F_REDO, true, 0, 0, 0, 0))
+	{
+		return -3;
+	}
 
 	return 0;
 }
 
 inline LRESULT CHsp3Interface::Indent() const
 {
+	// コマンダーにそのまま投げる
 	const auto& pEditWnd = CEditWnd::getInstance();
 	if (pEditWnd == nullptr)
 		return -2;
 
-	// 処理が複雑すぎるので、コマンダーにそのまま投げる
-	
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
-	pCommander.HandleCommand(F_INDENT_TAB, true, 0, 0, 0, 0);
-
-	// ↓直接呼んではいけない
-	// pCommander.Command_INDENT( WCODE::TAB, CViewCommander::INDENT_TAB);
-
+	if (!pCommander.HandleCommand(
+		F_INDENT_TAB, true, 0, 0, 0, 0))
+	{
+		return -3;
+	}
 	return 0;
 }
 
 inline LRESULT CHsp3Interface::UnIndent() const
 { 
+	// コマンダーにそのまま投げる
 	const auto& pEditWnd = CEditWnd::getInstance();
 	if (pEditWnd == nullptr)
 		return -2;
 
-	// 処理が複雑すぎるので、コマンダーにそのまま投げる
-	
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
-	pCommander.HandleCommand(F_UNINDENT_TAB, true, 0, 0, 0, 0);
-
-	// ↓直接呼んではいけない
-	// pCommander.Command_UNINDENT( WCODE::TAB);
-
+	if (!pCommander.HandleCommand(
+		F_UNINDENT_TAB, true, 0, 0, 0, 0))
+	{
+		return -3;
+	}
 	return 0;
 }
 
 inline LRESULT CHsp3Interface::SelectAll() const
 {
+	// コマンダーにそのまま投げる
 	const auto& pEditWnd = CEditWnd::getInstance();
 	if (pEditWnd == nullptr)
 		return -2;
 
-	// 処理が複雑すぎるので、コマンダーにそのまま投げる
-	
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
-	pCommander.HandleCommand(F_SELECTALL, true, 0, 0, 0, 0);
-
-	// ↓直接呼んではいけない
-	// pCommander.Command_SELECTALL();
-
+	if (!pCommander.HandleCommand(
+		F_SELECTALL, true, 0, 0, 0, 0))
+	{
+		return -3;
+	}
 	return 0;
 }
 
@@ -1000,9 +975,15 @@ inline LRESULT CHsp3Interface::SetAllText(HANDLE hPipe, bool bUnicode) const
 	
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
-	pCommander.HandleCommand(F_SELECTALL, true, 0, 0, 0, 0);
-	pCommander.HandleCommand(F_DELETE, true, 0, 0, 0, 0);
-	pCommander.HandleCommand(F_ADDTAIL_W, true, (LPARAM)bufW.GetStringPtr(), -1, 0, 0);
+	if (!pCommander.HandleCommand(
+		F_SELECTALL, true, 0, 0, 0, 0))
+		return -3;
+	if (!pCommander.HandleCommand(
+		F_DELETE, true, 0, 0, 0, 0))
+		return -4;
+	if (!pCommander.HandleCommand(
+		F_ADDTAIL_W, true, (LPARAM)bufW.GetStringPtr(), -1, 0, 0))
+		return -5;
 
 	// ↓直接呼んではいけない
 	// pCommander.Command_SELECTALL();
@@ -1123,9 +1104,12 @@ inline LRESULT CHsp3Interface::InsertText(HANDLE hPipe, bool bUnicode) const
 	auto& pActiveView = pEditWnd->GetActiveView();
 	auto& pCommander = pActiveView.GetCommander();
 
-	pCommander.HandleCommand(
+	if (pCommander.HandleCommand(
 		F_INSTEXT_W, true,
-		(LPARAM)bufW.GetStringPtr(), (LPARAM)bufW.GetStringLength(), TRUE, 0);
+		(LPARAM)bufW.GetStringPtr(), (LPARAM)bufW.GetStringLength(), TRUE, 0))
+	{
+		return -3;
+	}
 
 	// ↓直接呼んではいけない
 	// pCommander.Command_INSTEXT(true, bufW.GetStringPtr(), bufW.GetStringLength(), TRUE);

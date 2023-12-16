@@ -43,7 +43,8 @@ bool CWordParse::WhereCurrentWord_2(
 	CLogicInt*		pnIdxFrom,		//!< [out] 単語が見つかった場合は、単語の先頭インデックスを返す。
 	CLogicInt*		pnIdxTo,		//!< [out] 単語が見つかった場合は、単語の終端の次のバイトの先頭インデックスを返す。
 	CNativeW*		pcmcmWord,		//!< [out] 単語が見つかった場合は、現在単語を切り出して指定されたCMemoryオブジェクトに格納する。情報が不要な場合はNULLを指定する。
-	CNativeW*		pcmcmWordLeft	//!< [out] 単語が見つかった場合は、現在単語の左に位置する単語を切り出して指定されたCMemoryオブジェクトに格納する。情報が不要な場合はNULLを指定する。
+	CNativeW*		pcmcmWordLeft,	//!< [out] 単語が見つかった場合は、現在単語の左に位置する単語を切り出して指定されたCMemoryオブジェクトに格納する。情報が不要な場合はNULLを指定する。
+	bool			bHSPMode		//!< [in] HSP用特別モード(プリプロセッサ#の取り扱いを変更します)
 )
 {
 	using namespace WCODE;
@@ -54,25 +55,59 @@ bool CWordParse::WhereCurrentWord_2(
 	if( NULL == pLine ){
 		return false;
 	}
-	if( nIdx >= nLineLen ){
-		return false;
-	}
 
-	// 現在位置の文字の種類によっては選択不可
-	if( WCODE::IsLineDelimiter(pLine[nIdx], bEnableExtEol) ){
-		return false;
+	if ( bHSPMode)
+	{
+		// mes mesbox| などの位置を想定( | はキャレット位置)
+		if (nIdx > nLineLen) {
+			return false;
+		}
+	}
+	else
+	{
+		if( nIdx >= nLineLen ){
+			return false;
+		}
+
+		// 現在位置の文字の種類によっては選択不可
+		if (WCODE::IsLineDelimiter(pLine[nIdx], bEnableExtEol)) {
+			return false;
+		}
 	}
 
 	// 現在位置の文字の種類を調べる
-	ECharKind nCharKind = WhatKindOfChar( pLine, nLineLen, nIdx );
+	ECharKind nCharKind = bHSPMode ? WhatKindOfCharForHSP(pLine, nLineLen, nIdx) : WhatKindOfChar( pLine, nLineLen, nIdx );
 
 	// 文字種類が変わるまで前方へサーチ
 	CLogicInt	nIdxNext = nIdx;
 	CLogicInt	nCharChars = CLogicInt(&pLine[nIdxNext] - CNativeW::GetCharPrev( pLine, nLineLen, &pLine[nIdxNext] ));
+
+	// mes| "" などの位置を想定( | はキャレット位置)
+	if ( bHSPMode)
+	{
+		if ( nCharChars > 0)
+		{
+			// 一文字だけ戻す
+			if ( nCharKind == ECharKind::CK_SPACE
+				|| nCharKind == ECharKind::CK_ZEN_SPACE
+				|| nCharKind == ECharKind::CK_TAB
+				|| nCharKind == ECharKind::CK_ETC
+				|| nCharKind == ECharKind::CK_CR
+				|| nCharKind == ECharKind::CK_LF		// CRLFは行末キャレット（次行あり）
+				|| nCharKind == ECharKind::CK_NULL )	// NULLは行末キャレット（次行なし）
+			{
+				nIdxNext -= nCharChars;
+				nIdx = nIdxNext;
+				nCharKind = WhatKindOfCharForHSP(pLine, nLineLen, nIdx);
+				nCharChars = CLogicInt(&pLine[nIdxNext] - CNativeW::GetCharPrev(pLine, nLineLen, &pLine[nIdxNext]));
+			}
+		}
+	}
+
 	while( nCharChars > 0 ){
 		CLogicInt	nIdxNextPrev = nIdxNext;
 		nIdxNext -= nCharChars;
-		ECharKind	nCharKindNext = WhatKindOfChar( pLine, nLineLen, nIdxNext );
+		ECharKind	nCharKindNext = bHSPMode ? WhatKindOfCharForHSP(pLine, nLineLen, nIdxNext) : WhatKindOfChar( pLine, nLineLen, nIdxNext );
 
 		ECharKind nCharKindMerge = WhatKindOfTwoChars( nCharKindNext, nCharKind );
 		if( nCharKindMerge == CK_NULL ){
@@ -91,9 +126,10 @@ bool CWordParse::WhereCurrentWord_2(
 	// 文字種類が変わるまで後方へサーチ
 	nIdxNext = nIdx;
 	nCharChars = CNativeW::GetSizeOfChar( pLine, nLineLen, nIdxNext ); // 2005-09-02 D.S.Koba GetSizeOfChar
+
 	while( nCharChars > 0 ){
 		nIdxNext += nCharChars;
-		ECharKind	nCharKindNext = WhatKindOfChar( pLine, nLineLen, nIdxNext );
+		ECharKind	nCharKindNext = bHSPMode ? WhatKindOfCharForHSP(pLine, nLineLen, nIdxNext) : WhatKindOfChar( pLine, nLineLen, nIdxNext );
 
 		ECharKind nCharKindMerge = WhatKindOfTwoChars( nCharKindNext, nCharKind );
 		if( nCharKindMerge == CK_NULL ){
@@ -107,6 +143,84 @@ bool CWordParse::WhereCurrentWord_2(
 	if( NULL != pcmcmWord ){
 		pcmcmWord->SetString( &pLine[*pnIdxFrom], *pnIdxTo - *pnIdxFrom );
 	}
+	return true;
+}
+
+//@@@ 2023.09.16 invoia
+/*!
+	@brief 現在位置のダブルクオーテーションの範囲を調べる staticメンバ
+	@author inovia
+	@retval true	成功 現在位置のデータはダブルクオーテーションで囲った文字列と認識する。
+	@retval false	失敗 現在位置のデータはダブルクオーテーションで囲った文字列とは言いきれない気がする。
+*/
+bool CWordParse::GetDoubleQuateCurrentWord(
+	const wchar_t*	pLine,			//!< [in]  調べるメモリ全体の先頭アドレス
+	CLogicInt		nLineLen,		//!< [in]  調べるメモリ全体の有効長
+	CLogicInt		nIdx,			//!< [in]  調査開始地点:pLineからの相対的な位置
+	bool			bEnableExtEol,	//!< [in]  Unicode改行文字を改行とみなすかどうか
+	CLogicInt*		pnIdxFrom,		//!< [out] 単語が見つかった場合は、単語の先頭インデックスを返す。
+	CLogicInt*		pnIdxTo			//!< [out] 単語が見つかった場合は、単語の終端の次のバイトの先頭インデックスを返す。
+)
+{
+	using namespace WCODE;
+
+	*pnIdxFrom = nIdx;
+	*pnIdxTo = nIdx;
+
+	if (NULL == pLine) {
+		return false;
+	}
+	if (nIdx >= nLineLen) {
+		return false;
+	}
+
+	// 現在位置の文字の種類によっては選択不可
+	if (WCODE::IsLineDelimiter(pLine[nIdx], bEnableExtEol)) {
+		return false;
+	}
+
+	// ダブルクオーテーションが出るまで前方へサーチ
+	bool		bExistDQ = false;
+	CLogicInt	nIdxNext = nIdx;
+	CLogicInt	nCharChars = CLogicInt(&pLine[nIdxNext] - CNativeW::GetCharPrev(pLine, nLineLen, &pLine[nIdxNext]));
+	while (nCharChars > 0) {
+		CLogicInt	nIdxNextPrev = nIdxNext;
+		nIdxNext -= nCharChars;
+
+		if ( CNativeW::GetSizeOfChar(pLine, nLineLen, nIdxNext) == 1
+			&& (pLine[nIdxNext]) == L'\"')
+		{
+			nIdxNext = nIdxNextPrev;
+			bExistDQ = true;
+			break;
+		}
+
+		nCharChars = CLogicInt(&pLine[nIdxNext] - CNativeW::GetCharPrev(pLine, nLineLen, &pLine[nIdxNext]));
+	}
+	*pnIdxFrom = nIdxNext;
+
+	// 前方に見つからない場合は失敗扱い
+	if (!bExistDQ)
+	{
+		return false;
+	}
+
+	// ダブルクオーテーションが出るまで後方へサーチ
+	nIdxNext = nIdx;
+	nCharChars = CNativeW::GetSizeOfChar(pLine, nLineLen, nIdxNext); // 2005-09-02 D.S.Koba GetSizeOfChar
+	while (nCharChars > 0) {
+
+		if (CNativeW::GetSizeOfChar(pLine, nLineLen, nIdxNext) == 1
+			&& (pLine[nIdxNext]) == L'\"')
+		{
+			break;
+		}
+
+		nIdxNext += nCharChars;
+		nCharChars = CNativeW::GetSizeOfChar(pLine, nLineLen, nIdxNext); // 2005-09-02 D.S.Koba GetSizeOfChar
+	}
+	*pnIdxTo = nIdxNext;
+
 	return true;
 }
 
@@ -140,11 +254,10 @@ ECharKind CWordParse::WhatKindOfChar(
 {
 	using namespace WCODE;
 
-	int nCharChars = CNativeW::GetSizeOfChar( pData, pDataLen, nIdx );
-	if( nCharChars == 0 ){
-		return CK_NULL;	// NULL
-	}
-	else if( nCharChars == 1 ){
+	ECharKind ret = CK_NULL;
+	if(const auto nCharChars = CNativeW::GetSizeOfChar(pData, pDataLen, nIdx);
+		nCharChars == 1)
+	{
 		wchar_t c=pData[nIdx];
 
 		//今までの半角
@@ -186,9 +299,35 @@ ECharKind CWordParse::WhatKindOfChar(
 		}
 		return CK_ETC;	// 半角のその他
 	}
-	else{
-		return CK_NULL;	// NULL
+	// IVS（正字 + 異体字セレクタ）
+	else if (nCharChars == 3 &&
+		IsVariationSelector(pData + nIdx + 1))
+	{
+		ret = CK_ZEN_ETC;				// 全角のその他(漢字など)
 	}
+
+	return ret;
+}
+
+//! 現在位置の文字の種類を調べる
+ECharKind CWordParse::WhatKindOfCharForHSP(
+	const wchar_t*	pData,
+	int				pDataLen,
+	int				nIdx
+)
+{
+	using namespace WCODE;
+
+	int nCharChars = CNativeW::GetSizeOfChar(pData, pDataLen, nIdx);
+	if ( nCharChars == 1)
+	{
+		wchar_t c = pData[nIdx];
+		if ( c == L'#')			// プリプロセッサ対応のための特殊処理
+		{
+			return CK_CSYM;
+		}
+	}
+	return WhatKindOfChar(pData, pDataLen, nIdx);
 }
 
 //! 二つの文字を結合したものの種類を調べる

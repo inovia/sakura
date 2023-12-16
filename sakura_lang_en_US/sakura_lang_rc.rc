@@ -2374,6 +2374,9 @@ BEGIN
     F_OPEN_POWERSHELL_AS_ADMIN "Open PowerShell As Admin"
     F_HSP_LABEL_LIST        "HSP Label List..."
     F_HSP_COMPILE_RUN       "Compile and Run"
+    F_HSP_OPEN_DOCUMENT     "Open Document"
+    F_HSP_JUMP_DEFINITION   "Go To Definition"
+    F_HSP_JUMP_ALL_REFERENCES "Find All References"
 END
 
 STRINGTABLE
@@ -2918,7 +2921,6 @@ BEGIN
     F_HSP_OPEN_SRC_FOLDER   "Open Source Folder..."
     F_HSP_RUN_ASSIST        "HSP Assistant..."
     F_HSP_RUN_HSPTV         "HSPTV Browser..."
-    F_HSP_CREATE_DPM        "Make .DPM from Folder..."
     F_HSP_CONVERT_DISH_C    "HSP3Dish / Source Convert..."
     F_HSP_OPEN_HGIMG4_TOOL  "HGIMG4 Tool..."
 END
@@ -2931,7 +2933,8 @@ BEGIN
     F_HSP_OPEN_FUNC_REF     "Command Reference..."
     F_HSP_OPEN_MANUAL_INDEX "Manual Index..."
     F_HSP_OPEN_HELP_SOURCE_EDITOR "Help Source Editor..."
-    F_HSP_CREATE_PACKOPT    "Make .PACKOPT items..."
+	F_HSP_RUN_ICON_CONVERTER "Icon Converter..."
+	F_HSP_RUN_HSP3_UPDATER	"Install/Uninstall Package..."
     F_CUSTMENU_1            "Custom Menu 1"
     F_CUSTMENU_2            "Custom Menu 2"
     F_CUSTMENU_3            "Custom Menu 3"
@@ -2990,6 +2993,7 @@ BEGIN
     F_CUSTMENU_LIST         "Custom Menus"
     F_USERMACRO_LIST        "Registered Macros"
     F_PLUGIN_LIST           "Plugin Commands"
+	F_HSPINIMENU_LIST		"Menu.txt List for HSP"
 END
 
 STRINGTABLE
@@ -3859,6 +3863,7 @@ BEGIN
     STR_PROPCOMMON_EDITING  "Editing"
     STR_PROPCOMMON_FILE     "File"
     STR_PROPCOMMON_BACKUP   "Backup"
+	STR_PROPCOMMON_HSP      "HSP"
 END
 
 STRINGTABLE

@@ -378,7 +378,8 @@ bool CSearchAgent::WhereCurrentWord(
 	CLogicInt*	pnIdxFrom,
 	CLogicInt*	pnIdxTo,
 	CNativeW*	pcmcmWord,
-	CNativeW*	pcmcmWordLeft
+	CNativeW*	pcmcmWordLeft,
+	bool		bHSPMode
 )
 {
 	*pnIdxFrom = nIdx;
@@ -393,7 +394,30 @@ bool CSearchAgent::WhereCurrentWord(
 	const wchar_t*	pLine = pDocLine->GetDocLineStrWithEOL( &nLineLen );
 
 	/* 現在位置の単語の範囲を調べる */
-	return CWordParse::WhereCurrentWord_2( pLine, nLineLen, nIdx, GetDllShareData().m_Common.m_sEdit.m_bEnableExtEol, pnIdxFrom, pnIdxTo, pcmcmWord, pcmcmWordLeft );
+	return CWordParse::WhereCurrentWord_2( pLine, nLineLen, nIdx, GetDllShareData().m_Common.m_sEdit.m_bEnableExtEol, pnIdxFrom, pnIdxTo, pcmcmWord, pcmcmWordLeft, bHSPMode);
+}
+
+/* 現在位置のダブルクオーテーションの範囲を調べる */
+bool CSearchAgent::GetDoubleQuateCurrentWord(
+	CLogicInt	nLineNum,
+	CLogicInt	nIdx,
+	CLogicInt*	pnIdxFrom,
+	CLogicInt*	pnIdxTo
+)
+{
+	*pnIdxFrom = nIdx;
+	*pnIdxTo = nIdx;
+
+	const CDocLine*	pDocLine = m_pcDocLineMgr->GetLine(nLineNum);
+	if (NULL == pDocLine) {
+		return false;
+	}
+
+	CLogicInt		nLineLen;
+	const wchar_t*	pLine = pDocLine->GetDocLineStrWithEOL(&nLineLen);
+
+	/* 現在位置のダブルクオーテーションの範囲を調べる */
+	return CWordParse::GetDoubleQuateCurrentWord(pLine, nLineLen, nIdx, GetDllShareData().m_Common.m_sEdit.m_bEnableExtEol, pnIdxFrom, pnIdxTo);
 }
 
 // 現在位置の左右の単語の先頭位置を調べる

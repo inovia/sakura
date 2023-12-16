@@ -268,9 +268,9 @@ CMenuDrawer::CMenuDrawer()
 /* 150 */		F_GOLOGICALLINETOP_BOX			/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//(矩形選択)行頭に移動(改行単位)
 
 /* HSP系(5段目10個: 151-160) */
-/* 151 */		F_HSP_COMPILE_RUN				/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
-/* 152 */		F_HSP_CREATE_OBJ				/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
-/* 153 */		F_HSP_RUN_EXTERNAL				/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
+/* 151 */		F_HSP_COMPILE_RUN				/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	// コンパイル+実行
+/* 152 */		F_HSP_CREATE_OBJ				/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	// オブジェクト生成
+/* 153 */		F_HSP_RUN_EXTERNAL				/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	// 外部ファイル実行
 /* 154 */		F_DISABLE								/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
 /* 155 */		F_DISABLE								/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー
 /* 156 */		F_DISABLE								/* , TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 */,	//ダミー

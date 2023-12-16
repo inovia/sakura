@@ -140,7 +140,7 @@ void CTextDrawer::DispText(IDWriteFactory* pDWFactory, ID2D1DCRenderTarget* pRen
 			nWorkWidth += pDrawDxArray[nDrawLength++];
 		}
 		// サロゲートペア対策	2008/7/5 Uchi	Update 7/8 Uchi
-		if (nDrawLength < nDrawDataMaxLength && pDrawDxArray[nDrawLength] == 0) {
+		while (nDrawLength < nDrawDataMaxLength && pDrawDxArray[nDrawLength] == 0) {
 			nDrawLength++;
 		}
 

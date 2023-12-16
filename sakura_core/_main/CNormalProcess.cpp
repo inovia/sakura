@@ -432,6 +432,13 @@ bool CNormalProcess::InitializeProcess()
 	// 複数ファイル読み込み
 	OpenFiles( pEditWnd->GetHwnd() );
 
+	/* 自動起動系の処理 */
+	const auto& hsp3 = GetHsp3();
+	if ( hsp3.IsHspAssistantAutoStartEnabled())
+	{
+		hsp3.RunAssistAtOnce( pEditWnd->GetHwnd());
+	}
+
 	return pEditWnd->GetHwnd() ? true : false;
 }
 
