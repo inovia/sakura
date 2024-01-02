@@ -961,10 +961,10 @@ bool CHsp3::RunIconConverter(HWND hParent) const
 		args += L"/OUTPUT \"" + fileSavePath + L"\" ";
 
 		// /RESIZE フラグを追加
-		args += L"/RESIZE";
+		args += L"/RESIZE ";
 
 		// /FORCE32BIT フラグを追加
-		args += L"/FORCE32BIT";
+		args += L"/FORCE32BIT ";
 	}
 
 	// 実行

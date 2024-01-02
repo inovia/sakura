@@ -683,6 +683,7 @@ bool CShareData::InitShareData()
 			sHSP.m_bHspAssistantAutoStartEnabled = true;
 			sHSP.m_bUseLegacyLabelAnalysis = false;
 			sHSP.m_bAutoSaveBeforeCompile = false;
+			sHSP.m_bAeroSnapMitigation = false;
 			sHSP.m_bShowDebugWindow = false;
 			sHSP.m_szCommandLineOption[0] = L'\0';
 			sHSP.m_szExecuteExternalFile_Name[0] = L'\0';

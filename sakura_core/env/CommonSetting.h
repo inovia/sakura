@@ -726,7 +726,8 @@ struct CommonSetting_HSP
 	bool			m_bUseLegacyLabelAnalysis;						//!< 従来方式のラベル解析を優先する(HSP 3.6互換)
 	bool			m_bAutoSaveBeforeCompile;						//!< コンパイル時、未保存のファイルを自動保存する
 	bool			m_bHspAssistantAutoStartFlag;					//!< (未保存)HSPアシスタントを自動起動管理フラグ(別プロセスでstaticできないのでここで)
-	bool			m_PADDING[1];									//!< (未保存)未使用: Padding領域
+	bool			m_bAeroSnapMitigation;							//!< エアロスナップの緩和策を適用する
+	bool			m_PADDING[256];									//!< (未保存)未使用: Padding領域
 };
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //

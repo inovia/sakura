@@ -111,6 +111,9 @@ void CPropHSP::SetData( HWND hwndDlg )
 
 	/* コンパイル時、未保存のファイルを自動保存する(&S) */
 	::CheckDlgButtonBool(hwndDlg, IDC_CHECK_bAutoSaveBeforeCompile, m_Common.m_sHSP.m_bAutoSaveBeforeCompile);
+
+	/* エアロスナップの緩和策を適用する(&M) */
+	::CheckDlgButtonBool(hwndDlg, IDC_CHECK_bAeroSnapMitigation, m_Common.m_sHSP.m_bAeroSnapMitigation);
 	return;
 }
 
@@ -129,6 +132,9 @@ int CPropHSP::GetData( HWND hwndDlg )
 
 	/* コンパイル時、未保存のファイルを自動保存する(&S) */
 	m_Common.m_sHSP.m_bAutoSaveBeforeCompile = ::IsDlgButtonCheckedBool(hwndDlg, IDC_CHECK_bAutoSaveBeforeCompile);
+
+	/* エアロスナップの緩和策を適用する(&M) */
+	m_Common.m_sHSP.m_bAeroSnapMitigation = ::IsDlgButtonCheckedBool(hwndDlg, IDC_CHECK_bAeroSnapMitigation);
 
 	return TRUE;
 }

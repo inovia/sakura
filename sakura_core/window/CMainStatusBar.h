@@ -57,9 +57,38 @@ public:
 	//設定
 	bool SetStatusText(int nIndex, int nOption, const WCHAR* pszText, size_t textLen = SIZE_MAX);
 	void ShowProgressBar(bool bShow) const;
+
+	// 指定されたインデックスにテキストを設定する
+	inline void SetStatusBarTextCache(int index, const std::wstring& text)
+	{
+		m_texts[index] = text;
+	}
+
+	// 指定されたインデックスのテキストを取得する
+	inline std::wstring GetStatusBarTextCache(int index) const
+	{
+		auto it = m_texts.find(index);
+		if (it != m_texts.end())
+		{
+			return it->second;
+		}
+		return L"";  // テキストが見つからない場合は空のwstringを返す
+	}
+
+	// すべてのテキストをクリアする
+	inline void ClearStatusBarTextCache()
+	{
+		m_texts.clear();
+	}
+
 private:
 	CEditWnd*	m_pOwner;
 	HWND		m_hwndStatusBar;
 	HWND		m_hwndProgressBar;
+
+	// インデックスとテキストを保存するマップ
+private:
+	std::map<int, std::wstring> m_texts;  
+
 };
 #endif /* SAKURA_CMAINSTATUSBAR_E2FC11D7_4513_4F96_BDCC_E9B278ED0718_H_ */

@@ -33,6 +33,7 @@
 #include "util/std_macro.h"
 #include "env/DLLSHAREDATA.h"
 #include "hsp/CHsp3DarkMode.h"
+#include "config/system_constants.h"
 
 /*!
 	Windows Entry point
@@ -77,6 +78,9 @@ int WINAPI wWinMain(
 				CHsp3DarkMode::PreferredAppMode::APPMODE_ALLOWDARK);
 			DarkMode.RefreshImmersiveColorPolicyState();
 		}
+
+		// AppUserModelID
+		::SetCurrentProcessExplicitAppUserModelID( GSTR_APP_USER_MODEL_ID);
 	}
 	
 	//開発情報

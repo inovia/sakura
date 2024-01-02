@@ -605,6 +605,13 @@
 #define	GSTR_VIEWNAME		(L"HSPSakuraEditorSakuraView"												_T(STR_SHAREDATA_VERSION))
 
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
+//                      AppUserModelID                         //
+// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
+
+//! AppUserModelID
+#define	GSTR_APP_USER_MODEL_ID	(L"HSPSakuraEditor.Id"	_T(CON_SKR_MACHINE_SUFFIX_) _T(_CODE_SUFFIX_) _T(_DEBUG_SUFFIX_)	_T(STR_SHAREDATA_VERSION))
+
+// -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //                         リソース                            //
 // -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- //
 //	Dec. 2, 2002 genta

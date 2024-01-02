@@ -797,8 +797,8 @@
 #define IDC_HSP_CHECK2                  1740
 #define IDC_CHECK_bAutoRunHSPAssistant  1740
 #define IDC_CHECK_bUseLegacyLabelAnalysis 1741
-#define IDC_CHECK_bUseLegacyLabelAnalysis2 1742
 #define IDC_CHECK_bAutoSaveBeforeCompile 1742
+#define IDC_CHECK_bAeroSnapMitigation   1743
 #define IDS_AUTHOR_PAGE                 4054
 #define IDS_ABOUT_DESCRIPTION           4056
 #define IDD_TYPELIST                    5000

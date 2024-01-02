@@ -661,14 +661,6 @@ HWND CEditWnd::Create(
 		DarkMode.SetDarkModeTitleBar19(hWnd);
 		DarkMode.SetDarkModeTitleBar(hWnd);
 	}
-	//::SetClassLongPtr( hWnd, GCLP_HBRBACKGROUND, (LONG_PTR)::GetStockObject(BLACK_BRUSH));
-	//DarkMode.SetDarkModeHwnd(hWnd);
-	//DarkMode.SetPreferredAppMode(CHsp3DarkMode::APPMODE_ALLOWDARK);
-	//DarkMode.FlushMenuThemes();
-	//DarkMode.RefreshImmersiveColorPolicyState();
-
-	//DarkMode.AllowDarkModeForWindow(hWnd, true);
-	//DarkMode.SetDarkModeHwnd(hWnd);
 
 	// 初回アイドリング検出用のゼロ秒タイマーをセットする	// 2008.04.19 ryoji
 	// ゼロ秒タイマーが発動（初回アイドリング検出）したら MYWM_FIRST_IDLE を起動元プロセスにポストする。
@@ -1281,28 +1273,15 @@ LRESULT CEditWnd::DispatchEvent(
 
 			if ( DarkMode.IsSystemUseDarkMode())
 			{
-				// ステータスバーの指定した項目が SBT_OWNERDRAW かどうかを確認
-				LPARAM result = SendMessage(lpdis->hwndItem, SB_GETTEXTLENGTH, (WPARAM)lpdis->itemID, 0);
-				// auto bOwnerDraw = HIWORD(result) & SBT_OWNERDRAW;
-
 				if (lpdis->itemID != 5/* && (lpdis->itemAction & ODA_DRAWENTIRE) == ODA_DRAWENTIRE*/)
 				{
-					::SetTextColor(lpdis->hDC, DarkMode.GetSysColor(COLOR_BTNTEXT));
-					::SetBkMode(lpdis->hDC, TRANSPARENT);
+					::SetTextColor( lpdis->hDC, DarkMode.GetSysColor(COLOR_BTNTEXT));
+					::SetBkMode( lpdis->hDC, TRANSPARENT);
 
 					// テキストを取得
-					LPCTSTR lpszText = (LPCTSTR)lpdis->itemData;
-					::DrawText(lpdis->hDC, lpszText, -1, &lpdis->rcItem, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
+					const auto& text = m_cStatusBar.GetStatusBarTextCache( lpdis->itemID);
+					::DrawText( lpdis->hDC, text.c_str(), -1, &lpdis->rcItem, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 				}
-				//else if (0 == lpdis->itemID)
-				//{
-				//	::SetTextColor(lpdis->hDC, DarkMode.GetSysColor(COLOR_BTNTEXT));
-				//	::SetBkMode(lpdis->hDC, TRANSPARENT);
-
-				//	// テキストを取得
-				//	LPCTSTR lpszText = (LPCTSTR)lpdis->itemData;
-				//	::DrawText(lpdis->hDC, lpszText, -1, &lpdis->rcItem, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
-				//}
 			}
 
 			if( 5 == lpdis->itemID ){ // 2003.08.26 Moca idがずれて作画されなかった
@@ -1329,7 +1308,7 @@ LRESULT CEditWnd::DispatchEvent(
 					::TextOut( lpdis->hDC, lpdis->rcItem.left + 1, y, L"REC", wcslen( L"REC" ) );
 				}
 			}
-			return 0;
+			return TRUE;
 		}else{
 			switch( lpdis->CtlType ){
 			case ODT_MENU:	/* オーナー描画メニュー */
@@ -1404,6 +1383,44 @@ LRESULT CEditWnd::DispatchEvent(
 		}
 		return 0L;
 
+	case WM_WINDOWPOSCHANGING:
+	{
+		// エアロスナップの緩和策を適用
+		if ( m_pShareData->m_Common.m_sHSP.m_bAeroSnapMitigation)
+		{
+			//
+			RECT rc = { 0 };
+			WINDOWPLACEMENT wp = { 0 };
+			wp.length = sizeof(WINDOWPLACEMENT);
+
+			bool bAeroSnap = false;
+			{
+				::GetWindowPlacement( hwnd, &wp);
+				if ( wp.showCmd == SW_SHOWNORMAL)
+				{
+					::GetWindowRect( hwnd, &rc);
+
+					bAeroSnap =
+						(rc.left != wp.rcNormalPosition.left ||
+							rc.top != wp.rcNormalPosition.top ||
+							rc.right != wp.rcNormalPosition.right ||
+							rc.bottom != wp.rcNormalPosition.bottom);
+				}
+			}
+
+			if ( bAeroSnap)
+			{
+				MYTRACE( L"Snap!!\n");
+				wp.rcNormalPosition = rc;
+				::SetWindowPlacement(hwnd, &wp);
+			}
+			else {
+				MYTRACE(L"Not Snap!!\n");
+			}
+		}
+
+		return DefWindowProc( hwnd, uMsg, wParam, lParam);
+	}
 	case WM_WINDOWPOSCHANGED:
 		// ポップアップウィンドウの表示切替指示をポストする	// 2007.10.22 ryoji
 		// ・WM_SHOWWINDOWはすべての表示切替で呼ばれるわけではないのでWM_WINDOWPOSCHANGEDで処理

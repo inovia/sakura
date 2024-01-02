@@ -191,6 +191,16 @@ public:
 		GetDllShareData().m_Common.m_sHSP.m_bAutoSaveBeforeCompile = bAutoSaveBeforeCompile;
 	}
 
+	inline const bool IsAeroSnapMitigation() const
+	{
+		return GetDllShareData().m_Common.m_sHSP.m_bAeroSnapMitigation;
+	}
+
+	inline void SetAeroSnapMitigation(bool bAeroSnapMitigation) const
+	{
+		GetDllShareData().m_Common.m_sHSP.m_bAutoSaveBeforeCompile = bAeroSnapMitigation;
+	}
+
 	bool InitKeyword(CKeyWordSetMgr& keywordMgr) const;
 
 private:

@@ -195,6 +195,15 @@ bool CMainStatusBar::SetStatusText(int nIndex, int nOption, const WCHAR* pszText
 		}
 	}while (false);
 	if (bDraw) {
+
+		// ダークモード時自前描画を行うが、DRAWITEMSTRUCT 内の文字列が壊れているときがあるため
+		// ステータスバーで描画すべきテキストを別途管理する
+		const auto& DarkMode = CHsp3DarkMode::GetInstance();
+		if ( DarkMode.IsSystemUseDarkMode())
+		{
+			SetStatusBarTextCache(nIndex, (pszText == nullptr) ? L"" : pszText);
+		}
+		
 		StatusBar_SetText(m_hwndStatusBar, nIndex | nOption, pszText);
 	}
 	return bDraw;

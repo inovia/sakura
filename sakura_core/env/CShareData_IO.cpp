@@ -2315,6 +2315,8 @@ void CShareData_IO::IO_HSP(CDataProfile& cProfile, CommonSetting_HSP& hsp)
 			hsp.m_bUseLegacyLabelAnalysis = false;
 		if (!cProfile.IOProfileData(pszSecName, LTEXT("AutoSaveBeforeCompile"), hsp.m_bAutoSaveBeforeCompile))
 			hsp.m_bAutoSaveBeforeCompile = false;
+		if (!cProfile.IOProfileData(pszSecName, LTEXT("AeroSnapMitigation"), hsp.m_bAeroSnapMitigation))
+			hsp.m_bAeroSnapMitigation = false;
 	}
 	else
 	{
@@ -2323,6 +2325,7 @@ void CShareData_IO::IO_HSP(CDataProfile& cProfile, CommonSetting_HSP& hsp)
 		cProfile.IOProfileData(pszSecName, LTEXT("AssistantAutoStartEnabled"), hsp.m_bHspAssistantAutoStartEnabled);
 		cProfile.IOProfileData(pszSecName, LTEXT("UseLegacyLabelAnalysis"), hsp.m_bUseLegacyLabelAnalysis);
 		cProfile.IOProfileData(pszSecName, LTEXT("AutoSaveBeforeCompile"), hsp.m_bAutoSaveBeforeCompile);
+		cProfile.IOProfileData(pszSecName, LTEXT("AeroSnapMitigation"), hsp.m_bAeroSnapMitigation);
 	}
 }
 

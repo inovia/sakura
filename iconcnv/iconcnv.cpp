@@ -113,6 +113,13 @@ vector<BYTE> ConvertImageToARGB(
 			::GlobalUnlock(hg);
 		}
 		stream->Release();
+
+		//// Debug
+		//pBitmap->Save(L"C:\\Temp\\test.png", &pngClsid, nullptr);
+
+		//std::ofstream file(L"C:\\Temp\\test2.png", std::ios::out | std::ios::binary);
+		//file.write(reinterpret_cast<const char*>(pngData.data()), pngData.size());
+		//file.close();
 	}
 
 	return pngData;

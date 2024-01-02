@@ -1731,11 +1731,13 @@ FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x1
 BEGIN
     CONTROL         "HSPアシスタントを自動起動する(&A)",IDC_CHECK_bAutoRunHSPAssistant,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,14,206,10
-    GROUPBOX        "",-1,3,3,218,66,WS_GROUP
+    GROUPBOX        "",-1,3,3,218,118,WS_GROUP
     CONTROL         "従来方式のラベル解析を優先する(HSP 3.6互換)(&L)",IDC_CHECK_bUseLegacyLabelAnalysis,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,29,205,10
     CONTROL         "コンパイル時、未保存のファイルを自動保存する(&S)",IDC_CHECK_bAutoSaveBeforeCompile,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,43,205,10
+    CONTROL         "エアロスナップの緩和策を適用する(&M)",IDC_CHECK_bAeroSnapMitigation,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,57,205,10
 END
 
 
@@ -2421,9 +2423,24 @@ BEGIN
     F_OPEN_POWERSHELL_AS_ADMIN "管理者としてPowerShellを開く"
     F_HSP_LABEL_LIST        "HSPのラベル・関数一覧..."
     F_HSP_COMPILE_RUN       "コンパイル + 実行"
+END
+
+STRINGTABLE
+BEGIN
+    F_HSP_OPEN_PAINT_TOOL   "ペイントツールを開く..."
+    F_HSP_SEARCH_KEYWORD    "HSPキーワード検索..."
+    F_HSP_OPEN_PG_MANUAL    "HSPプログラミング・マニュアルを開く..."
+    F_HSP_OPEN_FUNC_REF     "HSP命令リファレンスを開く..."
+    F_HSP_OPEN_MANUAL_INDEX "HSPマニュアル目次..."
+    F_HSP_OPEN_HELP_SOURCE_EDITOR "Help Source Editorを開く..."
+    F_HSP_RUN_ICON_CONVERTER "アイコンコンバーター起動..."
     F_HSP_OPEN_DOCUMENT     "ドキュメントを開く"
     F_HSP_JUMP_DEFINITION   "定義へ移動"
     F_HSP_JUMP_ALL_REFERENCES "すべての参照を検索"
+    F_HSP_RUN_HSP3_UPDATER  "機能の追加と削除..."
+    F_CUSTMENU_1            "カスタムメニュー1"
+    F_CUSTMENU_2            "カスタムメニュー2"
+    F_CUSTMENU_3            "カスタムメニュー3"
 END
 
 STRINGTABLE
@@ -2974,21 +2991,6 @@ END
 
 STRINGTABLE
 BEGIN
-    F_HSP_OPEN_PAINT_TOOL   "ペイントツールを開く..."
-    F_HSP_SEARCH_KEYWORD    "HSPキーワード検索..."
-    F_HSP_OPEN_PG_MANUAL    "HSPプログラミング・マニュアルを開く..."
-    F_HSP_OPEN_FUNC_REF     "HSP命令リファレンスを開く..."
-    F_HSP_OPEN_MANUAL_INDEX "HSPマニュアル目次..."
-    F_HSP_OPEN_HELP_SOURCE_EDITOR "Help Source Editorを開く..."
-    F_HSP_RUN_ICON_CONVERTER "アイコンコンバーター起動..."
-	F_HSP_RUN_HSP3_UPDATER	"機能の追加と削除..."
-    F_CUSTMENU_1            "カスタムメニュー1"
-    F_CUSTMENU_2            "カスタムメニュー2"
-    F_CUSTMENU_3            "カスタムメニュー3"
-END
-
-STRINGTABLE
-BEGIN
     F_MENU_RBUTTON          "右クリックメニュー"
 END
 
@@ -3040,7 +3042,7 @@ BEGIN
     F_CUSTMENU_LIST         "カスタムメニューリスト"
     F_USERMACRO_LIST        "登録済みマクロリスト"
     F_PLUGIN_LIST           "プラグインコマンドリスト"
-	F_HSPINIMENU_LIST		"HSP用Menu.txtリスト"
+    F_HSPINIMENU_LIST       "HSP用Menu.txtリスト"
 END
 
 STRINGTABLE
@@ -3895,7 +3897,11 @@ BEGIN
     STR_PROPCOMMON_EDITING  "編集"
     STR_PROPCOMMON_FILE     "ファイル"
     STR_PROPCOMMON_BACKUP   "バックアップ"
-	STR_PROPCOMMON_HSP      "HSP"
+END
+
+STRINGTABLE
+BEGIN
+    STR_PROPCOMMON_HSP      "HSP"
 END
 
 STRINGTABLE
