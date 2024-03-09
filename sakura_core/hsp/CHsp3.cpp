@@ -286,7 +286,8 @@ BOOL CHsp3::HscMakeW(const CNativeW& name) const
 	// UTF-16 -> Shift_JIS
 	CNativeA nameA;
 	CShiftJis::UnicodeToSJIS( name, nameA._GetMemory());
-	return m_pHsp3Dll->hsc3_make()(0, (void*)nameA.GetStringPtr(), 0, 0);
+	return m_pHsp3Dll->hsc3_make()(0,
+		(void*)nameA.GetStringPtr(), 1/* アイコン書き換え機能有効 */, 0);
 }
 
 BOOL CHsp3::HscGetMesW(CNativeW& msg) const

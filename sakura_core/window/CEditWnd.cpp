@@ -1410,12 +1410,12 @@ LRESULT CEditWnd::DispatchEvent(
 
 			if ( bAeroSnap)
 			{
-				MYTRACE( L"Snap!!\n");
+				// MYTRACE( L"Snap!!\n");
 				wp.rcNormalPosition = rc;
 				::SetWindowPlacement(hwnd, &wp);
 			}
 			else {
-				MYTRACE(L"Not Snap!!\n");
+				// MYTRACE(L"Not Snap!!\n");
 			}
 		}
 

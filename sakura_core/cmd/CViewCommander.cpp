@@ -613,7 +613,7 @@ BOOL CViewCommander::HandleCommand(
 	case F_HSP_RUN_ICON_CONVERTER:				/* アイコンコンバーター起動(&I) */
 		Command_HSP_RUN_ICON_CONVERTER();
 		break;
-	case F_HSP_RUN_HSP3_UPDATER:				/* 機能の追加と削除(&A) */
+	case F_HSP_RUN_HSP3_UPDATER:				/* HSP3機能のアップデート(&A) */
 		Command_HSP_RUN_HSP3_UPDATER();
 		break;
 	case F_HSP_SEARCH_KEYWORD:					/* HSPキーワード検索(&K) */

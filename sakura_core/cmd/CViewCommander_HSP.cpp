@@ -761,3 +761,16 @@ void CViewCommander::Command_HSP_HIGHLIGHT_KEYWORDS(void)
 	// 選択解除
 	m_pCommanderView->GetSelectionInfo().DisableSelectArea(true);
 }
+
+void CViewCommander::Command_HSP_TOGGLE_LINE_COMMENT(void)
+{
+	// Ctrl+/
+	// トグルタイプのコメント/コメントアウト
+	// 矩形選択時は無効
+	// /**/ は解除時のみ有効
+	// ; と //
+	// 付与時は //
+	// インデントも維持する (タブまたはスペースを左から検出して、// を埋める）
+	// 選択時はその範囲内のみ影響。非選択時はその行のみ。
+
+}

@@ -2437,7 +2437,7 @@ BEGIN
     F_HSP_OPEN_DOCUMENT     "ドキュメントを開く"
     F_HSP_JUMP_DEFINITION   "定義へ移動"
     F_HSP_JUMP_ALL_REFERENCES "すべての参照を検索"
-    F_HSP_RUN_HSP3_UPDATER  "機能の追加と削除..."
+    F_HSP_RUN_HSP3_UPDATER  "HSP3機能のアップデート..."
     F_CUSTMENU_1            "カスタムメニュー1"
     F_CUSTMENU_2            "カスタムメニュー2"
     F_CUSTMENU_3            "カスタムメニュー3"
