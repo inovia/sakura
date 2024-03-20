@@ -1454,6 +1454,12 @@ void CDlgFuncList::SetListHSP3(void)
 			case 2:
 				wcscpy(szType, LS(STR_DLGFNCLST_HSP3_DEFCFUNC));
 				break;
+			case 3:
+				wcscpy(szType, LS(STR_DLGFNCLST_HSP3_MODFUNC));
+				break;
+			case 4:
+				wcscpy(szType, LS(STR_DLGFNCLST_HSP3_MODCFUNC));
+				break;
 			default:
 				szType[0] = L'\0';
 				break;

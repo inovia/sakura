@@ -168,6 +168,10 @@ end_of_for:;
 		/* C/C++スマートインデント処理 */
 		m_pCommanderView->SmartIndent_CPP( wcChar );
 		break;
+	case SMARTINDENT_HSP3:
+		/* HSP3スマートインデント処理 */
+		m_pCommanderView->SmartIndent_HSP3(wcChar);
+		break;
 	default:
 		//プラグインから検索する
 		{

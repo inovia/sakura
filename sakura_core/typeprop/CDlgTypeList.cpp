@@ -26,6 +26,7 @@
 #include "util/window.h"
 #include "util/RegKey.h"
 #include "util/string_ex2.h"
+#include "hsp/CHsp3DarkMode.h"
 #include <memory>
 #include "apiwrap/StdApi.h"
 #include "apiwrap/StdControl.h"
@@ -181,6 +182,14 @@ BOOL CDlgTypeList::OnActivate( WPARAM wParam, LPARAM lParam )
 
 INT_PTR CDlgTypeList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM lParam )
 {
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	LPARAM ret;
+	if (DarkMode.DarkModeDispatchEvent(hWnd, wMsg, wParam, lParam, ret))
+	{
+		return ret;
+	}
+
 	HWND hwndRMenu = GetItemHwnd( IDC_CHECK_EXT_RMENU );
 	HWND hwndDblClick = GetItemHwnd( IDC_CHECK_EXT_DBLCLICK );
 
@@ -302,6 +311,15 @@ INT_PTR CDlgTypeList::DispatchEvent( HWND hWnd, UINT wMsg, WPARAM wParam, LPARAM
 		}
 	}
 	return result;
+}
+
+BOOL CDlgTypeList::OnInitDialog(HWND hwndDlg, WPARAM wParam, LPARAM lParam)
+{
+	// ダークモード
+	auto& DarkMode = CHsp3DarkMode::GetInstance();
+	DarkMode.DarkModeOnInitDialog(hwndDlg, wParam, lParam);
+
+	return CDialog::OnInitDialog(hwndDlg, wParam, lParam);
 }
 
 /* ダイアログデータの設定 */

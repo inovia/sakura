@@ -801,8 +801,10 @@ public:
 						SIZE size;
 						::GetThemePartSize(hTheme, pDIS->hDC, iPart, iState, nullptr, TS_TRUE, &size);
 						RECT rcCheckbox = pDIS->rcItem;
-						rcCheckbox.left += 1;
+						rcCheckbox.left += 2;
 						rcCheckbox.right = rcCheckbox.left + size.cx;
+						rcCheckbox.top = 2;
+						rcCheckbox.bottom = rcCheckbox.top + size.cy;
 
 						// チェック/ラジオボックスを描画
 						::DrawThemeBackground(hTheme, pDIS->hDC, iPart, iState, &rcCheckbox, nullptr);
@@ -819,7 +821,7 @@ public:
 						::GetWindowText(hControl, szText, sizeof(szText) / sizeof(TCHAR));
 
 						// ボタンのスタイル取得
-						UINT format = 0;/* | DT_VCENTER*/;
+						UINT format = DT_WORDBREAK;
 						LONG_PTR lStyle = ::GetWindowLongPtr(hControl, GWL_STYLE);
 						if ( lStyle & BS_LEFT)
 						{

@@ -79,7 +79,8 @@ enum EOutlineType{
 //! スマートインデント種別
 enum ESmartIndentType {
 	SMARTINDENT_NONE,		//!< なし
-	SMARTINDENT_CPP			//!< C/C++
+	SMARTINDENT_CPP,			//!< C/C++
+	SMARTINDENT_HSP3		//!< HSP3
 };
 
 //! ヒアドキュメント種別

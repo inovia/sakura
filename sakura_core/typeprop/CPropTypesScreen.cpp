@@ -128,6 +128,7 @@ TYPE_NAME_ID<ETabArrow> TabArrowArr[] = {
 TYPE_NAME_ID<ESmartIndentType> SmartIndentArr[] = {
 	{ SMARTINDENT_NONE,	STR_SMART_INDENT_NONE },
 	{ SMARTINDENT_CPP,	STR_SMART_INDENT_C_CPP },
+	{ SMARTINDENT_HSP3,	STR_SMART_INDENT_C_HSP3 },
 };
 
 /*!	2行目以降のインデント方法

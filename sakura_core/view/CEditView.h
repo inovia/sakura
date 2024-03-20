@@ -561,6 +561,7 @@ public:
 	};
 	TOGGLE_WRAP_ACTION GetWrapMode( CKetaXInt* newKetas );
 	void SmartIndent_CPP(wchar_t wcChar);	/* C/C++スマートインデント処理 */
+	void SmartIndent_HSP3(wchar_t wcChar);	/* HSP3スマートインデント処理 */
 	/* コマンド操作 */
 	void SetFont( void );										/* フォントの変更 */
 	void SplitBoxOnOff(BOOL bVert, BOOL bHorz, BOOL bSizeBox);						/* 縦・横の分割ボックス・サイズボックスのＯＮ／ＯＦＦ */
