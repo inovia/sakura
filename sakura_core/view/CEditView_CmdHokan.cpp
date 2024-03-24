@@ -213,7 +213,7 @@ int CEditView::HokanSearchByFile(
 			if( !bKeyStartWithMark && wcschr( L"$@#\\", pszLine[j] ) != NULL )continue;
 
 			// 文字種類取得
-			ECharKind kindPre = CWordParse::WhatKindOfChar( pszLine, nLineLen, j );	// 文字種類取得
+			ECharKind kindPre = CWordParse::WhatKindOfCharForHSP( pszLine, nLineLen, j );	// 文字種類取得
 
 			// 全角記号は候補に含めない
 			if ( kindPre == CK_ZEN_SPACE || kindPre == CK_ZEN_NOBASU || kindPre == CK_ZEN_DAKU ||
@@ -232,7 +232,7 @@ int CEditView::HokanSearchByFile(
 				if ( pszLine[j] < 0x00C0 && !IS_KEYWORD_CHAR( pszLine[j] ) )break;
 
 				// 文字種類取得
-				ECharKind kindCur = CWordParse::WhatKindOfChar( pszLine, nLineLen, j );
+				ECharKind kindCur = CWordParse::WhatKindOfCharForHSP( pszLine, nLineLen, j );
 				// 全角記号は候補に含めない
 				if ( kindCur == CK_ZEN_SPACE || kindCur == CK_ZEN_KIGO || kindCur == CK_ZEN_SKIGO ){
 					break;

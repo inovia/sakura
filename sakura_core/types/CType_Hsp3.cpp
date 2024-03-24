@@ -256,7 +256,7 @@ void CType_Hsp3::InitTypeConfigImp(STypeConfig* pType)
 	// pType->m_ColorInfoArr[COLORIDX_DIGIT].m_bDisp = true;			//半角数値を色分け表示	//Mar. 10, 2001 JEPRO
 	// pType->m_ColorInfoArr[COLORIDX_BRACKET_PAIR].m_bDisp = true;	//対括弧の強調をデフォルトONに	//Sep. 21, 2002 genta
 
-	pType->m_bStringLineOnly = false;								// 文字列の改行を許す
+	pType->m_bStringLineOnly = false;								// 文字列の改行を許さない
 	pType->m_bUseHokanByKeyword = true;
 	pType->m_bHokanLoHiCase = true;
 
@@ -265,9 +265,6 @@ void CType_Hsp3::InitTypeConfigImp(STypeConfig* pType)
 /* HSP3スマートインデント処理 */
 void CEditView::SmartIndent_HSP3(wchar_t wcChar)
 {
-	// TODO: HSPのラベル* 未対応
-
-
 	const wchar_t*	pLine;
 	CLogicInt		nLineLen;
 	int			k;
@@ -693,7 +690,23 @@ void CDocOutline::MakeFuncList_HSP3(CFuncInfoArr* pcFuncInfoArr)
 			// シングルクォーテーション文字列を読み取り中
 			if ( FL_HSP3_MODE_SINGLE_QUOTE == nMode)
 			{
-				if (L'\'' == pLine[i])
+				if (i < nLineLen - 1
+					&& L'\\' == pLine[i]
+					&& L'\\' == pLine[i + 1])
+				{
+					// 継続判定：[\\]
+					++i;
+					continue;
+				}
+				else if (i < nLineLen - 1
+					&& L'\\' == pLine[i]
+					&& L'\'' == pLine[i + 1])
+				{
+					// 継続判定：\'
+					++i;
+					continue;
+				}
+				else if (L'\'' == pLine[i])
 				{
 					nMode = FL_HSP3_MODE_NORMAL;
 					continue;
@@ -704,6 +717,14 @@ void CDocOutline::MakeFuncList_HSP3(CFuncInfoArr* pcFuncInfoArr)
 			if (FL_HSP3_MODE_DOUBLE_QUOTE == nMode)
 			{
 				if (i < nLineLen - 1
+					&& L'\\' == pLine[i]
+					&& L'\\' == pLine[i + 1])
+				{
+					// 継続判定：[\\]
+					++i;
+					continue;
+				}
+				else if (i < nLineLen - 1
 					&& L'\\' == pLine[i]
 					&& L'"'  == pLine[i+1])
 				{
@@ -722,6 +743,14 @@ void CDocOutline::MakeFuncList_HSP3(CFuncInfoArr* pcFuncInfoArr)
 			if (FL_HSP3_MODE_DOUBLE_QUOTE_MULTILINE == nMode)
 			{
 				if (i < nLineLen - 1
+					&& L'\\' == pLine[i]
+					&& L'\\' == pLine[i + 1])
+				{
+					// 継続判定：[\\]
+					++i;
+					continue;
+				}
+				else if (i < nLineLen - 1
 					&& L'\\' == pLine[i]
 					&& L'"' == pLine[i + 1])
 				{

@@ -326,6 +326,10 @@ ECharKind CWordParse::WhatKindOfCharForHSP(
 		{
 			return CK_CSYM;
 		}
+		else if (c == L'\\' || c == L'@')	// cnt\2 などの \ の識別用
+		{
+			return CK_ETC;
+		}
 	}
 	return WhatKindOfChar(pData, pDataLen, nIdx);
 }
@@ -398,14 +402,14 @@ bool CWordParse::SearchNextWordPosition(
 	// 空白とタブは無視する
 
 	// 現在位置の文字の種類を調べる
-	ECharKind nCharKind = WhatKindOfChar( pLine, nLineLen, nIdx );
+	ECharKind nCharKind = WhatKindOfCharForHSP( pLine, nLineLen, nIdx );
 
 	CLogicInt nIdxNext = nIdx;
 	// 2005-09-02 D.S.Koba GetSizeOfChar
 	CLogicInt nCharChars = CNativeW::GetSizeOfChar( pLine, nLineLen, nIdxNext );
 	while( nCharChars > 0 ){
 		nIdxNext += nCharChars;
-		ECharKind nCharKindNext = WhatKindOfChar( pLine, nLineLen, nIdxNext );
+		ECharKind nCharKindNext = WhatKindOfCharForHSP( pLine, nLineLen, nIdxNext );
 		// 空白とタブは無視する
 		if( nCharKindNext == CK_TAB || nCharKindNext == CK_SPACE ){
 			if ( bStopsBothEnds && nCharKind != nCharKindNext ){
@@ -444,14 +448,14 @@ bool CWordParse::SearchNextWordPosition4KW(
 	// 空白とタブは無視する
 
 	// 現在位置の文字の種類を調べる
-	ECharKind nCharKind = WhatKindOfChar( pLine, nLineLen, nIdx );
+	ECharKind nCharKind = WhatKindOfCharForHSP( pLine, nLineLen, nIdx );
 
 	CLogicInt nIdxNext = nIdx;
 	// 2005-09-02 D.S.Koba GetSizeOfChar
 	CLogicInt nCharChars = CNativeW::GetSizeOfChar( pLine, nLineLen, nIdxNext );
 	while( nCharChars > 0 ){
 		nIdxNext += nCharChars;
-		ECharKind nCharKindNext = WhatKindOfChar( pLine, nLineLen, nIdxNext );
+		ECharKind nCharKindNext = WhatKindOfCharForHSP( pLine, nLineLen, nIdxNext );
 		// 空白とタブは無視する
 		if( nCharKindNext == CK_TAB || nCharKindNext == CK_SPACE ){
 			if ( bStopsBothEnds && nCharKind != nCharKindNext ){
@@ -478,7 +482,7 @@ bool CWordParse::SearchPrevWordPosition(const wchar_t* pLine,
 	CLogicInt nLineLen, CLogicInt nIdx, CLogicInt* pnColumnNew, BOOL bStopsBothEnds)
 {
 	/* 現在位置の文字の種類を調べる */
-	ECharKind	nCharKind = CWordParse::WhatKindOfChar( pLine, nLineLen, nIdx );
+	ECharKind	nCharKind = CWordParse::WhatKindOfCharForHSP( pLine, nLineLen, nIdx );
 	if( nIdx == 0 ){
 		return false;
 	}
@@ -491,7 +495,7 @@ bool CWordParse::SearchPrevWordPosition(const wchar_t* pLine,
 	while( nCharChars > 0 ){
 		CLogicInt		nIdxNextPrev = nIdxNext;
 		nIdxNext -= nCharChars;
-		ECharKind nCharKindNext = CWordParse::WhatKindOfChar( pLine, nLineLen, nIdxNext );
+		ECharKind nCharKindNext = CWordParse::WhatKindOfCharForHSP( pLine, nLineLen, nIdxNext );
 
 		ECharKind nCharKindMerge = CWordParse::WhatKindOfTwoChars( nCharKindNext, nCharKind );
 		if( nCharKindMerge == CK_NULL ){

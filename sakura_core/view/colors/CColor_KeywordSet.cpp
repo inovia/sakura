@@ -56,12 +56,12 @@ bool CColor_KeywordSet::BeginColor(const CStringRef& cStr, int nPos)
 			現在位置からキーワードを抜き出し、そのキーワードが登録単語ならば、色を変える
 	*/
 
-	const ECharKind charKind = CWordParse::WhatKindOfChar( cStr.GetPtr(), cStr.GetLength() , nPos );
+	const ECharKind charKind = CWordParse::WhatKindOfCharForHSP( cStr.GetPtr(), cStr.GetLength() , nPos );
 	if( charKind <= CK_SPACE ){
 		return false; // この文字はキーワード対象文字ではない。
 	}
 	if( 0 < nPos ){
-		const ECharKind charKindPrev = CWordParse::WhatKindOfChar( cStr.GetPtr(), cStr.GetLength() , nPos-1 );
+		const ECharKind charKindPrev = CWordParse::WhatKindOfCharForHSP( cStr.GetPtr(), cStr.GetLength() , nPos-1 );
 		const ECharKind charKindTwo = CWordParse::WhatKindOfTwoChars4KW( charKindPrev, charKind );
 		if( charKindTwo != CK_NULL ){
 			return false;
